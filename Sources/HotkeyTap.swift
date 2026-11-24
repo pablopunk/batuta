@@ -4,12 +4,12 @@ import AppKit
 enum Direction {
     case left, right, up, down
 
-    init?(keyCode: Int64) {
-        switch keyCode {
-        case 123: self = .left
-        case 124: self = .right
-        case 125: self = .down
-        case 126: self = .up
+    init?(keyCode: Int64, keys: DirectionKeys) {
+        switch (keys, keyCode) {
+        case (.arrows, 123), (.hjkl, 4): self = .left
+        case (.arrows, 124), (.hjkl, 37): self = .right
+        case (.arrows, 125), (.hjkl, 38): self = .down
+        case (.arrows, 126), (.hjkl, 40): self = .up
         default: return nil
         }
     }
@@ -21,7 +21,7 @@ private enum KeyCode {
     static let escape: Int64 = 53
 }
 
-/// Global keyboard tap. It only swallows arrows held with the chosen modifier, plus Return/Escape/arrows while a stage is being picked.
+/// Global keyboard tap. It only swallows direction keys held with the chosen modifier, plus Return/Escape/direction keys while a stage is being picked.
 @MainActor
 final class HotkeyTap {
     var onDirection: ((Direction) -> Void)?
@@ -101,7 +101,7 @@ final class HotkeyTap {
         let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
         let picking = isPickingStage()
 
-        if let direction = Direction(keyCode: keyCode),
+        if let direction = Direction(keyCode: keyCode, keys: ConfigStore.shared.config.directionKeys),
            holdsExactlyRequiredModifiers(event.flags) || (picking && holdsNoModifiers(event.flags)) {
             swallowedKeyCodes.insert(keyCode)
             onDirection?(direction)

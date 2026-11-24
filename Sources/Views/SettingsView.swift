@@ -24,6 +24,7 @@ struct SettingsView: View {
             VStack(alignment: .leading, spacing: 10) {
                 SectionHeaderView(title: "Navigation", icon: "arrow.left.arrow.right")
                 ModifierPickerRow()
+                DirectionKeysRow()
                 StageConfirmModeRow()
                 PreferenceToggleRow(
                     title: "Highlight focused window",
@@ -77,7 +78,7 @@ private struct ModifierPickerRow: View {
         CaptionedRow(
             title: "Modifier",
             icon: "command",
-            caption: "Hold it with ← → to move between windows. Keep going past the edge to reach your stages, then ↑ ↓."
+            caption: "Hold it with \(keys.leftRightLabel) to move between windows. Keep going past the edge to reach your stages, then \(keys.upDownLabel)."
         ) {
             HStack(spacing: 4) {
                 ForEach(ModifierKey.allCases, id: \.self) { key in
@@ -87,6 +88,29 @@ private struct ModifierPickerRow: View {
                 }
             }
         }
+    }
+
+    private var keys: DirectionKeys { configStore.config.directionKeys }
+}
+
+private struct DirectionKeysRow: View {
+    @ObservedObject private var configStore = ConfigStore.shared
+
+    var body: some View {
+        HStack(spacing: 10) {
+            RowIcon(systemName: "arrow.up.and.down.and.arrow.left.and.right")
+            Text("Keys")
+                .font(.system(size: 13, weight: .medium))
+            Spacer(minLength: 0)
+            HStack(spacing: 4) {
+                ForEach(DirectionKeys.allCases, id: \.self) { keys in
+                    Pill(label: keys.label, isOn: configStore.config.directionKeys == keys) {
+                        configStore.config.directionKeys = keys
+                    }
+                }
+            }
+        }
+        .frame(minHeight: 28)
     }
 }
 

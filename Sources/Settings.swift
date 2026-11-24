@@ -24,6 +24,32 @@ enum ModifierKey: String, CaseIterable, Codable {
     static let allEventFlags: CGEventFlags = [.maskControl, .maskAlternate, .maskShift, .maskCommand]
 }
 
+enum DirectionKeys: String, CaseIterable, Codable {
+    case hjkl
+    case arrows
+
+    var label: String {
+        switch self {
+        case .hjkl: "hjkl"
+        case .arrows: "←↓↑→"
+        }
+    }
+
+    var leftRightLabel: String {
+        switch self {
+        case .hjkl: "h l"
+        case .arrows: "← →"
+        }
+    }
+
+    var upDownLabel: String {
+        switch self {
+        case .hjkl: "k j"
+        case .arrows: "↑ ↓"
+        }
+    }
+}
+
 enum StageConfirmMode: String, CaseIterable, Codable {
     case releaseModifier = "release"
     case pressReturn = "return"
@@ -31,7 +57,8 @@ enum StageConfirmMode: String, CaseIterable, Codable {
 
 /// Everything in ~/.config/batuta/config.json. Missing keys fall back to defaults so the file can stay partial.
 struct BatutaConfig: Codable, Equatable {
-    var modifiers: [ModifierKey] = ModifierKey.allCases
+    var modifiers: [ModifierKey] = [.control, .option, .command]
+    var directionKeys: DirectionKeys = .hjkl
     var openStageOn: StageConfirmMode = .releaseModifier
     var highlightFocusedWindow = true
     var showMenuBarIcon = true
@@ -42,6 +69,7 @@ struct BatutaConfig: Codable, Equatable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let defaults = BatutaConfig()
         modifiers = try container.decodeIfPresent([ModifierKey].self, forKey: .modifiers) ?? defaults.modifiers
+        directionKeys = try container.decodeIfPresent(DirectionKeys.self, forKey: .directionKeys) ?? defaults.directionKeys
         openStageOn = try container.decodeIfPresent(StageConfirmMode.self, forKey: .openStageOn) ?? defaults.openStageOn
         highlightFocusedWindow = try container.decodeIfPresent(Bool.self, forKey: .highlightFocusedWindow) ?? defaults.highlightFocusedWindow
         showMenuBarIcon = try container.decodeIfPresent(Bool.self, forKey: .showMenuBarIcon) ?? defaults.showMenuBarIcon
