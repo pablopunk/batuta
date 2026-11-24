@@ -1,6 +1,7 @@
 import AppKit
 import ApplicationServices
 import QuartzCore
+import os
 
 /// macOS has no API to animate another app's window, so frames are stepped through Accessibility on the display's refresh.
 /// Only the position animates: resizing every frame makes apps relayout and stutter, so the size changes once.
@@ -22,6 +23,7 @@ final class WindowAnimator: NSObject {
     private var displayLink: CADisplayLink?
     private var pidsWithEnhancedUserInterface: Set<pid_t> = []
 
+    private static let log = Logger(subsystem: "com.pablopunk.batuta", category: "animation")
     private let proxyOverlay = WindowProxyOverlay()
     private static let proxyDuration: CFTimeInterval = 0.32
     private static let proxyRevealDelay: TimeInterval = 0.06
@@ -29,16 +31,20 @@ final class WindowAnimator: NSObject {
     /// Prefers sliding pictures of the windows (smooth, needs Screen Recording) and falls back to stepping real windows.
     func animate(_ targets: [(window: StageWindow, frame: CGRect)]) {
         guard WindowSnapshotter.hasPermission else {
+            Self.log.info("no screen recording permission, stepping windows through AX")
             WindowSnapshotter.requestPermission()
             animateThroughAccessibility(targets)
             return
         }
 
         Task { @MainActor in
+            let captureStart = CACurrentMediaTime()
             guard let images = await WindowSnapshotter.snapshots(of: targets.map(\.window)) else {
+                Self.log.info("window capture failed, stepping windows through AX")
                 animateThroughAccessibility(targets)
                 return
             }
+            Self.log.info("sliding \(images.count) pictures, capture took \(Int((CACurrentMediaTime() - captureStart) * 1000))ms")
             slidePictures(images, targets)
         }
     }
