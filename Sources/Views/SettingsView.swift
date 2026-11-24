@@ -22,20 +22,30 @@ struct SettingsView: View {
             Divider().opacity(0.5)
 
             VStack(alignment: .leading, spacing: 10) {
-                SectionHeaderView(title: "Navigation", icon: "arrow.left.arrow.right")
+                SectionHeaderView(title: "Keys", icon: "keyboard")
                 ModifierPickerRow()
                 MoveModifierPickerRow()
                 DirectionKeysRow()
                 StageConfirmModeRow()
-                ResizeHintRow()
-                StageNumbersHintRow()
+            }
+
+            Divider().opacity(0.5)
+
+            VStack(alignment: .leading, spacing: 6) {
+                SectionHeaderView(title: "Shortcuts", icon: "command")
+                ShortcutList()
+            }
+
+            Divider().opacity(0.5)
+
+            VStack(alignment: .leading, spacing: 6) {
+                SectionHeaderView(title: "Windows", icon: "macwindow")
                 PreferenceToggleRow(
                     title: "Highlight focused window",
                     subtitle: "Flash a frame around it",
                     icon: "sparkles",
                     isOn: configStore.binding(\.highlightFocusedWindow)
                 )
-
                 PreferenceToggleRow(
                     title: "Animate window moves",
                     subtitle: "Off snaps windows into place",
@@ -87,7 +97,7 @@ private struct ModifierPickerRow: View {
         CaptionedRow(
             title: "Navigate",
             icon: "command",
-            caption: "Hold it with \(keys.leftRightLabel) to move between windows. Keep going past the edge to reach your stages, then \(keys.upDownLabel)."
+            caption: "Hold to move between windows and stages."
         ) {
             HStack(spacing: 4) {
                 ForEach(ModifierKey.allCases, id: \.self) { key in
@@ -99,7 +109,6 @@ private struct ModifierPickerRow: View {
         }
     }
 
-    private var keys: DirectionKeys { configStore.config.directionKeys }
 }
 
 private struct MoveModifierPickerRow: View {
@@ -109,7 +118,7 @@ private struct MoveModifierPickerRow: View {
         CaptionedRow(
             title: "Move",
             icon: "arrow.left.and.right.square",
-            caption: "Add one more key to move instead: swap windows, take one out of the stage, or pull a stage in."
+            caption: "Moves windows instead of focusing them."
         ) {
             HStack(spacing: 4) {
                 ForEach(ModifierKey.allCases, id: \.self) { key in
@@ -159,8 +168,8 @@ private struct StageConfirmModeRow: View {
 
     private var caption: String {
         switch confirmMode {
-        case .releaseModifier: "Let go of the modifier to open the selected stage. Esc cancels."
-        case .pressReturn: "Press ↩ to open the selected stage. Esc cancels."
+        case .releaseModifier: "Opens when you let go. Esc cancels."
+        case .pressReturn: "Opens on ↩. Esc cancels."
         }
     }
 }
@@ -179,30 +188,35 @@ private struct ConfigFileButton: View {
     }
 }
 
-private struct ResizeHintRow: View {
+/// A quiet cheat sheet: what each shortcut does, with the keys from the current config.
+private struct ShortcutList: View {
     @ObservedObject private var configStore = ConfigStore.shared
 
     var body: some View {
-        CaptionedRow(
-            title: "Resize",
-            icon: "arrow.up.left.and.arrow.down.right",
-            caption: "Grows the current window by a third of the free space each press; three presses fill it. − walks back, then shrinks."
-        ) {
-            KeyHint(text: configStore.config.modifiers.map(\.symbol).joined() + " + −")
+        VStack(spacing: 5) {
+            row("Focus window", navigate + " " + keys.leftRightLabel)
+            row("Move window", move + " " + keys.leftRightLabel)
+            row("Pick a stage", navigate + " " + keys.upDownLabel)
+            row("Jump to stage", navigate + " 1–9")
+            row("Resize window", navigate + " + −")
+            row("Switch tiling mode", configStore.config.effectiveCycleTilingModeShortcut.label)
         }
+        .padding(.leading, 28)
     }
-}
 
-private struct StageNumbersHintRow: View {
-    @ObservedObject private var configStore = ConfigStore.shared
+    private var config: BatutaConfig { configStore.config }
+    private var keys: DirectionKeys { config.directionKeys }
+    private var navigate: String { ModifierKey.allCases.filter(config.modifiers.contains).map(\.symbol).joined() }
+    private var move: String { ModifierKey.allCases.filter { config.modifiers.contains($0) || $0 == config.moveModifier }.map(\.symbol).joined() }
 
-    var body: some View {
-        CaptionedRow(
-            title: "Jump to stage",
-            icon: "number",
-            caption: "Hold the keys to see numbers on Stage Manager, then press one to open that stage."
-        ) {
-            KeyHint(text: configStore.config.modifiers.map(\.symbol).joined() + " 1–9")
+    private func row(_ title: String, _ keys: String) -> some View {
+        HStack(spacing: 8) {
+            Text(title)
+                .font(.system(size: 12))
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+            Spacer(minLength: 4)
+            KeyHint(text: keys)
         }
     }
 }
