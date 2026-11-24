@@ -48,7 +48,7 @@ final class StageNavigator {
     /// Switches only the current stage to the next tiling mode and tiles it right away.
     func cycleTilingModeOfCurrentStage() {
         guard !isPickingStage else { return }
-        let windows = StageWindows.visibleSortedLeftToRight()
+        let windows = StageOrders.ordered(StageWindows.visibleSortedLeftToRight())
         guard let first = windows.first else { return }
         let focusedFrame = windows.first { $0.id == StageWindows.focusedWindowID() }?.frame ?? first.frame
         let nextMode = StageLayout.mode(for: windows).next
@@ -112,6 +112,7 @@ final class StageNavigator {
         if let neighbourIndex = SpatialNeighbor.index(of: direction, from: focused.frame, among: windows.map(\.frame), excluding: focusedIndex) {
             let neighbour = windows[neighbourIndex]
             WindowAnimator.shared.animate([(focused, neighbour.frame), (neighbour, focused.frame)])
+            StageOrders.swap(focused.id, neighbour.id)
             if ConfigStore.shared.config.highlightFocusedWindow { overlay.flash(around: neighbour.frame) }
         } else if let strip = StageStrip.closest(to: focused.frame), points(direction, towardStripOf: strip) {
             StageStrip.removeFromCurrentStage(focused)
@@ -132,7 +133,7 @@ final class StageNavigator {
                 if attemptsLeft > 0 { makeRoomForAddedWindows(previousWindowIDs: previousWindowIDs, strip: strip, started: started, attemptsLeft: attemptsLeft - 1) }
                 return
             }
-            let existing = windows.filter { previousWindowIDs.contains($0.id) }
+            let existing = StageOrders.ordered(windows.filter { previousWindowIDs.contains($0.id) })
             if let chosen = StageTilingModes.chosenMode(for: existing.map(\.id)) { StageTilingModes.choose(chosen, for: added.map(\.id)) }
             timingLog.notice("add: new window seen after \(CACurrentMediaTime() - started, format: .fixed(precision: 3))s")
             StageLayout.arrange(existing + added, besides: strip)
@@ -146,7 +147,7 @@ final class StageNavigator {
                 if attemptsLeft > 0 { retileAfterWindowLeaves(leavingID, strip: strip, attemptsLeft: attemptsLeft - 1) }
                 return
             }
-            StageLayout.arrange(windows, besides: strip)
+            StageLayout.arrange(StageOrders.ordered(windows), besides: strip)
         }
     }
 

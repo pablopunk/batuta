@@ -34,4 +34,4 @@ The Laptop settings (`tiling`) apply to every screen. Turn on **Own settings** i
 
 **⌃⌥⌘ Space** (change it in the Tiling tab, saved as `cycleTilingModeShortcut`) switches the current stage to the next mode and tiles it now. Only that stage changes; it keeps the mode until Batuta quits, and other stages keep the default.
 
-Batuta tiles when a stage window is pulled in, when a window leaves the stage, and when you switch to another stage by keyboard or mouse (**Tile on stage switch**, `tileWhenSwitchingStages`, on by default).
+Batuta tiles when a stage window is pulled in, when a window leaves the stage, and when you switch to another stage by keyboard or mouse (**Tile on stage switch**, `tileWhenSwitchingStages`, on by default). A stage that comes back with the same windows is left as it is, so sizes you changed by hand stay; when windows joined or left, the others keep their order.

@@ -43,8 +43,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func startWatching() {
         hotkeyTap.start()
         stageSwitchWatcher.onStageSwitched = { windows in
-            guard ConfigStore.shared.config.tileWhenSwitchingStages else { return }
-            StageLayout.arrange(windows, besides: StageStrip.closest(to: windows.first?.frame))
+            guard ConfigStore.shared.config.tileWhenSwitchingStages, !StageOrders.isTiledAlready(windows) else { return }
+            StageLayout.arrange(StageOrders.ordered(windows), besides: StageStrip.closest(to: windows.first?.frame))
         }
         stageSwitchWatcher.start()
         StageLayout.onArranged = { [stageSwitchWatcher] in stageSwitchWatcher.acceptCurrentStage() }
