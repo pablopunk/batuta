@@ -62,6 +62,9 @@ struct BatutaConfig: Codable, Equatable {
     var moveModifier: ModifierKey = .shift
     var directionKeys: DirectionKeys = .hjkl
     var openStageOn: StageConfirmMode = .releaseModifier
+    var tilingMode: TilingMode = .bsp
+    /// Keyed by window count ("1" to "5"); each value has one unit rect per window, left to right.
+    var customLayouts: [String: [UnitRect]] = TilingLayouts.defaultCustomLayouts
     var highlightFocusedWindow = true
     var animateWindowMoves = true
     var showMenuBarIcon = true
@@ -82,6 +85,10 @@ struct BatutaConfig: Codable, Equatable {
         }
         directionKeys = try container.decodeIfPresent(DirectionKeys.self, forKey: .directionKeys) ?? defaults.directionKeys
         openStageOn = try container.decodeIfPresent(StageConfirmMode.self, forKey: .openStageOn) ?? defaults.openStageOn
+        tilingMode = try container.decodeIfPresent(TilingMode.self, forKey: .tilingMode) ?? defaults.tilingMode
+        customLayouts = defaults.customLayouts.merging(
+            try container.decodeIfPresent([String: [UnitRect]].self, forKey: .customLayouts) ?? [:]
+        ) { _, fromFile in fromFile }
         highlightFocusedWindow = try container.decodeIfPresent(Bool.self, forKey: .highlightFocusedWindow) ?? defaults.highlightFocusedWindow
         animateWindowMoves = try container.decodeIfPresent(Bool.self, forKey: .animateWindowMoves) ?? defaults.animateWindowMoves
         showMenuBarIcon = try container.decodeIfPresent(Bool.self, forKey: .showMenuBarIcon) ?? defaults.showMenuBarIcon

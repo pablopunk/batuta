@@ -80,6 +80,7 @@ final class StageNavigator {
             if ConfigStore.shared.config.highlightFocusedWindow { overlay.flash(around: neighbour.frame) }
         } else if let strip = StageStrip.closest(to: focused.frame), points(direction, towardStripOf: strip) {
             StageStrip.removeFromCurrentStage(focused)
+            Self.retileAfterWindowLeaves(focused.id, strip: strip)
         }
     }
 
@@ -97,7 +98,18 @@ final class StageNavigator {
                 return
             }
             let existing = windows.filter { previousWindowIDs.contains($0.id) }
-            StageLayout.arrangeInColumns(existing + added, besides: strip)
+            StageLayout.arrange(existing + added, besides: strip)
+        }
+    }
+
+    private static func retileAfterWindowLeaves(_ leavingID: CGWindowID, strip: StageStrip, attemptsLeft: Int = addedWindowPollAttempts) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + addedWindowPollInterval) {
+            let windows = StageWindows.visibleSortedLeftToRight()
+            guard !windows.contains(where: { $0.id == leavingID }) else {
+                if attemptsLeft > 0 { retileAfterWindowLeaves(leavingID, strip: strip, attemptsLeft: attemptsLeft - 1) }
+                return
+            }
+            StageLayout.arrange(windows, besides: strip)
         }
     }
 

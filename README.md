@@ -18,3 +18,13 @@ make build  # builds and installs Batuta.app
 ```
 
 Batuta needs Accessibility permission.
+
+## Tiling
+
+Pick a mode in the Tiling tab (saved as `tilingMode` in the config):
+
+- **BSP**: each window splits the last one in half.
+- **Messy**: big windows that overlap (placeholder rules for now).
+- **Custom**: draw tiles for 1 to 5 windows; saved as `customLayouts`, keyed by window count, as 0–1 rects (`x`, `y`, `width`, `height`, top-left origin). Tile 1 is the leftmost window.
+
+Batuta tiles when a stage window is pulled in, and when a window leaves the stage.

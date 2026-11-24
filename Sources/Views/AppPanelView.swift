@@ -2,11 +2,13 @@ import SwiftUI
 
 private enum PanelTab: String, CaseIterable {
     case settings = "Settings"
+    case tiling = "Tiling"
     case info = "About"
 
     var icon: String {
         switch self {
         case .settings: "gear"
+        case .tiling: "square.grid.2x2"
         case .info: "info.circle"
         }
     }
@@ -37,6 +39,7 @@ struct AppPanelView: View {
         Group {
             switch selectedTab {
             case .settings: SettingsView(onQuit: onQuit)
+            case .tiling: TilingView()
             case .info: InfoView(onQuit: onQuit)
             }
         }

@@ -1,23 +1,18 @@
 import AppKit
 
-/// Rough first layout: every window of the stage gets an equal column, in the given order.
+/// Places the windows of the stage with the chosen tiling mode, in the given order.
 @MainActor
 enum StageLayout {
     private static let gap: CGFloat = 12
     private static let fallbackStripWidth: CGFloat = 260
 
-    static func arrangeInColumns(_ windows: [StageWindow], besides strip: StageStrip?) {
+    static func arrange(_ windows: [StageWindow], besides strip: StageStrip?) {
         guard !windows.isEmpty, let area = usableArea(near: windows[0].frame, besides: strip) else { return }
-        let count = CGFloat(windows.count)
-        let columnWidth = (area.width - gap * (count - 1)) / count
-
-        let targets = windows.enumerated().map { index, window in
-            (window: window, frame: CGRect(
-                x: area.minX + CGFloat(index) * (columnWidth + gap),
-                y: area.minY,
-                width: columnWidth,
-                height: area.height
-            ))
+        let config = ConfigStore.shared.config
+        let rects = TilingLayouts.unitRects(for: windows.count, mode: config.tilingMode, customLayouts: config.customLayouts)
+        let areaIncludingHalfGaps = area.insetBy(dx: -gap / 2, dy: -gap / 2)
+        let targets = zip(windows, rects).map { window, rect in
+            (window: window, frame: rect.placed(in: areaIncludingHalfGaps).insetBy(dx: gap / 2, dy: gap / 2))
         }
         WindowAnimator.shared.animate(targets)
     }

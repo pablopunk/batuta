@@ -1,0 +1,117 @@
+import SwiftUI
+
+/// Edits `customLayouts` in the config: one tab per window count, tiles dragged on a screen-shaped canvas.
+struct CustomLayoutEditor: View {
+    @ObservedObject private var configStore = ConfigStore.shared
+    @State private var windowCount = 2
+    @State private var draftRects: [UnitRect]?
+    @State private var dragStartRects: [UnitRect]?
+    @State private var activeIndex: Int?
+
+    private static let snapStep = 0.05
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 4) {
+                Text("Windows")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(.secondary)
+                Spacer(minLength: 0)
+                ForEach(TilingLayouts.customWindowCounts, id: \.self) { count in
+                    Pill(label: "\(count)", isOn: windowCount == count) { windowCount = count }
+                }
+            }
+
+            LayoutCanvas { size in
+                ForEach(Array(rects.enumerated()), id: \.offset) { index, rect in
+                    editableTile(index: index, rect: rect, canvasSize: size)
+                }
+            }
+
+            HStack {
+                Text("Tile 1 is the leftmost window.")
+                    .font(.system(size: 11))
+                    .foregroundStyle(.tertiary)
+                Spacer(minLength: 0)
+                Button("Reset to BSP", action: resetToBinarySpacePartition)
+                    .buttonStyle(.plain)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(.secondary)
+            }
+        }
+    }
+
+    private var savedRects: [UnitRect] {
+        let saved = configStore.config.customLayouts[TilingLayouts.customLayoutKey(windowCount)] ?? []
+        return saved.count == windowCount ? saved : TilingLayouts.binarySpacePartition(windowCount)
+    }
+
+    private var rects: [UnitRect] { draftRects ?? savedRects }
+
+    private func editableTile(index: Int, rect: UnitRect, canvasSize: CGSize) -> some View {
+        TileShape(number: index + 1, isActive: activeIndex == index)
+            .frame(width: rect.width * canvasSize.width, height: rect.height * canvasSize.height)
+            .overlay(alignment: .bottomTrailing) {
+                ResizeHandle()
+                    .gesture(dragGesture(index: index, canvasSize: canvasSize, resizes: true))
+            }
+            .offset(x: rect.x * canvasSize.width, y: rect.y * canvasSize.height)
+            .gesture(dragGesture(index: index, canvasSize: canvasSize, resizes: false))
+            .zIndex(activeIndex == index ? 1 : 0)
+    }
+
+    private func dragGesture(index: Int, canvasSize: CGSize, resizes: Bool) -> some Gesture {
+        DragGesture(minimumDistance: 1, coordinateSpace: .global)
+            .onChanged { value in
+                let start = dragStartRects ?? rects
+                if dragStartRects == nil { dragStartRects = start }
+                activeIndex = index
+                let dx = value.translation.width / canvasSize.width
+                let dy = value.translation.height / canvasSize.height
+                var next = start
+                next[index] = resizes ? Self.resized(start[index], dx: dx, dy: dy) : Self.moved(start[index], dx: dx, dy: dy)
+                draftRects = next
+            }
+            .onEnded { _ in
+                if let draftRects { save(draftRects) }
+                draftRects = nil
+                dragStartRects = nil
+                activeIndex = nil
+            }
+    }
+
+    private static func moved(_ rect: UnitRect, dx: Double, dy: Double) -> UnitRect {
+        UnitRect(x: snapped(rect.x + dx), y: snapped(rect.y + dy), width: rect.width, height: rect.height).clampedToUnitSquare()
+    }
+
+    private static func resized(_ rect: UnitRect, dx: Double, dy: Double) -> UnitRect {
+        let maxX = min(snapped(rect.x + rect.width + dx), 1)
+        let maxY = min(snapped(rect.y + rect.height + dy), 1)
+        return UnitRect(x: rect.x, y: rect.y, width: maxX - rect.x, height: maxY - rect.y).clampedToUnitSquare()
+    }
+
+    private static func snapped(_ value: Double) -> Double {
+        (value / snapStep).rounded() * snapStep
+    }
+
+    private func save(_ rects: [UnitRect]) {
+        let key = TilingLayouts.customLayoutKey(windowCount)
+        configStore.update { $0.customLayouts[key] = rects }
+    }
+
+    private func resetToBinarySpacePartition() {
+        save(TilingLayouts.binarySpacePartition(windowCount))
+    }
+}
+
+private struct ResizeHandle: View {
+    var body: some View {
+        Image(systemName: "arrow.up.left.and.arrow.down.right")
+            .font(.system(size: 8, weight: .bold))
+            .foregroundStyle(.white)
+            .frame(width: 14, height: 14)
+            .background(Circle().fill(Color.accentColor))
+            .padding(4)
+            .contentShape(Rectangle())
+    }
+}
