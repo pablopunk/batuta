@@ -1,9 +1,9 @@
 import SwiftUI
 
-/// Edits `customLayouts` in the config: one tab per window count, tiles dragged on a screen-shaped canvas.
+/// Edits `customLayouts` in the config for one window count: tiles dragged on a screen-shaped canvas.
 struct CustomLayoutEditor: View {
     @ObservedObject private var configStore = ConfigStore.shared
-    @State private var windowCount = 2
+    let windowCount: Int
     @State private var draftRects: [UnitRect]?
     @State private var dragStartRects: [UnitRect]?
     @State private var activeIndex: Int?
@@ -12,16 +12,6 @@ struct CustomLayoutEditor: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 4) {
-                Text("Windows")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(.secondary)
-                Spacer(minLength: 0)
-                ForEach(TilingLayouts.customWindowCounts, id: \.self) { count in
-                    Pill(label: "\(count)", isOn: windowCount == count) { windowCount = count }
-                }
-            }
-
             LayoutCanvas { size in
                 ForEach(Array(rects.enumerated()), id: \.offset) { index, rect in
                     editableTile(index: index, rect: rect, canvasSize: size)

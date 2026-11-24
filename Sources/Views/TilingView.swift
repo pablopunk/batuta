@@ -2,6 +2,7 @@ import SwiftUI
 
 struct TilingView: View {
     @ObservedObject private var configStore = ConfigStore.shared
+    @State private var windowCount = 2
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -17,8 +18,10 @@ struct TilingView: View {
                 }
             }
 
+            WindowCountStepper(count: $windowCount)
+
             if configStore.config.tilingMode == .custom {
-                CustomLayoutEditor()
+                CustomLayoutEditor(windowCount: windowCount)
             } else {
                 LayoutPreview(rects: previewRects)
             }
@@ -27,7 +30,7 @@ struct TilingView: View {
     }
 
     private var previewRects: [UnitRect] {
-        TilingLayouts.unitRects(for: 3, mode: configStore.config.tilingMode, customLayouts: configStore.config.customLayouts)
+        TilingLayouts.unitRects(for: windowCount, mode: configStore.config.tilingMode, customLayouts: configStore.config.customLayouts)
     }
 
     private var modeCaption: String {
@@ -36,6 +39,42 @@ struct TilingView: View {
         case .messy: "Loose layouts where windows can overlap."
         case .custom: "Draw where windows go for 1 to 6 windows. Drag to move, drag the corner to resize."
         }
+    }
+}
+
+private struct WindowCountStepper: View {
+    @Binding var count: Int
+    private let range = TilingLayouts.customWindowCounts
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Text("Windows")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(.secondary)
+            Spacer(minLength: 0)
+            stepButton("minus", isEnabled: count > range.lowerBound) { count -= 1 }
+            Text("\(count)")
+                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                .monospacedDigit()
+                .frame(minWidth: 14)
+            stepButton("plus", isEnabled: count < range.upperBound) { count += 1 }
+        }
+    }
+
+    private func stepButton(_ symbol: String, isEnabled: Bool, action: @escaping () -> Void) -> some View {
+        Button {
+            withAnimation(.snappy(duration: 0.2), action)
+        } label: {
+            Image(systemName: symbol)
+                .font(.system(size: 10, weight: .bold))
+                .frame(width: 22, height: 22)
+                .background(Circle().fill(Color.secondary.opacity(0.15)))
+                .contentShape(Circle())
+        }
+        .buttonStyle(.plain)
+        .focusEffectDisabled()
+        .disabled(!isEnabled)
+        .opacity(isEnabled ? 1 : 0.35)
     }
 }
 
