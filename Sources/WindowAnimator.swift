@@ -26,6 +26,12 @@ final class WindowAnimator: NSObject {
         finishImmediately()
         disableEnhancedUserInterface(for: Set(targets.map(\.window.pid)))
 
+        guard ConfigStore.shared.config.animateWindowMoves else {
+            moves = targets.map { Move(pump: WindowPositionPump(element: $0.window.element), startOrigin: $0.window.frame.origin, target: $0.frame) }
+            finishImmediately()
+            return
+        }
+
         moves = targets.map { window, frame in
             let pump = WindowPositionPump(element: window.element)
             shrinkUpFront(window, toward: frame, using: pump)

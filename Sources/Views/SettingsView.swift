@@ -33,6 +33,12 @@ struct SettingsView: View {
                     isOn: $configStore.config.highlightFocusedWindow
                 )
 
+                PreferenceToggleRow(
+                    title: "Animate window moves",
+                    subtitle: "Off snaps windows into place",
+                    icon: "wind",
+                    isOn: $configStore.config.animateWindowMoves
+                )
                 ConfigFileButton()
 
                 if !hasAccessibilityPermission {
