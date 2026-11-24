@@ -6,7 +6,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let navigator = StageNavigator()
     private let hotkeyTap = HotkeyTap()
     private let stageSwitchWatcher = StageSwitchWatcher()
-    private let resizeSteps = WindowResizeSteps()
     private var permissionPollTimer: Timer?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -33,18 +32,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         hotkeyTap.onMoveDirection = { [navigator] in navigator.moveItem($0) }
         hotkeyTap.onCycleTilingMode = { [navigator] in navigator.cycleTilingModeOfCurrentStage() }
         hotkeyTap.onStageNumber = { [navigator] in navigator.openStage(number: $0) }
-        hotkeyTap.onResize = { [navigator, resizeSteps] grows in
+        hotkeyTap.onResize = { [navigator] grows in
             navigator.hideStageNumbers()
-            grows ? resizeSteps.grow() : resizeSteps.shrink()
+            grows ? WindowResizeSteps.grow() : WindowResizeSteps.shrink()
         }
-        hotkeyTap.onNavigateKeysHeld = { [navigator, resizeSteps] held in
-            if held {
-                navigator.showStageNumbersSoon()
-            } else {
-                navigator.hideStageNumbers()
-                resizeSteps.forgetMeasurement()
-            }
-        }
+        hotkeyTap.onNavigateKeysHeld = { [navigator] held in held ? navigator.showStageNumbersSoon() : navigator.hideStageNumbers() }
         hotkeyTap.onConfirm = { [navigator] in navigator.confirmStage() }
         hotkeyTap.onCancel = { [navigator] in navigator.stopPickingStage() }
         hotkeyTap.onPointerTookOver = { [navigator] in navigator.stopPickingStage(cursor: .leaveWherePersonMovedIt) }
