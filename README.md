@@ -3,8 +3,8 @@
 Keyboard navigation for macOS Stage Manager, without moving windows.
 
 - **Modifier + h/l** focuses the window to the left/right in the current stage.
-- Go past the edge window toward the Stage Manager strip (or press **Modifier + k/j**) to start picking a stage.
-- **Move modifier + h/l** (default: navigate keys + ⇧) swaps the focused window with its neighbour; at the edge next to the strip it sends the window out of the stage.
+- Go past the edge window toward Stage Manager (or press **Modifier + k/j**) to start picking a stage.
+- **Move modifier + h/l** (default: navigate keys + ⇧) swaps the focused window with its neighbour; at the edge next to Stage Manager it sends the window out of the stage.
 - While a stage is selected, **Move modifier + l** pulls it into the current stage (release the keys to drop it).
 - **k/j** moves through the stages, **release the modifier** (or press **↩**, set in settings) to open it, **Esc** cancels.
 
@@ -28,6 +28,6 @@ Pick a mode in the Tiling tab (saved as `tilingMode` in the config):
 - **Messy**: loose hand-drawn layouts for 1 to 6 windows that can overlap; more windows use Even.
 - **Custom**: draw tiles for 1 to 6 windows; saved as `customLayouts`, keyed by window count, as 0–1 rects (`x`, `y`, `width`, `height`, top-left origin). Tile 1 is the leftmost window.
 
-**Leave room for the strip** (`leaveRoomForStrip`, on by default) keeps windows clear of the Stage Manager strip; turn it off to tile over the whole screen.
+**Leave room for Stage Manager** (`leaveRoomForStrip`, on by default) keeps windows clear of Stage Manager; turn it off to tile over the whole screen.
 
 Batuta tiles when a stage window is pulled in, and when a window leaves the stage.

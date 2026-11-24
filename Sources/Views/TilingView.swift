@@ -19,8 +19,8 @@ struct TilingView: View {
             }
 
             PreferenceToggleRow(
-                title: "Leave room for the strip",
-                subtitle: "Off lets windows cover the stages",
+                title: "Leave room for Stage Manager",
+                subtitle: "Off lets windows cover it",
                 icon: "sidebar.left",
                 isOn: configStore.binding(\.leaveRoomForStrip)
             )
