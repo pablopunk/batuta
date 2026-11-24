@@ -25,7 +25,7 @@ final class WindowAnimator: NSObject {
 
     private static let log = Logger(subsystem: "com.pablopunk.batuta", category: "animation")
     private let proxyOverlay = WindowProxyOverlay()
-    private static let proxyDuration: CFTimeInterval = 0.24
+    private static let proxyDuration: CFTimeInterval = 0.32
     private static let proxyRevealDelay: TimeInterval = 0.06
 
     /// Prefers sliding pictures of the windows (smooth, needs Screen Recording) and falls back to stepping real windows.
@@ -39,28 +39,26 @@ final class WindowAnimator: NSObject {
 
         Task { @MainActor in
             let captureStart = CACurrentMediaTime()
-            guard let screen = Self.screen(containing: targets[0].window.frame),
-                  let pictures = await WindowSnapshotter.pictures(of: targets.map(\.window), on: screen) else {
+            guard let images = await WindowSnapshotter.snapshots(of: targets.map(\.window)) else {
                 Self.log.info("window capture failed, stepping windows through AX")
                 animateThroughAccessibility(targets)
                 return
             }
-            Self.log.info("sliding \(pictures.windows.count) pictures, capture took \(Int((CACurrentMediaTime() - captureStart) * 1000))ms")
-            slidePictures(pictures, targets, on: screen)
+            Self.log.info("sliding \(images.count) pictures, capture took \(Int((CACurrentMediaTime() - captureStart) * 1000))ms")
+            slidePictures(images, targets)
         }
     }
 
     /// Real windows jump to their targets right away, hidden under their pictures, which then slide there too.
-    private static func screen(containing frame: CGRect) -> NSScreen? {
-        NSScreen.screens.first { $0.frame.intersects(frame.convertedToAppKit) } ?? NSScreen.main
-    }
-
-    private func slidePictures(_ pictures: WindowPictures, _ targets: [(window: StageWindow, frame: CGRect)], on screen: NSScreen) {
+    private func slidePictures(_ images: [CGImage], _ targets: [(window: StageWindow, frame: CGRect)]) {
         finishImmediately()
-        let proxies = zip(pictures.windows, targets).map { image, target in (image: image, from: target.window.frame, to: target.frame) }
+        let screen = NSScreen.screens.first { $0.frame.intersects(targets[0].window.frame.convertedToAppKit) } ?? NSScreen.main
+        guard let screen else { return animateThroughAccessibility(targets) }
+
+        let proxies = zip(images, targets).map { image, target in (image: image, from: target.window.frame, to: target.frame) }
         let landed = DispatchGroup()
 
-        proxyOverlay.slide(proxies, over: pictures.wallpaper, on: screen, duration: Self.proxyDuration) { [weak self] in
+        proxyOverlay.slide(proxies, on: screen, duration: Self.proxyDuration) { [weak self] in
             landed.notify(queue: .main) {
                 DispatchQueue.main.asyncAfter(deadline: .now() + Self.proxyRevealDelay) {
                     MainActor.assumeIsolated { self?.proxyOverlay.hide() }
