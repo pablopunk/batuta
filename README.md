@@ -4,8 +4,8 @@ Keyboard navigation for macOS Stage Manager, without moving windows.
 
 - **Modifier + h/l** focuses the window to the left/right in the current stage.
 - Go past the edge window toward the Stage Manager strip (or press **Modifier + k/j**) to start picking a stage.
-- **Modifier + ⇧ + h/l** swaps the focused window with its neighbour; at the edge next to the strip it sends the window out of the stage.
-- While a stage is selected, **Modifier + ⇧ + l** pulls it into the current stage (release the keys to drop it).
+- **Move modifier + h/l** (default: navigate keys + ⇧) swaps the focused window with its neighbour; at the edge next to the strip it sends the window out of the stage.
+- While a stage is selected, **Move modifier + l** pulls it into the current stage (release the keys to drop it).
 - **k/j** moves through the stages, **release the modifier** (or press **↩**, set in settings) to open it, **Esc** cancels.
 
 The modifier defaults to ⌃⌥⌘ and the keys to hjkl (arrows are an option). Settings live in `~/.config/batuta/config.json`.

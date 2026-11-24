@@ -58,6 +58,8 @@ enum StageConfirmMode: String, CaseIterable, Codable {
 /// Everything in ~/.config/batuta/config.json. Missing keys fall back to defaults so the file can stay partial.
 struct BatutaConfig: Codable, Equatable {
     var modifiers: [ModifierKey] = [.control, .option, .command]
+    /// Held on top of `modifiers` to move things instead of focusing them. Never one of `modifiers`.
+    var moveModifier: ModifierKey = .shift
     var directionKeys: DirectionKeys = .hjkl
     var openStageOn: StageConfirmMode = .releaseModifier
     var highlightFocusedWindow = true
@@ -70,6 +72,14 @@ struct BatutaConfig: Codable, Equatable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         let defaults = BatutaConfig()
         modifiers = try container.decodeIfPresent([ModifierKey].self, forKey: .modifiers) ?? defaults.modifiers
+        moveModifier = try container.decodeIfPresent(ModifierKey.self, forKey: .moveModifier) ?? defaults.moveModifier
+        if modifiers.contains(moveModifier) {
+            if let freeKey = ModifierKey.allCases.first(where: { !modifiers.contains($0) }) {
+                moveModifier = freeKey
+            } else {
+                modifiers = modifiers.filter { $0 != moveModifier }
+            }
+        }
         directionKeys = try container.decodeIfPresent(DirectionKeys.self, forKey: .directionKeys) ?? defaults.directionKeys
         openStageOn = try container.decodeIfPresent(StageConfirmMode.self, forKey: .openStageOn) ?? defaults.openStageOn
         highlightFocusedWindow = try container.decodeIfPresent(Bool.self, forKey: .highlightFocusedWindow) ?? defaults.highlightFocusedWindow
@@ -81,11 +91,23 @@ struct BatutaConfig: Codable, Equatable {
         modifiers.reduce(into: CGEventFlags()) { $0.insert($1.eventFlag) }
     }
 
+    var moveModifierFlags: CGEventFlags {
+        requiredModifierFlags.union(moveModifier.eventFlag)
+    }
+
     func toggling(_ modifier: ModifierKey) -> BatutaConfig {
+        guard modifier != moveModifier else { return self }
         var copy = self
         let toggled = modifiers.contains(modifier) ? modifiers.filter { $0 != modifier } : modifiers + [modifier]
         guard !toggled.isEmpty else { return self }
         copy.modifiers = ModifierKey.allCases.filter(toggled.contains)
+        return copy
+    }
+
+    func choosingMoveModifier(_ modifier: ModifierKey) -> BatutaConfig {
+        guard !modifiers.contains(modifier) else { return self }
+        var copy = self
+        copy.moveModifier = modifier
         return copy
     }
 }

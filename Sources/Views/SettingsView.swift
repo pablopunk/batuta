@@ -24,6 +24,7 @@ struct SettingsView: View {
             VStack(alignment: .leading, spacing: 10) {
                 SectionHeaderView(title: "Navigation", icon: "arrow.left.arrow.right")
                 ModifierPickerRow()
+                MoveModifierPickerRow()
                 DirectionKeysRow()
                 StageConfirmModeRow()
                 PreferenceToggleRow(
@@ -82,13 +83,13 @@ private struct ModifierPickerRow: View {
 
     var body: some View {
         CaptionedRow(
-            title: "Modifier",
+            title: "Navigate",
             icon: "command",
             caption: "Hold it with \(keys.leftRightLabel) to move between windows. Keep going past the edge to reach your stages, then \(keys.upDownLabel)."
         ) {
             HStack(spacing: 4) {
                 ForEach(ModifierKey.allCases, id: \.self) { key in
-                    Pill(label: key.symbol, isOn: configStore.config.modifiers.contains(key)) {
+                    Pill(label: key.symbol, isOn: configStore.config.modifiers.contains(key), isLocked: key == configStore.config.moveModifier) {
                         configStore.update { $0 = $0.toggling(key) }
                     }
                 }
@@ -97,6 +98,27 @@ private struct ModifierPickerRow: View {
     }
 
     private var keys: DirectionKeys { configStore.config.directionKeys }
+}
+
+private struct MoveModifierPickerRow: View {
+    @ObservedObject private var configStore = ConfigStore.shared
+
+    var body: some View {
+        CaptionedRow(
+            title: "Move",
+            icon: "arrow.left.and.right.square",
+            caption: "Add one more key to move instead: swap windows, take one out of the stage, or pull a stage in."
+        ) {
+            HStack(spacing: 4) {
+                ForEach(ModifierKey.allCases, id: \.self) { key in
+                    let isNavigateKey = configStore.config.modifiers.contains(key)
+                    Pill(label: key.symbol, isOn: isNavigateKey || configStore.config.moveModifier == key, isLocked: isNavigateKey) {
+                        configStore.update { $0 = $0.choosingMoveModifier(key) }
+                    }
+                }
+            }
+        }
+    }
 }
 
 private struct DirectionKeysRow: View {

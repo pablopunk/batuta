@@ -108,7 +108,7 @@ final class HotkeyTap {
                 onDirection?(direction)
                 return true
             }
-            if holdsRequiredModifiersPlusShift(event.flags) {
+            if holdsMoveModifiers(event.flags) {
                 swallowedKeyCodes.insert(keyCode)
                 onMoveDirection?(direction)
                 return true
@@ -136,11 +136,10 @@ final class HotkeyTap {
         return !required.isEmpty && flags.intersection(ModifierKey.allEventFlags) == required
     }
 
-    /// Shift adds "move" to any direction, unless shift is already part of the chosen modifier.
-    private func holdsRequiredModifiersPlusShift(_ flags: CGEventFlags) -> Bool {
-        let required = ConfigStore.shared.config.requiredModifierFlags
-        guard !required.isEmpty, !required.contains(.maskShift) else { return false }
-        return flags.intersection(ModifierKey.allEventFlags) == required.union(.maskShift)
+    private func holdsMoveModifiers(_ flags: CGEventFlags) -> Bool {
+        let config = ConfigStore.shared.config
+        guard !config.requiredModifierFlags.isEmpty else { return false }
+        return flags.intersection(ModifierKey.allEventFlags) == config.moveModifierFlags
     }
 
     private func holdsRequiredModifiers(_ flags: CGEventFlags) -> Bool {

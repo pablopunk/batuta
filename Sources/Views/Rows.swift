@@ -83,6 +83,7 @@ struct LaunchAtLoginRow: View {
 struct Pill: View {
     let label: String
     let isOn: Bool
+    var isLocked = false
     let action: () -> Void
 
     var body: some View {
@@ -97,6 +98,8 @@ struct Pill: View {
                 .animation(.snappy(duration: 0.2), value: isOn)
         }
         .buttonStyle(.plain)
+        .opacity(isLocked ? 0.45 : 1)
+        .disabled(isLocked)
     }
 }
 
