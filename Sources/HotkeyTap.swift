@@ -19,8 +19,8 @@ private enum KeyCode {
     static let returnKey: Int64 = 36
     static let keypadEnter: Int64 = 76
     static let escape: Int64 = 53
-    static let growKeys: Set<Int64> = [24, 69]
-    static let shrinkKeys: Set<Int64> = [27, 78]
+    static let keypadPlus: Int64 = 69
+    static let keypadMinus: Int64 = 78
     static let digits: [Int64: Int] = [18: 1, 19: 2, 20: 3, 21: 4, 23: 5, 22: 6, 26: 7, 28: 8, 25: 9]
 }
 
@@ -123,9 +123,9 @@ final class HotkeyTap {
             return true
         }
 
-        if !picking, KeyCode.growKeys.contains(keyCode) || KeyCode.shrinkKeys.contains(keyCode), holdsExactlyRequiredModifiers(event.flags) {
+        if !picking, holdsExactlyRequiredModifiers(event.flags), let grows = Self.resizeDirection(forKeyCode: keyCode) {
             swallowedKeyCodes.insert(keyCode)
-            onResize?(KeyCode.growKeys.contains(keyCode))
+            onResize?(grows)
             return true
         }
 
@@ -161,6 +161,17 @@ final class HotkeyTap {
             return true
         default:
             return false
+        }
+    }
+
+    /// True grows, false shrinks. "=" counts as "+" because US keyboards type "+" with Shift on that key.
+    private static func resizeDirection(forKeyCode keyCode: Int64) -> Bool? {
+        if keyCode == KeyCode.keypadPlus { return true }
+        if keyCode == KeyCode.keypadMinus { return false }
+        switch KeyboardLayout.character(forKeyCode: keyCode) {
+        case "+", "=": return true
+        case "-": return false
+        default: return nil
         }
     }
 
