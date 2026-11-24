@@ -44,6 +44,11 @@ struct StageStrip {
 
     private static let log = Logger(subsystem: "com.pablopunk.batuta", category: "stage")
 
+    static func addToCurrentStage(_ item: StageStripItem) {
+        let added = item.element.perform("AXAddToStage")
+        log.info("add stage \(item.title, privacy: .public) to current: \(added ? "ok" : "failed", privacy: .public)")
+    }
+
     /// AXPress on a strip button reports success but Stage Manager ignores it, so the stage opens by focusing one of its windows instead.
     @MainActor
     static func open(_ item: StageStripItem) {

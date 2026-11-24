@@ -28,6 +28,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func wireHotkeysToNavigator() {
         hotkeyTap.isPickingStage = { [navigator] in navigator.isPickingStage }
         hotkeyTap.onDirection = { [navigator] in navigator.move($0) }
+        hotkeyTap.onMoveDirection = { [navigator] in navigator.moveItem($0) }
         hotkeyTap.onConfirm = { [navigator] in navigator.confirmStage() }
         hotkeyTap.onCancel = { [navigator] in navigator.stopPickingStage() }
         hotkeyTap.onModifierReleased = { [navigator] in

@@ -25,6 +25,7 @@ private enum KeyCode {
 @MainActor
 final class HotkeyTap {
     var onDirection: ((Direction) -> Void)?
+    var onMoveDirection: ((Direction) -> Void)?
     var onConfirm: (() -> Void)?
     var onCancel: (() -> Void)?
     var onModifierReleased: (() -> Void)?
@@ -101,11 +102,17 @@ final class HotkeyTap {
         let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
         let picking = isPickingStage()
 
-        if let direction = Direction(keyCode: keyCode, keys: ConfigStore.shared.config.directionKeys),
-           holdsExactlyRequiredModifiers(event.flags) || (picking && holdsNoModifiers(event.flags)) {
-            swallowedKeyCodes.insert(keyCode)
-            onDirection?(direction)
-            return true
+        if let direction = Direction(keyCode: keyCode, keys: ConfigStore.shared.config.directionKeys) {
+            if holdsExactlyRequiredModifiers(event.flags) || (picking && holdsNoModifiers(event.flags)) {
+                swallowedKeyCodes.insert(keyCode)
+                onDirection?(direction)
+                return true
+            }
+            if holdsRequiredModifiersPlusShift(event.flags) {
+                swallowedKeyCodes.insert(keyCode)
+                onMoveDirection?(direction)
+                return true
+            }
         }
 
         guard picking else { return false }
@@ -127,6 +134,13 @@ final class HotkeyTap {
     private func holdsExactlyRequiredModifiers(_ flags: CGEventFlags) -> Bool {
         let required = ConfigStore.shared.config.requiredModifierFlags
         return !required.isEmpty && flags.intersection(ModifierKey.allEventFlags) == required
+    }
+
+    /// Shift adds "move" to any direction, unless shift is already part of the chosen modifier.
+    private func holdsRequiredModifiersPlusShift(_ flags: CGEventFlags) -> Bool {
+        let required = ConfigStore.shared.config.requiredModifierFlags
+        guard !required.isEmpty, !required.contains(.maskShift) else { return false }
+        return flags.intersection(ModifierKey.allEventFlags) == required.union(.maskShift)
     }
 
     private func holdsRequiredModifiers(_ flags: CGEventFlags) -> Bool {

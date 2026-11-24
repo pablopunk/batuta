@@ -17,6 +17,14 @@ final class StageNavigator {
         }
     }
 
+    func moveItem(_ direction: Direction) {
+        guard let strip = pickingStrip, strip.items.indices.contains(pickedIndex),
+              !points(direction, towardStripOf: strip) else { return }
+        let item = strip.items[pickedIndex]
+        stopPickingStage()
+        StageStrip.addToCurrentStage(item)
+    }
+
     func confirmStage() {
         guard let strip = pickingStrip, strip.items.indices.contains(pickedIndex) else { return }
         let item = strip.items[pickedIndex]
