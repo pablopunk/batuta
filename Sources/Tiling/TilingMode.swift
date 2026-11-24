@@ -1,6 +1,7 @@
 import CoreGraphics
 
 enum TilingMode: String, CaseIterable, Codable {
+    case off
     case even
     case bsp
     case messy
@@ -8,6 +9,7 @@ enum TilingMode: String, CaseIterable, Codable {
 
     var label: String {
         switch self {
+        case .off: "Off"
         case .even: "Even"
         case .bsp: "BSP"
         case .messy: "Messy"

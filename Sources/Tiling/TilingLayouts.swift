@@ -6,6 +6,7 @@ enum TilingLayouts {
 
     static func unitRects(for windowCount: Int, mode: TilingMode, customLayouts: [String: [UnitRect]]) -> [UnitRect] {
         switch mode {
+        case .off: []
         case .even: evenGrid(windowCount)
         case .bsp: binarySpacePartition(windowCount)
         case .messy: messyOverlap(windowCount)

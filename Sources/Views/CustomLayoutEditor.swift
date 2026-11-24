@@ -89,7 +89,7 @@ struct CustomLayoutEditor: View {
         configStore.update { $0.customLayouts[key] = rects }
     }
 
-    private static let modesToCopyFrom = TilingMode.allCases.filter { $0 != .custom }
+    private static let modesToCopyFrom = TilingMode.allCases.filter { $0 != .custom && $0 != .off }
 
     private func copyLayout(from mode: TilingMode) {
         save(TilingLayouts.unitRects(for: windowCount, mode: mode, customLayouts: [:]))

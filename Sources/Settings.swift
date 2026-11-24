@@ -74,10 +74,10 @@ struct TilingSettings: Codable, Equatable {
 
 /// Everything in ~/.config/batuta/config.json. Missing keys fall back to defaults so the file can stay partial.
 struct BatutaConfig: Codable, Equatable {
-    var modifiers: [ModifierKey] = [.control, .option, .command]
+    var modifiers: [ModifierKey] = [.control, .command]
     /// Held on top of `modifiers` to move things instead of focusing them. Never one of `modifiers`.
     var moveModifier: ModifierKey = .shift
-    var directionKeys: DirectionKeys = .hjkl
+    var directionKeys: DirectionKeys = .arrows
     var openStageOn: StageConfirmMode = .releaseModifier
     /// Used on the laptop screen, and on every screen unless `externalScreensHaveOwnTiling` is on.
     var tiling = TilingSettings()
@@ -89,7 +89,8 @@ struct BatutaConfig: Codable, Equatable {
     var highlightFocusedWindow = true
     var animateWindowMoves = true
     var showMenuBarIcon = true
-    var cycleTilingModeShortcut = KeyShortcut.defaultCycleTilingMode
+    /// Nil follows the navigate modifiers with Space.
+    var cycleTilingModeShortcut: KeyShortcut?
 
     init() {}
 
@@ -122,12 +123,16 @@ struct BatutaConfig: Codable, Equatable {
         highlightFocusedWindow = try container.decodeIfPresent(Bool.self, forKey: .highlightFocusedWindow) ?? defaults.highlightFocusedWindow
         animateWindowMoves = try container.decodeIfPresent(Bool.self, forKey: .animateWindowMoves) ?? defaults.animateWindowMoves
         showMenuBarIcon = try container.decodeIfPresent(Bool.self, forKey: .showMenuBarIcon) ?? defaults.showMenuBarIcon
-        cycleTilingModeShortcut = try container.decodeIfPresent(KeyShortcut.self, forKey: .cycleTilingModeShortcut) ?? defaults.cycleTilingModeShortcut
+        cycleTilingModeShortcut = try container.decodeIfPresent(KeyShortcut.self, forKey: .cycleTilingModeShortcut) 
     }
 
     /// Keys from before tiling settings were grouped per screen.
     private enum LegacyCodingKeys: String, CodingKey {
         case tilingMode, leaveRoomForStrip, leaveRoomForStageManagerOnBuiltInScreen
+    }
+
+    var effectiveCycleTilingModeShortcut: KeyShortcut {
+        cycleTilingModeShortcut ?? KeyShortcut(keyCode: KeyShortcut.space, keyLabel: "Space", modifiers: modifiers)
     }
 
     func tilingSettings(onBuiltInScreen: Bool) -> TilingSettings {

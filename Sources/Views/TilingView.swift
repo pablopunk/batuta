@@ -32,7 +32,7 @@ struct TilingView: View {
             }
 
             Group {
-                CaptionedRow(title: "Mode", icon: "rectangle.split.2x2", caption: "Default for every stage. " + modeCaption) {
+                VStack(alignment: .leading, spacing: 6) {
                     HStack(spacing: 4) {
                         ForEach(TilingMode.allCases, id: \.self) { mode in
                             Pill(label: mode.label, isOn: settings.mode == mode) {
@@ -40,6 +40,12 @@ struct TilingView: View {
                             }
                         }
                     }
+                    .fixedSize()
+                    .frame(maxWidth: .infinity)
+                    Text("Default for every stage. " + modeCaption)
+                        .font(.system(size: 11))
+                        .foregroundStyle(.tertiary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
 
                 PreferenceToggleRow(
@@ -61,11 +67,11 @@ struct TilingView: View {
 
             CycleShortcutRow()
 
-            WindowCountStepper(count: $windowCount)
+            if settings.mode != .off { WindowCountStepper(count: $windowCount) }
 
             if settings.mode == .custom {
                 CustomLayoutEditor(windowCount: windowCount)
-            } else {
+            } else if settings.mode != .off {
                 LayoutPreview(rects: previewRects)
             }
         }
@@ -97,6 +103,7 @@ struct TilingView: View {
 
     private var modeCaption: String {
         switch settings.mode {
+        case .off: "Batuta leaves windows where they are. The shortcut can still tile one stage."
         case .even: "Every window gets the same space, in rows."
         case .bsp: "Each new window splits the last one in half."
         case .messy: "Loose layouts where windows can overlap."
@@ -114,7 +121,7 @@ private struct CycleShortcutRow: View {
             icon: "arrow.triangle.2.circlepath",
             caption: "Changes the mode of the current stage only. Other stages keep the default. Click the shortcut to change it."
         ) {
-            ShortcutRecorder(shortcut: configStore.binding(\.cycleTilingModeShortcut))
+            ShortcutRecorder(shortcut: Binding(get: { configStore.config.effectiveCycleTilingModeShortcut }, set: { shortcut in configStore.update { $0.cycleTilingModeShortcut = shortcut } }))
         }
     }
 }

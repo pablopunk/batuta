@@ -15,8 +15,10 @@ enum StageLayout {
         let config = ConfigStore.shared.config
         let settings = config.tilingSettings(onBuiltInScreen: screen.isBuiltIn)
         let area = usableArea(on: screen, leavingRoom: settings.leaveRoomForStageManager, besides: strip)
-        let rects = TilingLayouts.unitRects(for: windows.count, mode: mode(for: windows), customLayouts: config.customLayouts)
         StageOrders.remember(windows)
+        let mode = mode(for: windows)
+        guard mode != .off else { return }
+        let rects = TilingLayouts.unitRects(for: windows.count, mode: mode, customLayouts: config.customLayouts)
         let areaIncludingHalfGaps = area.insetBy(dx: -gap / 2, dy: -gap / 2)
         let targets = zip(windows, rects).map { window, rect in
             (window: window, frame: rect.placed(in: areaIncludingHalfGaps).insetBy(dx: gap / 2, dy: gap / 2))

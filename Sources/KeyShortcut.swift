@@ -7,7 +7,6 @@ struct KeyShortcut: Codable, Equatable {
     var modifiers: [ModifierKey]
 
     static let space: Int64 = 49
-    static let defaultCycleTilingMode = KeyShortcut(keyCode: space, keyLabel: "Space", modifiers: [.control, .option, .command])
 
     var label: String {
         ModifierKey.allCases.filter(modifiers.contains).map(\.symbol).joined() + " " + keyLabel
