@@ -34,7 +34,7 @@ struct TilingView: View {
         switch configStore.config.tilingMode {
         case .even: "Every window gets the same space, in rows."
         case .messy: "Loose layouts where windows can overlap."
-        case .custom: "Draw where windows go for 1 to 5 windows. Drag to move, drag the corner to resize."
+        case .custom: "Draw where windows go for 1 to 6 windows. Drag to move, drag the corner to resize."
         }
     }
 }

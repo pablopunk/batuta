@@ -2,7 +2,7 @@ import Foundation
 
 /// Pure layout math: where each window goes, as unit rects, for a number of windows.
 enum TilingLayouts {
-    static let customWindowCounts = 1...5
+    static let customWindowCounts = 1...6
 
     static func unitRects(for windowCount: Int, mode: TilingMode, customLayouts: [String: [UnitRect]]) -> [UnitRect] {
         switch mode {
