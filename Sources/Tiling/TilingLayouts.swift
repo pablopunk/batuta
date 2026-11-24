@@ -7,6 +7,7 @@ enum TilingLayouts {
     static func unitRects(for windowCount: Int, mode: TilingMode, customLayouts: [String: [UnitRect]]) -> [UnitRect] {
         switch mode {
         case .even: evenGrid(windowCount)
+        case .bsp: binarySpacePartition(windowCount)
         case .messy: messyOverlap(windowCount)
         case .custom: customLayout(windowCount, from: customLayouts) ?? evenGrid(windowCount)
         }
@@ -36,6 +37,24 @@ enum TilingLayouts {
         let base = windowCount / rowCount
         let rowsWithExtraWindow = windowCount % rowCount
         return row >= rowCount - rowsWithExtraWindow ? base + 1 : base
+    }
+
+    /// Dwindle: each window takes the first half of what is left, splitting side by side, then top and bottom, in turns.
+    static func binarySpacePartition(_ windowCount: Int) -> [UnitRect] {
+        guard windowCount > 0 else { return [] }
+        var remaining = UnitRect(x: 0, y: 0, width: 1, height: 1)
+        var rects: [UnitRect] = []
+        for index in 0..<(windowCount - 1) {
+            let splitsSideBySide = index.isMultiple(of: 2)
+            let first = splitsSideBySide
+                ? UnitRect(x: remaining.x, y: remaining.y, width: remaining.width / 2, height: remaining.height)
+                : UnitRect(x: remaining.x, y: remaining.y, width: remaining.width, height: remaining.height / 2)
+            rects.append(first)
+            remaining = splitsSideBySide
+                ? UnitRect(x: first.x + first.width, y: remaining.y, width: first.width, height: remaining.height)
+                : UnitRect(x: remaining.x, y: first.y + first.height, width: remaining.width, height: first.height)
+        }
+        return rects + [remaining]
     }
 
     /// Hand-drawn layouts for 1 to 5 windows; tiles overlap on purpose. More windows fall back to Even.
