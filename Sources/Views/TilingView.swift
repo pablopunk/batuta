@@ -105,13 +105,9 @@ private struct CycleShortcutRow: View {
         CaptionedRow(
             title: "Switch mode",
             icon: "arrow.triangle.2.circlepath",
-            caption: "Changes the mode of the current stage only. Other stages keep the default."
+            caption: "Changes the mode of the current stage only. Other stages keep the default. Click the shortcut to change it."
         ) {
-            Text(configStore.config.modifiers.map(\.symbol).joined() + " Space")
-                .font(.system(size: 11, weight: .semibold, design: .rounded))
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(Capsule().fill(Color.secondary.opacity(0.15)))
+            ShortcutRecorder(shortcut: configStore.binding(\.cycleTilingModeShortcut))
         }
     }
 }

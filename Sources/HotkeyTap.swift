@@ -19,7 +19,6 @@ private enum KeyCode {
     static let returnKey: Int64 = 36
     static let keypadEnter: Int64 = 76
     static let escape: Int64 = 53
-    static let space: Int64 = 49
 }
 
 /// Global keyboard tap. It only swallows direction keys held with the chosen modifier, plus Return/Escape/direction keys while a stage is being picked.
@@ -102,8 +101,15 @@ final class HotkeyTap {
     }
 
     private func handleKeyDown(_ event: CGEvent) -> Bool {
+        guard !ShortcutRecording.isActive else { return false }
         let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
         let picking = isPickingStage()
+
+        if !picking, ConfigStore.shared.config.cycleTilingModeShortcut.matches(keyCode: keyCode, flags: event.flags) {
+            swallowedKeyCodes.insert(keyCode)
+            onCycleTilingMode?()
+            return true
+        }
 
         if let direction = Direction(keyCode: keyCode, keys: ConfigStore.shared.config.directionKeys) {
             if holdsExactlyRequiredModifiers(event.flags) || (picking && holdsNoModifiers(event.flags)) {
@@ -116,12 +122,6 @@ final class HotkeyTap {
                 onMoveDirection?(direction)
                 return true
             }
-        }
-
-        if keyCode == KeyCode.space, !picking, holdsExactlyRequiredModifiers(event.flags) {
-            swallowedKeyCodes.insert(keyCode)
-            onCycleTilingMode?()
-            return true
         }
 
         guard picking else { return false }

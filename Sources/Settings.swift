@@ -88,6 +88,7 @@ struct BatutaConfig: Codable, Equatable {
     var highlightFocusedWindow = true
     var animateWindowMoves = true
     var showMenuBarIcon = true
+    var cycleTilingModeShortcut = KeyShortcut.defaultCycleTilingMode
 
     init() {}
 
@@ -119,6 +120,7 @@ struct BatutaConfig: Codable, Equatable {
         highlightFocusedWindow = try container.decodeIfPresent(Bool.self, forKey: .highlightFocusedWindow) ?? defaults.highlightFocusedWindow
         animateWindowMoves = try container.decodeIfPresent(Bool.self, forKey: .animateWindowMoves) ?? defaults.animateWindowMoves
         showMenuBarIcon = try container.decodeIfPresent(Bool.self, forKey: .showMenuBarIcon) ?? defaults.showMenuBarIcon
+        cycleTilingModeShortcut = try container.decodeIfPresent(KeyShortcut.self, forKey: .cycleTilingModeShortcut) ?? defaults.cycleTilingModeShortcut
     }
 
     /// Keys from before tiling settings were grouped per screen.

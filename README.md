@@ -32,6 +32,6 @@ Pick the default mode for every stage in the Tiling tab (saved as `tiling.mode` 
 
 The Laptop settings (`tiling`) apply to every screen. Turn on **Own settings** in the External tab (`externalScreensHaveOwnTiling`) to give external screens their own `externalTiling`.
 
-**Modifier + Space** switches the current stage to the next mode and tiles it now. Only that stage changes; it keeps the mode until Batuta quits, and other stages keep the default.
+**⌃⌥⌘ Space** (change it in the Tiling tab, saved as `cycleTilingModeShortcut`) switches the current stage to the next mode and tiles it now. Only that stage changes; it keeps the mode until Batuta quits, and other stages keep the default.
 
 Batuta tiles when a stage window is pulled in, and when a window leaves the stage.
