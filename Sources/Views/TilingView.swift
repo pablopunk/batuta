@@ -18,12 +18,20 @@ struct TilingView: View {
                 }
             }
 
-            PreferenceToggleRow(
-                title: "Leave room for Stage Manager",
-                subtitle: "Off lets windows cover it",
+            CaptionedRow(
+                title: "Leave room on",
                 icon: "sidebar.left",
-                isOn: configStore.binding(\.leaveRoomForStrip)
-            )
+                caption: "Keep windows clear of Stage Manager on these screens. Off lets windows cover it."
+            ) {
+                HStack(spacing: 4) {
+                    Pill(label: "Laptop", isOn: configStore.config.leaveRoomForStageManagerOnBuiltInScreen) {
+                        configStore.update { $0.leaveRoomForStageManagerOnBuiltInScreen.toggle() }
+                    }
+                    Pill(label: "External", isOn: configStore.config.leaveRoomForStageManagerOnExternalScreens) {
+                        configStore.update { $0.leaveRoomForStageManagerOnExternalScreens.toggle() }
+                    }
+                }
+            }
 
             WindowCountStepper(count: $windowCount)
 

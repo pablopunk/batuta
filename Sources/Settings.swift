@@ -65,7 +65,8 @@ struct BatutaConfig: Codable, Equatable {
     var tilingMode: TilingMode = .even
     /// Keyed by window count ("1" to "6"); each value has one unit rect per window, left to right.
     var customLayouts: [String: [UnitRect]] = TilingLayouts.defaultCustomLayouts
-    var leaveRoomForStrip = true
+    var leaveRoomForStageManagerOnBuiltInScreen = true
+    var leaveRoomForStageManagerOnExternalScreens = true
     var highlightFocusedWindow = true
     var animateWindowMoves = true
     var showMenuBarIcon = true
@@ -90,10 +91,23 @@ struct BatutaConfig: Codable, Equatable {
         customLayouts = defaults.customLayouts.merging(
             try container.decodeIfPresent([String: [UnitRect]].self, forKey: .customLayouts) ?? [:]
         ) { _, fromFile in fromFile }
-        leaveRoomForStrip = try container.decodeIfPresent(Bool.self, forKey: .leaveRoomForStrip) ?? defaults.leaveRoomForStrip
+        let legacyLeaveRoom = try decoder.container(keyedBy: LegacyCodingKeys.self).decodeIfPresent(Bool.self, forKey: .leaveRoomForStrip)
+        leaveRoomForStageManagerOnBuiltInScreen = try container.decodeIfPresent(Bool.self, forKey: .leaveRoomForStageManagerOnBuiltInScreen)
+            ?? legacyLeaveRoom ?? defaults.leaveRoomForStageManagerOnBuiltInScreen
+        leaveRoomForStageManagerOnExternalScreens = try container.decodeIfPresent(Bool.self, forKey: .leaveRoomForStageManagerOnExternalScreens)
+            ?? legacyLeaveRoom ?? defaults.leaveRoomForStageManagerOnExternalScreens
         highlightFocusedWindow = try container.decodeIfPresent(Bool.self, forKey: .highlightFocusedWindow) ?? defaults.highlightFocusedWindow
         animateWindowMoves = try container.decodeIfPresent(Bool.self, forKey: .animateWindowMoves) ?? defaults.animateWindowMoves
         showMenuBarIcon = try container.decodeIfPresent(Bool.self, forKey: .showMenuBarIcon) ?? defaults.showMenuBarIcon
+    }
+
+    /// Before the setting was split per screen it was one `leaveRoomForStrip` value.
+    private enum LegacyCodingKeys: String, CodingKey {
+        case leaveRoomForStrip
+    }
+
+    func leavesRoomForStageManager(onBuiltInScreen: Bool) -> Bool {
+        onBuiltInScreen ? leaveRoomForStageManagerOnBuiltInScreen : leaveRoomForStageManagerOnExternalScreens
     }
 
     var requiredModifierFlags: CGEventFlags {

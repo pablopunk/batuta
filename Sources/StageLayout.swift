@@ -22,7 +22,7 @@ enum StageLayout {
         let appKitFrame = frame.convertedToAppKit
         guard let screen = NSScreen.screens.first(where: { $0.frame.intersects(appKitFrame) }) ?? NSScreen.main else { return nil }
         let visible = screen.visibleFrame.convertedFromAppKit.insetBy(dx: gap, dy: gap)
-        guard ConfigStore.shared.config.leaveRoomForStrip else { return visible }
+        guard ConfigStore.shared.config.leavesRoomForStageManager(onBuiltInScreen: screen.isBuiltIn) else { return visible }
         let stripWidth = strip.map { $0.frame.maxX - visible.minX + gap } ?? fallbackStripWidth
 
         if strip?.isOnLeftEdge ?? true {
@@ -30,5 +30,12 @@ enum StageLayout {
         }
         let rightStripWidth = strip.map { visible.maxX - $0.frame.minX + gap } ?? fallbackStripWidth
         return CGRect(x: visible.minX, y: visible.minY, width: visible.width - rightStripWidth, height: visible.height)
+    }
+}
+
+extension NSScreen {
+    var isBuiltIn: Bool {
+        guard let displayID = deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID else { return false }
+        return CGDisplayIsBuiltin(displayID) != 0
     }
 }
