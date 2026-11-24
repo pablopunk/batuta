@@ -1,60 +1,67 @@
 import AppKit
 
-/// Navigate + "+" grows the focused window by a third of the room it had when the first press measured it,
-/// so three presses fill the usable area. Navigate + "-" walks back, then shrinks toward half its first size.
-/// Letting go of Navigate ends the measurement.
+/// Navigate + "+" moves each edge of the focused window a third of the way to the usable area's edge, measured
+/// again on every press, so steps get smaller as the window nears the edges. Navigate + "-" undoes those steps
+/// while Navigate is held, then shrinks the window around its center. Letting go of Navigate forgets the steps.
 @MainActor
 final class WindowResizeSteps {
-    private static let stepsToEdge = 3
-    private static let smallestScale: CGFloat = 0.5
+    private static let shareOfRoomPerStep: CGFloat = 1 / 3
+    private static let roomTooSmallToGrow: CGFloat = 8
+    private static let shrinkShareOfSize: CGFloat = 1 / 6
+    private static let smallestSize = CGSize(width: 320, height: 240)
 
-    private struct Measurement {
-        let windowID: CGWindowID
-        let startFrame: CGRect
-        let grownFrame: CGRect
-        let shrunkFrame: CGRect
-        var step = 0
+    private var history: [(windowID: CGWindowID, frame: CGRect)] = []
+
+    func grow() {
+        guard let window = focusedWindow(),
+              let area = StageLayout.usableArea(around: window.frame, besides: StageStrip.closest(to: window.frame)) else { return }
+        let grown = Self.grown(window.frame, toward: area)
+        guard grown != window.frame else { return }
+        history.append((window.id, window.frame))
+        WindowAnimator.shared.animate([(window, grown)])
     }
 
-    private var measurement: Measurement?
-
-    func grow() { resize(by: 1) }
-    func shrink() { resize(by: -1) }
+    func shrink() {
+        guard let window = focusedWindow() else { return }
+        if let last = history.last, last.windowID == window.id {
+            history.removeLast()
+            WindowAnimator.shared.animate([(window, last.frame)])
+            return
+        }
+        history = []
+        let shrunk = Self.shrunk(window.frame)
+        guard shrunk != window.frame else { return }
+        WindowAnimator.shared.animate([(window, shrunk)])
+    }
 
     func forgetMeasurement() {
-        measurement = nil
+        history = []
     }
 
-    private func resize(by delta: Int) {
-        let windows = StageWindows.visibleSortedLeftToRight()
-        guard let focusedID = StageWindows.focusedWindowID(), let window = windows.first(where: { $0.id == focusedID }) else { return }
-        if measurement?.windowID != window.id { measurement = measure(window) }
-        guard var current = measurement else { return }
-        current.step = min(max(current.step + delta, -Self.stepsToEdge), Self.stepsToEdge)
-        measurement = current
-        WindowAnimator.shared.animate([(window, frame(at: current))])
+    private func focusedWindow() -> StageWindow? {
+        guard let focusedID = StageWindows.focusedWindowID() else { return nil }
+        if let last = history.last, last.windowID != focusedID { history = [] }
+        return StageWindows.visibleSortedLeftToRight().first { $0.id == focusedID }
     }
 
-    private func measure(_ window: StageWindow) -> Measurement? {
-        guard let area = StageLayout.usableArea(around: window.frame, besides: StageStrip.closest(to: window.frame)) else { return nil }
-        let start = window.frame
-        let shrunkSize = CGSize(width: start.width * Self.smallestScale, height: start.height * Self.smallestScale)
-        let shrunk = CGRect(x: start.midX - shrunkSize.width / 2, y: start.midY - shrunkSize.height / 2, width: shrunkSize.width, height: shrunkSize.height)
-        return Measurement(windowID: window.id, startFrame: start, grownFrame: area.union(start).intersection(area), shrunkFrame: shrunk)
+    private static func grown(_ frame: CGRect, toward area: CGRect) -> CGRect {
+        let left = step(frame.minX - area.minX)
+        let right = step(area.maxX - frame.maxX)
+        let top = step(frame.minY - area.minY)
+        let bottom = step(area.maxY - frame.maxY)
+        return CGRect(x: frame.minX - left, y: frame.minY - top, width: frame.width + left + right, height: frame.height + top + bottom).integral
     }
 
-    private func frame(at measurement: Measurement) -> CGRect {
-        let progress = CGFloat(abs(measurement.step)) / CGFloat(Self.stepsToEdge)
-        let end = measurement.step >= 0 ? measurement.grownFrame : measurement.shrunkFrame
-        return Self.interpolate(measurement.startFrame, end, progress).integral
+    /// A third of the room left; once less than the gap would remain, the rest is taken so growth ends.
+    private static func step(_ room: CGFloat) -> CGFloat {
+        guard room > roomTooSmallToGrow else { return 0 }
+        let step = room * shareOfRoomPerStep
+        return room - step <= roomTooSmallToGrow ? room : step
     }
 
-    private static func interpolate(_ a: CGRect, _ b: CGRect, _ progress: CGFloat) -> CGRect {
-        CGRect(
-            x: a.minX + (b.minX - a.minX) * progress,
-            y: a.minY + (b.minY - a.minY) * progress,
-            width: a.width + (b.width - a.width) * progress,
-            height: a.height + (b.height - a.height) * progress
-        )
+    private static func shrunk(_ frame: CGRect) -> CGRect {
+        let width = max(frame.width * (1 - shrinkShareOfSize), min(frame.width, smallestSize.width))
+        let height = max(frame.height * (1 - shrinkShareOfSize), min(frame.height, smallestSize.height))
+        return CGRect(x: frame.midX - width / 2, y: frame.midY - height / 2, width: width, height: height).integral
     }
 }
