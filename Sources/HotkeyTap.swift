@@ -19,6 +19,8 @@ private enum KeyCode {
     static let returnKey: Int64 = 36
     static let keypadEnter: Int64 = 76
     static let escape: Int64 = 53
+    static let growKeys: Set<Int64> = [24, 69]
+    static let shrinkKeys: Set<Int64> = [27, 78]
     static let digits: [Int64: Int] = [18: 1, 19: 2, 20: 3, 21: 4, 23: 5, 22: 6, 26: 7, 28: 8, 25: 9]
 }
 
@@ -29,6 +31,7 @@ final class HotkeyTap {
     var onMoveDirection: ((Direction) -> Void)?
     var onCycleTilingMode: (() -> Void)?
     var onStageNumber: ((Int) -> Void)?
+    var onResize: ((_ grows: Bool) -> Void)?
     var onNavigateKeysHeld: ((Bool) -> Void)?
     var onConfirm: (() -> Void)?
     var onCancel: (() -> Void)?
@@ -117,6 +120,12 @@ final class HotkeyTap {
         if !picking, ConfigStore.shared.config.effectiveCycleTilingModeShortcut.matches(keyCode: keyCode, flags: event.flags) {
             swallowedKeyCodes.insert(keyCode)
             onCycleTilingMode?()
+            return true
+        }
+
+        if !picking, KeyCode.growKeys.contains(keyCode) || KeyCode.shrinkKeys.contains(keyCode), holdsExactlyRequiredModifiers(event.flags) {
+            swallowedKeyCodes.insert(keyCode)
+            onResize?(KeyCode.growKeys.contains(keyCode))
             return true
         }
 

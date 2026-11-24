@@ -45,6 +45,13 @@ enum StageLayout {
         return ConfigStore.shared.config.tilingSettings(onBuiltInScreen: isBuiltIn).mode
     }
 
+    /// The area tiles may use around this window: its screen, minus the room for Stage Manager when that is on.
+    static func usableArea(around frame: CGRect, besides strip: StageStrip?) -> CGRect? {
+        guard let screen = screen(containing: frame) else { return nil }
+        let settings = ConfigStore.shared.config.tilingSettings(onBuiltInScreen: screen.isBuiltIn)
+        return usableArea(on: screen, leavingRoom: settings.leaveRoomForStageManager, besides: strip)
+    }
+
     private static func screen(containing frame: CGRect) -> NSScreen? {
         let appKitFrame = frame.convertedToAppKit
         return NSScreen.screens.first { $0.frame.intersects(appKitFrame) } ?? NSScreen.main
