@@ -42,19 +42,29 @@ enum TilingLayouts {
         return rects
     }
 
-    /// Placeholder until the real Messy rules exist: big windows pinned to the corners of a triangle-ish spread, overlapping.
+    /// Hand-drawn layouts for 1 to 5 windows; tiles overlap on purpose. More windows fall back to BSP.
     static func messyOverlap(_ windowCount: Int) -> [UnitRect] {
-        guard windowCount > 1 else {
-            return windowCount == 1 ? [UnitRect(x: 0.08, y: 0.04, width: 0.84, height: 0.92)] : []
-        }
-        let anchors: [(x: Double, y: Double)] = [(0, 0), (1, 1), (1, 0), (0, 1), (0.5, 0.5)]
-        let width = windowCount == 2 ? 0.66 : 0.58
-        let height = windowCount == 2 ? 0.86 : 0.66
-        return (0..<windowCount).map { index in
-            let anchor = anchors[index % anchors.count]
-            return UnitRect(x: anchor.x * (1 - width), y: anchor.y * (1 - height), width: width, height: height)
-        }
+        let rects = messyLayouts[windowCount] ?? []
+        return rects.count == windowCount ? rects : binarySpacePartition(windowCount)
     }
+
+    private static let messyLayouts: [Int: [UnitRect]] = [
+        1: [UnitRect(x: 0.25, y: 0.15, width: 0.55, height: 0.7)],
+        2: [UnitRect(x: 0.1, y: 0.1, width: 0.45, height: 0.75),
+            UnitRect(x: 0.5, y: 0.15, width: 0.45, height: 0.75)],
+        3: [UnitRect(x: 0.1, y: 0.05, width: 0.4, height: 0.7),
+            UnitRect(x: 0.45, y: 0, width: 0.45, height: 0.7),
+            UnitRect(x: 0.35, y: 0.3, width: 0.45, height: 0.65)],
+        4: [UnitRect(x: 0, y: 0, width: 0.5, height: 0.5),
+            UnitRect(x: 0.5, y: 0, width: 0.5, height: 0.5),
+            UnitRect(x: 0, y: 0.5, width: 0.5, height: 0.5),
+            UnitRect(x: 0.5, y: 0.5, width: 0.5, height: 0.5)],
+        5: [UnitRect(x: 0, y: 0, width: 0.5, height: 0.5),
+            UnitRect(x: 0.5, y: 0, width: 0.5, height: 0.5),
+            UnitRect(x: 0, y: 0.5, width: 0.35, height: 0.5),
+            UnitRect(x: 0.35, y: 0.5, width: 0.35, height: 0.5),
+            UnitRect(x: 0.7, y: 0.5, width: 0.3, height: 0.5)],
+    ]
 
     private static func customLayout(_ windowCount: Int, from layouts: [String: [UnitRect]]) -> [UnitRect]? {
         guard let rects = layouts[customLayoutKey(windowCount)], rects.count == windowCount else { return nil }

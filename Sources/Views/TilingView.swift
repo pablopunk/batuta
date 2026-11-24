@@ -33,7 +33,7 @@ struct TilingView: View {
     private var modeCaption: String {
         switch configStore.config.tilingMode {
         case .bsp: "Each new window splits the last one in half."
-        case .messy: "Big windows that overlap. Rules coming soon."
+        case .messy: "Loose layouts where windows can overlap."
         case .custom: "Draw where windows go for 1 to 5 windows. Drag to move, drag the corner to resize."
         }
     }
