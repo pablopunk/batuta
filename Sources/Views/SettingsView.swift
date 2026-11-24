@@ -15,7 +15,7 @@ struct SettingsView: View {
                     title: "Show menu bar icon",
                     subtitle: "Reopen app to re-enable",
                     icon: "menubar.rectangle",
-                    isOn: $configStore.config.showMenuBarIcon
+                    isOn: configStore.binding(\.showMenuBarIcon)
                 )
             }
 
@@ -30,14 +30,14 @@ struct SettingsView: View {
                     title: "Highlight focused window",
                     subtitle: "Flash a frame around it",
                     icon: "sparkles",
-                    isOn: $configStore.config.highlightFocusedWindow
+                    isOn: configStore.binding(\.highlightFocusedWindow)
                 )
 
                 PreferenceToggleRow(
                     title: "Animate window moves",
                     subtitle: "Off snaps windows into place",
                     icon: "wind",
-                    isOn: $configStore.config.animateWindowMoves
+                    isOn: configStore.binding(\.animateWindowMoves)
                 )
                 ConfigFileButton()
 
@@ -89,7 +89,7 @@ private struct ModifierPickerRow: View {
             HStack(spacing: 4) {
                 ForEach(ModifierKey.allCases, id: \.self) { key in
                     Pill(label: key.symbol, isOn: configStore.config.modifiers.contains(key)) {
-                        configStore.config = configStore.config.toggling(key)
+                        configStore.update { $0 = $0.toggling(key) }
                     }
                 }
             }
@@ -111,7 +111,7 @@ private struct DirectionKeysRow: View {
             HStack(spacing: 4) {
                 ForEach(DirectionKeys.allCases, id: \.self) { keys in
                     Pill(label: keys.label, isOn: configStore.config.directionKeys == keys) {
-                        configStore.config.directionKeys = keys
+                        configStore.update { $0.directionKeys = keys }
                     }
                 }
             }
@@ -127,8 +127,8 @@ private struct StageConfirmModeRow: View {
     var body: some View {
         CaptionedRow(title: "Open stage", icon: "checkmark.circle", caption: caption) {
             HStack(spacing: 4) {
-                Pill(label: "Release", isOn: confirmMode == .releaseModifier) { configStore.config.openStageOn = .releaseModifier }
-                Pill(label: "↩", isOn: confirmMode == .pressReturn) { configStore.config.openStageOn = .pressReturn }
+                Pill(label: "Release", isOn: confirmMode == .releaseModifier) { configStore.update { $0.openStageOn = .releaseModifier } }
+                Pill(label: "↩", isOn: confirmMode == .pressReturn) { configStore.update { $0.openStageOn = .pressReturn } }
             }
         }
     }

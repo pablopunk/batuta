@@ -54,7 +54,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func restoreMenuBarIconIfNeeded() {
-        ConfigStore.shared.config.showMenuBarIcon = true
+        ConfigStore.shared.update { $0.showMenuBarIcon = true }
     }
 }
 

@@ -7,7 +7,7 @@ struct BatutaApp: App {
     @ObservedObject private var configStore = ConfigStore.shared
 
     var body: some Scene {
-        MenuBarExtra(isInserted: $configStore.config.showMenuBarIcon) {
+        MenuBarExtra(isInserted: configStore.binding(\.showMenuBarIcon)) {
             AppPanelView(onQuit: { NSApplication.shared.terminate(nil) })
         } label: {
             Image(nsImage: .menuBarIcon)

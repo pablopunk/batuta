@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import SwiftUI
 
 /// Reads and writes ~/.config/batuta/config.json, and reloads it when it is edited by hand.
 @MainActor
@@ -10,8 +11,23 @@ final class ConfigStore: ObservableObject {
         .appendingPathComponent(".config/batuta", isDirectory: true)
     static let fileURL = directoryURL.appendingPathComponent("config.json")
 
-    @Published var config: BatutaConfig {
-        didSet { if config != oldValue { save() } }
+    /// Writes go through `update` so identical values never publish: MenuBarExtra re-sets its binding on every
+    /// render, and publishing those no-op writes made SwiftUI loop forever.
+    @Published private(set) var config: BatutaConfig
+
+    func update(_ change: (inout BatutaConfig) -> Void) {
+        var next = config
+        change(&next)
+        guard next != config else { return }
+        config = next
+        save()
+    }
+
+    func binding<Value>(_ keyPath: WritableKeyPath<BatutaConfig, Value>) -> Binding<Value> {
+        Binding(
+            get: { self.config[keyPath: keyPath] },
+            set: { newValue in self.update { $0[keyPath: keyPath] = newValue } }
+        )
     }
 
     private var directoryWatcher: DispatchSourceFileSystemObject?
