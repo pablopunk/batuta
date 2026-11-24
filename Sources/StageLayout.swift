@@ -11,15 +11,15 @@ enum StageLayout {
         let count = CGFloat(windows.count)
         let columnWidth = (area.width - gap * (count - 1)) / count
 
-        for (index, window) in windows.enumerated() {
-            let target = CGRect(
+        let targets = windows.enumerated().map { index, window in
+            (window: window, frame: CGRect(
                 x: area.minX + CGFloat(index) * (columnWidth + gap),
                 y: area.minY,
                 width: columnWidth,
                 height: area.height
-            )
-            WindowAnimator.animate(window, to: target)
+            ))
         }
+        WindowAnimator.shared.animate(targets)
     }
 
     /// The screen's visible frame, in top-left coordinates, minus the side where the Stage Manager strip lives.

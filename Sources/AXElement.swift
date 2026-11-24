@@ -37,6 +37,23 @@ extension AXUIElement {
         AXUIElementPerformAction(self, action as CFString) == .success
     }
 
+    func setPosition(_ point: CGPoint) {
+        var origin = point
+        guard let position = AXValueCreate(.cgPoint, &origin) else { return }
+        set(kAXPositionAttribute, to: position)
+    }
+
+    func setSize(_ size: CGSize) {
+        var dimensions = size
+        guard let value = AXValueCreate(.cgSize, &dimensions) else { return }
+        set(kAXSizeAttribute, to: value)
+    }
+
+    func bool(_ name: String) -> Bool? {
+        guard let value: AnyObject = attribute(name) else { return nil }
+        return (value as? NSNumber)?.boolValue
+    }
+
     /// Setting the size again after the position lets windows near a screen edge reach their final size.
     func setFrame(_ frame: CGRect, settleSize: Bool) {
         var origin = frame.origin
