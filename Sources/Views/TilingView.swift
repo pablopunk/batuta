@@ -53,24 +53,28 @@ private struct LayoutPreview: View {
     }
 }
 
-/// A screen-shaped area; content is placed from its top-left corner.
+/// A screen-shaped area as wide as the panel content; content is placed from its top-left corner.
+/// It has a fixed size because the menu bar window gives a GeometryReader almost no room.
 struct LayoutCanvas<Content: View>: View {
     @ViewBuilder let content: (CGSize) -> Content
-    private let aspectRatio: CGFloat = {
-        guard let frame = NSScreen.main?.visibleFrame, frame.height > 0 else { return 16 / 10 }
-        return frame.width / frame.height
-    }()
+    static var width: CGFloat { 292 }
+
+    private var size: CGSize {
+        let aspectRatio: CGFloat = {
+            guard let frame = NSScreen.main?.visibleFrame, frame.height > 0 else { return 16 / 10 }
+            return frame.width / frame.height
+        }()
+        return CGSize(width: Self.width, height: (Self.width / aspectRatio).rounded())
+    }
 
     var body: some View {
-        GeometryReader { proxy in
-            ZStack(alignment: .topLeading) {
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(Color.secondary.opacity(0.08))
-                    .strokeBorder(Color.secondary.opacity(0.2))
-                content(proxy.size)
-            }
+        ZStack(alignment: .topLeading) {
+            RoundedRectangle(cornerRadius: 8)
+                .fill(Color.secondary.opacity(0.08))
+                .strokeBorder(Color.secondary.opacity(0.2))
+            content(size)
         }
-        .aspectRatio(aspectRatio, contentMode: .fit)
+        .frame(width: size.width, height: size.height, alignment: .topLeading)
     }
 }
 
