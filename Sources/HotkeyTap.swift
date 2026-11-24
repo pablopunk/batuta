@@ -28,6 +28,7 @@ final class HotkeyTap {
     var onMoveDirection: ((Direction) -> Void)?
     var onConfirm: (() -> Void)?
     var onCancel: (() -> Void)?
+    var onPointerTookOver: (() -> Void)?
     var onModifierReleased: (() -> Void)?
     var isPickingStage: () -> Bool = { false }
 
@@ -86,7 +87,7 @@ final class HotkeyTap {
             if !holdsRequiredModifiers(event.flags) { onModifierReleased?() }
             return passThrough
         case .leftMouseDown, .rightMouseDown:
-            if isPickingStage() { onCancel?() }
+            if isPickingStage() { onPointerTookOver?() }
             return passThrough
         case .keyDown:
             return handleKeyDown(event) ? nil : passThrough

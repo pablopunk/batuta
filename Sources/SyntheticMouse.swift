@@ -35,6 +35,13 @@ enum SyntheticMouse {
         }
     }
 
+    /// A real move event, not a warp, so Stage Manager sees the pointer arrive.
+    static func move(to point: CGPoint) {
+        post(.mouseMoved, at: point)
+    }
+
+    static var cursorPosition: CGPoint { currentCursorPosition }
+
     private static var currentCursorPosition: CGPoint {
         CGEvent(source: nil)?.location ?? .zero
     }

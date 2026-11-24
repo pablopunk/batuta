@@ -6,3 +6,4 @@
 * Windows of other stages are reported on-screen by CoreGraphics with thumbnail-sized bounds; only windows whose CG bounds match their AX size belong to the current stage.
 * Stage Manager's strip is `com.apple.WindowManager` → AX element with identifier `sm.strip` → `AXButton` children. `AXPress` on them is ignored, so a stage opens by focusing the window whose CG thumbnail sits inside the button.
 * Hiding the menu bar icon must never make the app unreachable; reopening the app restores it.
+- Stage Manager hides the strip when windows reach the screen edge. While picking, `StageStripReveal` parks the pointer on that edge with a real mouse-move event and puts it back after the action; keep it that way rather than drawing our own strip.

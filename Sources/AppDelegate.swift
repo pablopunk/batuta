@@ -31,6 +31,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         hotkeyTap.onMoveDirection = { [navigator] in navigator.moveItem($0) }
         hotkeyTap.onConfirm = { [navigator] in navigator.confirmStage() }
         hotkeyTap.onCancel = { [navigator] in navigator.stopPickingStage() }
+        hotkeyTap.onPointerTookOver = { [navigator] in navigator.stopPickingStage(cursor: .leaveWherePersonMovedIt) }
         hotkeyTap.onModifierReleased = { [navigator] in
             guard ConfigStore.shared.config.openStageOn == .releaseModifier else { return }
             navigator.confirmStage()

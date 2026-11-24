@@ -28,10 +28,11 @@ final class StageNavigator {
     private func addPickedStageToCurrentStage(_ strip: StageStrip, _ direction: Direction) {
         guard strip.items.indices.contains(pickedIndex), !points(direction, towardStripOf: strip) else { return }
         let item = strip.items[pickedIndex]
-        stopPickingStage()
+        stopPickingStage(cursor: .putBackLater)
         afterModifiersAreReleased {
             let windowsBefore = StageWindows.visibleSortedLeftToRight()
             StageStrip.addToCurrentStage(item, droppingAt: Self.currentStageCenter) {
+                StageStripReveal.putCursorBack()
                 Self.makeRoomForAddedWindows(previousWindowIDs: Set(windowsBefore.map(\.id)), strip: strip)
             }
         }
@@ -40,14 +41,31 @@ final class StageNavigator {
     func confirmStage() {
         guard let strip = pickingStrip, strip.items.indices.contains(pickedIndex) else { return }
         let item = strip.items[pickedIndex]
-        stopPickingStage()
-        afterModifiersAreReleased { StageStrip.open(item) }
+        stopPickingStage(cursor: .putBackLater)
+        afterModifiersAreReleased {
+            StageStrip.open(item)
+            StageStripReveal.putCursorBack()
+        }
     }
 
-    func stopPickingStage() {
+    enum CursorAfterPicking {
+        case putBack
+        /// The action still needs the strip on screen; it puts the cursor back when done.
+        case putBackLater
+        /// The person grabbed the mouse, so the pointer stays where they moved it.
+        case leaveWherePersonMovedIt
+    }
+
+    func stopPickingStage(cursor: CursorAfterPicking = .putBack) {
         guard pickingStrip != nil else { return }
         pickingStrip = nil
+        revealGeneration += 1
         overlay.hide()
+        switch cursor {
+        case .putBack: StageStripReveal.putCursorBack()
+        case .putBackLater: break
+        case .leaveWherePersonMovedIt: StageStripReveal.forgetCursor()
+        }
     }
 
     /// Stage Manager reads held modifiers as "add to stage" style clicks, so the press waits until every modifier is up.
@@ -128,6 +146,7 @@ final class StageNavigator {
 
         switch direction {
         case .up, .down:
+            pickedIndex = 0
             startPickingStage(near: focusedFrame)
         case .left, .right:
             let step = direction == .left ? -1 : 1
@@ -135,8 +154,12 @@ final class StageNavigator {
 
             if windows.indices.contains(targetIndex) {
                 focus(windows[targetIndex])
-            } else if let strip = StageStrip.closest(to: focusedFrame), points(direction, towardStripOf: strip) {
-                startPickingStage(strip)
+            } else {
+                let strip = StageStrip.closest(to: focusedFrame)
+                let pointsTowardStrip = strip.map { points(direction, towardStripOf: $0) } ?? (direction == .left)
+                guard pointsTowardStrip else { return }
+                pickedIndex = 0
+                startPickingStage(strip, near: focusedFrame)
             }
         }
     }
@@ -154,6 +177,8 @@ final class StageNavigator {
 
     private func returnToWindowNearest(_ strip: StageStrip) {
         pickingStrip = nil
+        revealGeneration += 1
+        StageStripReveal.putCursorBack()
         let windows = StageWindows.visibleSortedLeftToRight()
         guard let edgeWindow = strip.isOnLeftEdge ? windows.first : windows.last else {
             overlay.hide()
@@ -163,14 +188,37 @@ final class StageNavigator {
     }
 
     private func startPickingStage(near frame: CGRect?) {
-        guard let strip = StageStrip.closest(to: frame) else { return }
-        startPickingStage(strip)
+        startPickingStage(StageStrip.closest(to: frame), near: frame)
     }
 
-    private func startPickingStage(_ strip: StageStrip) {
-        guard !strip.items.isEmpty else { return }
-        pickingStrip = strip
-        select(0, in: strip)
+    /// The strip may be hidden behind edge-to-edge windows, so it is revealed first and read again once it slides in.
+    private func startPickingStage(_ strip: StageStrip?, near frame: CGRect?) {
+        StageStripReveal.reveal(near: frame, onLeftEdge: strip?.isOnLeftEdge ?? true)
+        if let strip, !strip.items.isEmpty {
+            pickingStrip = strip
+            select(0, in: strip)
+        }
+        revealGeneration += 1
+        refreshStripWhileItSlidesIn(near: frame, generation: revealGeneration)
+    }
+
+    private var revealGeneration = 0
+    private static let stripRefreshInterval: TimeInterval = 0.05
+    private static let stripRefreshAttempts = 10
+
+    private func refreshStripWhileItSlidesIn(near frame: CGRect?, generation: Int, attemptsLeft: Int = stripRefreshAttempts) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.stripRefreshInterval) { [weak self] in
+            guard let self, generation == self.revealGeneration else { return }
+            if let strip = StageStrip.closest(to: frame), !strip.items.isEmpty {
+                self.pickingStrip = strip
+                self.select(min(self.pickedIndex, strip.items.count - 1), in: strip)
+            }
+            if attemptsLeft > 0 {
+                self.refreshStripWhileItSlidesIn(near: frame, generation: generation, attemptsLeft: attemptsLeft - 1)
+            } else if self.pickingStrip == nil {
+                StageStripReveal.putCursorBack()
+            }
+        }
     }
 
     private func select(_ index: Int, in strip: StageStrip) {
