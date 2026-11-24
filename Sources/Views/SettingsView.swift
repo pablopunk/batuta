@@ -194,41 +194,56 @@ private struct ShortcutList: View {
 
     var body: some View {
         VStack(spacing: 5) {
-            row("Focus window", navigate + " " + keys.leftRightLabel)
-            row("Move window", move + " " + keys.leftRightLabel)
-            row("Pick a stage", navigate + " " + keys.upDownLabel)
-            row("Jump to stage", navigate + " 1–9")
-            row("Resize window", navigate + " + −")
-            row("Switch tiling mode", configStore.config.effectiveCycleTilingModeShortcut.label)
+            row("Focus window", navigate, keys.leftRightLabel)
+            row("Move window", move, keys.leftRightLabel)
+            row("Pick a stage", navigate, keys.upDownLabel)
+            row("Jump to stage", navigate, "1–9")
+            row("Resize window", navigate, "+ −")
+            row("Switch tiling mode", symbols(cycleShortcut.modifiers), cycleShortcut.keyLabel)
         }
         .padding(.leading, 28)
     }
 
     private var config: BatutaConfig { configStore.config }
     private var keys: DirectionKeys { config.directionKeys }
-    private var navigate: String { ModifierKey.allCases.filter(config.modifiers.contains).map(\.symbol).joined() }
-    private var move: String { ModifierKey.allCases.filter { config.modifiers.contains($0) || $0 == config.moveModifier }.map(\.symbol).joined() }
+    private var cycleShortcut: KeyShortcut { config.effectiveCycleTilingModeShortcut }
+    private var navigate: String { symbols(config.modifiers) }
+    private var move: String { symbols(config.modifiers + [config.moveModifier]) }
 
-    private func row(_ title: String, _ keys: String) -> some View {
+    private func symbols(_ modifiers: [ModifierKey]) -> String {
+        ModifierKey.allCases.filter(modifiers.contains).map(\.symbol).joined()
+    }
+
+    private func row(_ title: String, _ modifiers: String, _ key: String) -> some View {
         HStack(spacing: 8) {
             Text(title)
                 .font(.system(size: 12))
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
             Spacer(minLength: 4)
-            KeyHint(text: keys)
+            KeyHint(modifiers: modifiers, key: key)
         }
     }
 }
 
+/// Modifiers and key sit in fixed columns so every hint in a list lines up.
 struct KeyHint: View {
-    let text: String
+    let modifiers: String
+    let key: String
 
     var body: some View {
-        Text(text)
-            .font(.system(size: 11, weight: .semibold, design: .rounded))
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(Capsule().fill(Color.secondary.opacity(0.15)))
+        HStack(spacing: 6) {
+            Text(modifiers)
+                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                .tracking(1.5)
+                .frame(width: 56, alignment: .trailing)
+            Text(key)
+                .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                .frame(width: 30, alignment: .leading)
+        }
+        .lineLimit(1)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .background(Capsule().fill(Color.secondary.opacity(0.15)))
     }
 }
