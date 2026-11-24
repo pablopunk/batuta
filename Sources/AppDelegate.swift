@@ -31,6 +31,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         hotkeyTap.onDirection = { [navigator] in navigator.move($0) }
         hotkeyTap.onMoveDirection = { [navigator] in navigator.moveItem($0) }
         hotkeyTap.onCycleTilingMode = { [navigator] in navigator.cycleTilingModeOfCurrentStage() }
+        hotkeyTap.onStageNumber = { [navigator] in navigator.openStage(number: $0) }
+        hotkeyTap.onNavigateKeysHeld = { [navigator] held in held ? navigator.showStageNumbersSoon() : navigator.hideStageNumbers() }
         hotkeyTap.onConfirm = { [navigator] in navigator.confirmStage() }
         hotkeyTap.onCancel = { [navigator] in navigator.stopPickingStage() }
         hotkeyTap.onPointerTookOver = { [navigator] in navigator.stopPickingStage(cursor: .leaveWherePersonMovedIt) }

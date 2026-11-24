@@ -8,6 +8,9 @@ private let timingLog = Logger(subsystem: "com.pablopunk.batuta", category: "tim
 final class StageNavigator {
     private let overlay = HighlightOverlay()
     private let modeBanner = ModeBanner()
+    private let stageNumbers = StageNumberBadges()
+    private var stageNumbersGeneration = 0
+    private static let stageNumbersDelay: TimeInterval = 0.25
     private var pickingStrip: StageStrip?
     private var pickedIndex = 0
 
@@ -55,6 +58,39 @@ final class StageNavigator {
         StageTilingModes.choose(nextMode, for: windows.map(\.id))
         StageLayout.arrange(windows, besides: StageStrip.closest(to: focusedFrame))
         modeBanner.show(nextMode.label, near: focusedFrame)
+    }
+
+    /// Waits a moment so other shortcuts that use the same keys do not flash the numbers.
+    func showStageNumbersSoon() {
+        stageNumbersGeneration += 1
+        let generation = stageNumbersGeneration
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.stageNumbersDelay) { [weak self] in
+            guard let self, generation == self.stageNumbersGeneration else { return }
+            let focusedFrame = StageWindows.visibleSortedLeftToRight().first { $0.id == StageWindows.focusedWindowID() }?.frame
+            guard let strip = self.pickingStrip ?? StageStrip.closest(to: focusedFrame), !strip.items.isEmpty else { return }
+            self.stageNumbers.show(on: strip.items)
+        }
+    }
+
+    func hideStageNumbers() {
+        stageNumbersGeneration += 1
+        stageNumbers.hide()
+    }
+
+    /// Stage 1 is the top thumbnail in Stage Manager.
+    func openStage(number: Int) {
+        let focusedFrame = StageWindows.visibleSortedLeftToRight().first { $0.id == StageWindows.focusedWindowID() }?.frame
+        guard let strip = pickingStrip ?? StageStrip.closest(to: focusedFrame), strip.items.indices.contains(number - 1) else { return }
+        hideStageNumbers()
+        let item = strip.items[number - 1]
+        guard StageWindows.windowShownAsThumbnail(inside: item.frame) != nil else {
+            pickingStrip = strip
+            pickedIndex = number - 1
+            confirmStage()
+            return
+        }
+        stopPickingStage()
+        StageStrip.open(item)
     }
 
     func confirmStage() {

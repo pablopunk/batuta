@@ -19,6 +19,7 @@ private enum KeyCode {
     static let returnKey: Int64 = 36
     static let keypadEnter: Int64 = 76
     static let escape: Int64 = 53
+    static let digits: [Int64: Int] = [18: 1, 19: 2, 20: 3, 21: 4, 23: 5, 22: 6, 26: 7, 28: 8, 25: 9]
 }
 
 /// Global keyboard tap. It only swallows direction keys held with the chosen modifier, plus Return/Escape/direction keys while a stage is being picked.
@@ -27,6 +28,8 @@ final class HotkeyTap {
     var onDirection: ((Direction) -> Void)?
     var onMoveDirection: ((Direction) -> Void)?
     var onCycleTilingMode: (() -> Void)?
+    var onStageNumber: ((Int) -> Void)?
+    var onNavigateKeysHeld: ((Bool) -> Void)?
     var onConfirm: (() -> Void)?
     var onCancel: (() -> Void)?
     var onPointerTookOver: (() -> Void)?
@@ -36,6 +39,7 @@ final class HotkeyTap {
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
     private var swallowedKeyCodes = Set<Int64>()
+    private var holdsNavigateKeys = false
 
     var isRunning: Bool { eventTap != nil }
 
@@ -86,6 +90,11 @@ final class HotkeyTap {
             return passThrough
         case .flagsChanged:
             if !holdsRequiredModifiers(event.flags) { onModifierReleased?() }
+            let holdsNavigateKeysNow = holdsExactlyRequiredModifiers(event.flags)
+            if holdsNavigateKeysNow != holdsNavigateKeys {
+                holdsNavigateKeys = holdsNavigateKeysNow
+                onNavigateKeysHeld?(holdsNavigateKeysNow)
+            }
             return passThrough
         case .leftMouseDown, .rightMouseDown:
             if isPickingStage() { onPointerTookOver?() }
@@ -108,6 +117,12 @@ final class HotkeyTap {
         if !picking, ConfigStore.shared.config.effectiveCycleTilingModeShortcut.matches(keyCode: keyCode, flags: event.flags) {
             swallowedKeyCodes.insert(keyCode)
             onCycleTilingMode?()
+            return true
+        }
+
+        if let number = KeyCode.digits[keyCode], holdsExactlyRequiredModifiers(event.flags) || (picking && holdsNoModifiers(event.flags)) {
+            swallowedKeyCodes.insert(keyCode)
+            onStageNumber?(number)
             return true
         }
 
