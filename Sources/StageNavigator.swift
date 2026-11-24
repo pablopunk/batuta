@@ -72,8 +72,18 @@ final class StageNavigator {
         case .down:
             select(min(pickedIndex + 1, strip.items.count - 1), in: strip)
         case .left, .right:
-            if !points(direction, towardStripOf: strip) { stopPickingStage() }
+            if !points(direction, towardStripOf: strip) { returnToWindowNearest(strip) }
         }
+    }
+
+    private func returnToWindowNearest(_ strip: StageStrip) {
+        pickingStrip = nil
+        let windows = StageWindows.visibleSortedLeftToRight()
+        guard let edgeWindow = strip.isOnLeftEdge ? windows.first : windows.last else {
+            overlay.hide()
+            return
+        }
+        focus(edgeWindow, alwaysHighlight: true)
     }
 
     private func startPickingStage(near frame: CGRect?) {
@@ -92,9 +102,13 @@ final class StageNavigator {
         overlay.show(around: strip.items[index].frame)
     }
 
-    private func focus(_ window: StageWindow) {
+    private func focus(_ window: StageWindow, alwaysHighlight: Bool = false) {
         StageWindows.focus(window)
-        if ConfigStore.shared.config.highlightFocusedWindow { overlay.flash(around: window.frame) }
+        if alwaysHighlight || ConfigStore.shared.config.highlightFocusedWindow {
+            overlay.flash(around: window.frame)
+        } else {
+            overlay.hide()
+        }
     }
 
     private func points(_ direction: Direction, towardStripOf strip: StageStrip) -> Bool {
