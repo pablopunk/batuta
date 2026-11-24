@@ -37,6 +37,16 @@ extension AXUIElement {
         AXUIElementPerformAction(self, action as CFString) == .success
     }
 
+    /// Setting the size again after the position lets windows near a screen edge reach their final size.
+    func setFrame(_ frame: CGRect, settleSize: Bool) {
+        var origin = frame.origin
+        var size = frame.size
+        guard let position = AXValueCreate(.cgPoint, &origin), let dimensions = AXValueCreate(.cgSize, &size) else { return }
+        set(kAXSizeAttribute, to: dimensions)
+        set(kAXPositionAttribute, to: position)
+        if settleSize { set(kAXSizeAttribute, to: dimensions) }
+    }
+
     func set(_ name: String, to value: AnyObject) {
         AXUIElementSetAttributeValue(self, name as CFString, value)
     }
@@ -61,6 +71,9 @@ extension AXUIElement {
 
 extension CGRect {
     var center: CGPoint { CGPoint(x: midX, y: midY) }
+
+    /// Inverse of `convertedToAppKit`; the flip is its own inverse.
+    var convertedFromAppKit: CGRect { convertedToAppKit }
 
     /// Accessibility and CGWindow frames start at the top-left of the primary screen; AppKit starts at its bottom-left.
     var convertedToAppKit: CGRect {

@@ -13,6 +13,7 @@ struct StageStrip {
     private static let stripIdentifier = "sm.strip"
 
     let items: [StageStripItem]
+    let frame: CGRect
     let isOnLeftEdge: Bool
 
     static var isStageManagerEnabled: Bool {
@@ -39,15 +40,15 @@ struct StageStrip {
             .compactMap { button in button.frame.map { StageStripItem(element: button, title: button.title ?? "", frame: $0) } }
             .sorted { $0.frame.minY < $1.frame.minY }
 
-        return StageStrip(items: items, isOnLeftEdge: isOnLeftHalfOfItsScreen(strip.frame))
+        return StageStrip(items: items, frame: strip.frame, isOnLeftEdge: isOnLeftHalfOfItsScreen(strip.frame))
     }
 
     private static let log = Logger(subsystem: "com.pablopunk.batuta", category: "stage")
 
     /// AXAddToStage reports success but is ignored too, so the thumbnail is dragged onto the current stage like a person would.
     @MainActor
-    static func addToCurrentStage(_ item: StageStripItem, droppingAt stageCenter: CGPoint) {
-        SyntheticMouse.drag(from: item.frame.center, to: stageCenter)
+    static func addToCurrentStage(_ item: StageStripItem, droppingAt stageCenter: CGPoint, completion: @escaping @MainActor () -> Void) {
+        SyntheticMouse.drag(from: item.frame.center, to: stageCenter, completion: completion)
         log.info("dragged stage \(item.title, privacy: .public) into current stage")
     }
 

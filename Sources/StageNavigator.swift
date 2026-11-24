@@ -22,7 +22,12 @@ final class StageNavigator {
               !points(direction, towardStripOf: strip) else { return }
         let item = strip.items[pickedIndex]
         stopPickingStage()
-        openOnceModifiersAreReleased(item) { StageStrip.addToCurrentStage($0, droppingAt: Self.currentStageCenter) }
+        openOnceModifiersAreReleased(item) { item in
+            let windowsBefore = StageWindows.visibleSortedLeftToRight()
+            StageStrip.addToCurrentStage(item, droppingAt: Self.currentStageCenter) {
+                Self.makeRoomForAddedWindows(previousWindowIDs: Set(windowsBefore.map(\.id)), strip: strip)
+            }
+        }
     }
 
     func confirmStage() {
@@ -50,6 +55,19 @@ final class StageNavigator {
             } else {
                 action(item)
             }
+        }
+    }
+
+    private static let stageManagerSettleDelay: TimeInterval = 0.45
+
+    /// Existing windows keep their left-to-right order and the newcomers take the columns on the right.
+    private static func makeRoomForAddedWindows(previousWindowIDs: Set<CGWindowID>, strip: StageStrip) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + stageManagerSettleDelay) {
+            let windows = StageWindows.visibleSortedLeftToRight()
+            let existing = windows.filter { previousWindowIDs.contains($0.id) }
+            let added = windows.filter { !previousWindowIDs.contains($0.id) }
+            guard !added.isEmpty else { return }
+            StageLayout.arrangeInColumns(existing + added, besides: strip)
         }
     }
 
