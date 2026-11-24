@@ -33,20 +33,14 @@ struct AppPanelView: View {
         .frame(width: panelWidth)
     }
 
-    /// Every tab stays laid out so the panel keeps one height: the menu bar window glitches when its content resizes.
     private var tabContents: some View {
-        ZStack(alignment: .top) {
-            tabContent(.settings) { SettingsView(onQuit: onQuit) }
-            tabContent(.info) { InfoView(onQuit: onQuit) }
+        Group {
+            switch selectedTab {
+            case .settings: SettingsView(onQuit: onQuit)
+            case .info: InfoView(onQuit: onQuit)
+            }
         }
-    }
-
-    private func tabContent<Content: View>(_ tab: PanelTab, @ViewBuilder content: () -> Content) -> some View {
-        content()
-            .opacity(selectedTab == tab ? 1 : 0)
-            .offset(y: selectedTab == tab ? 0 : 8)
-            .allowsHitTesting(selectedTab == tab)
-            .accessibilityHidden(selectedTab != tab)
+        .transition(.opacity.combined(with: .move(edge: .bottom)))
     }
 
     private func tabButton(_ tab: PanelTab) -> some View {

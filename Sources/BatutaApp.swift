@@ -13,7 +13,7 @@ struct BatutaApp: App {
             Image(nsImage: .menuBarIcon)
         }
         .menuBarExtraStyle(.window)
-        .windowResizability(.contentSize)
+        .windowResizability(.contentMinSize)
         .defaultSize(width: 320, height: 250)
     }
 }
