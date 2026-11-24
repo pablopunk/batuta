@@ -21,13 +21,28 @@ final class StageNavigator {
         guard let strip = pickingStrip, strip.items.indices.contains(pickedIndex) else { return }
         let item = strip.items[pickedIndex]
         stopPickingStage()
-        StageStrip.open(item)
+        openOnceModifiersAreReleased(item)
     }
 
     func stopPickingStage() {
         guard pickingStrip != nil else { return }
         pickingStrip = nil
         overlay.hide()
+    }
+
+    /// Stage Manager reads held modifiers as "add to stage" style clicks, so the press waits until every modifier is up.
+    private func openOnceModifiersAreReleased(_ item: StageStripItem, attemptsLeft: Int = 50) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.02) { [weak self] in
+            if Self.isAnyModifierHeld, attemptsLeft > 0 {
+                self?.openOnceModifiersAreReleased(item, attemptsLeft: attemptsLeft - 1)
+            } else {
+                StageStrip.open(item)
+            }
+        }
+    }
+
+    private static var isAnyModifierHeld: Bool {
+        !CGEventSource.flagsState(.combinedSessionState).intersection(ModifierKey.allEventFlags).isEmpty
     }
 
     private func moveAmongWindows(_ direction: Direction) {

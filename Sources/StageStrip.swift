@@ -1,4 +1,5 @@
 import AppKit
+import os
 import ApplicationServices
 
 struct StageStripItem {
@@ -41,8 +42,11 @@ struct StageStrip {
         return StageStrip(items: items, isOnLeftEdge: isOnLeftHalfOfItsScreen(strip.frame))
     }
 
+    private static let log = Logger(subsystem: "com.pablopunk.batuta", category: "stage")
+
     static func open(_ item: StageStripItem) {
-        item.element.perform(kAXPressAction)
+        let opened = item.element.perform(kAXPressAction)
+        log.info("open stage \(item.title, privacy: .public): \(opened ? "ok" : "failed", privacy: .public)")
     }
 
     @MainActor
