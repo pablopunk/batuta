@@ -55,6 +55,23 @@ enum StageConfirmMode: String, CaseIterable, Codable {
     case pressReturn = "return"
 }
 
+/// How stages on one kind of screen are tiled. A stage can switch away from `mode` with the cycle shortcut.
+struct TilingSettings: Codable, Equatable {
+    var mode: TilingMode = .even
+    var leaveRoomForStageManager = true
+
+    init(mode: TilingMode = .even, leaveRoomForStageManager: Bool = true) {
+        self.mode = mode
+        self.leaveRoomForStageManager = leaveRoomForStageManager
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        mode = try container.decodeIfPresent(TilingMode.self, forKey: .mode) ?? .even
+        leaveRoomForStageManager = try container.decodeIfPresent(Bool.self, forKey: .leaveRoomForStageManager) ?? true
+    }
+}
+
 /// Everything in ~/.config/batuta/config.json. Missing keys fall back to defaults so the file can stay partial.
 struct BatutaConfig: Codable, Equatable {
     var modifiers: [ModifierKey] = [.control, .option, .command]
@@ -62,11 +79,12 @@ struct BatutaConfig: Codable, Equatable {
     var moveModifier: ModifierKey = .shift
     var directionKeys: DirectionKeys = .hjkl
     var openStageOn: StageConfirmMode = .releaseModifier
-    var tilingMode: TilingMode = .even
+    /// Used on the laptop screen, and on every screen unless `externalScreensHaveOwnTiling` is on.
+    var tiling = TilingSettings()
+    var externalScreensHaveOwnTiling = false
+    var externalTiling = TilingSettings()
     /// Keyed by window count ("1" to "6"); each value has one unit rect per window, left to right.
     var customLayouts: [String: [UnitRect]] = TilingLayouts.defaultCustomLayouts
-    var leaveRoomForStageManagerOnBuiltInScreen = true
-    var leaveRoomForStageManagerOnExternalScreens = true
     var highlightFocusedWindow = true
     var animateWindowMoves = true
     var showMenuBarIcon = true
@@ -87,27 +105,29 @@ struct BatutaConfig: Codable, Equatable {
         }
         directionKeys = try container.decodeIfPresent(DirectionKeys.self, forKey: .directionKeys) ?? defaults.directionKeys
         openStageOn = try container.decodeIfPresent(StageConfirmMode.self, forKey: .openStageOn) ?? defaults.openStageOn
-        tilingMode = try container.decodeIfPresent(TilingMode.self, forKey: .tilingMode) ?? defaults.tilingMode
         customLayouts = defaults.customLayouts.merging(
             try container.decodeIfPresent([String: [UnitRect]].self, forKey: .customLayouts) ?? [:]
         ) { _, fromFile in fromFile }
-        let legacyLeaveRoom = try decoder.container(keyedBy: LegacyCodingKeys.self).decodeIfPresent(Bool.self, forKey: .leaveRoomForStrip)
-        leaveRoomForStageManagerOnBuiltInScreen = try container.decodeIfPresent(Bool.self, forKey: .leaveRoomForStageManagerOnBuiltInScreen)
-            ?? legacyLeaveRoom ?? defaults.leaveRoomForStageManagerOnBuiltInScreen
-        leaveRoomForStageManagerOnExternalScreens = try container.decodeIfPresent(Bool.self, forKey: .leaveRoomForStageManagerOnExternalScreens)
-            ?? legacyLeaveRoom ?? defaults.leaveRoomForStageManagerOnExternalScreens
+        let legacy = try decoder.container(keyedBy: LegacyCodingKeys.self)
+        tiling = try container.decodeIfPresent(TilingSettings.self, forKey: .tiling) ?? TilingSettings(
+            mode: try legacy.decodeIfPresent(TilingMode.self, forKey: .tilingMode) ?? .even,
+            leaveRoomForStageManager: try legacy.decodeIfPresent(Bool.self, forKey: .leaveRoomForStageManagerOnBuiltInScreen)
+                ?? legacy.decodeIfPresent(Bool.self, forKey: .leaveRoomForStrip) ?? true
+        )
+        externalScreensHaveOwnTiling = try container.decodeIfPresent(Bool.self, forKey: .externalScreensHaveOwnTiling) ?? false
+        externalTiling = try container.decodeIfPresent(TilingSettings.self, forKey: .externalTiling) ?? tiling
         highlightFocusedWindow = try container.decodeIfPresent(Bool.self, forKey: .highlightFocusedWindow) ?? defaults.highlightFocusedWindow
         animateWindowMoves = try container.decodeIfPresent(Bool.self, forKey: .animateWindowMoves) ?? defaults.animateWindowMoves
         showMenuBarIcon = try container.decodeIfPresent(Bool.self, forKey: .showMenuBarIcon) ?? defaults.showMenuBarIcon
     }
 
-    /// Before the setting was split per screen it was one `leaveRoomForStrip` value.
+    /// Keys from before tiling settings were grouped per screen.
     private enum LegacyCodingKeys: String, CodingKey {
-        case leaveRoomForStrip
+        case tilingMode, leaveRoomForStrip, leaveRoomForStageManagerOnBuiltInScreen
     }
 
-    func leavesRoomForStageManager(onBuiltInScreen: Bool) -> Bool {
-        onBuiltInScreen ? leaveRoomForStageManagerOnBuiltInScreen : leaveRoomForStageManagerOnExternalScreens
+    func tilingSettings(onBuiltInScreen: Bool) -> TilingSettings {
+        onBuiltInScreen || !externalScreensHaveOwnTiling ? tiling : externalTiling
     }
 
     var requiredModifierFlags: CGEventFlags {

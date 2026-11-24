@@ -1,9 +1,13 @@
 import AppKit
+import os
+
+private let timingLog = Logger(subsystem: "com.pablopunk.batuta", category: "timing")
 
 /// Moves focus between the windows of the current stage, and past the edge into the Stage Manager strip.
 @MainActor
 final class StageNavigator {
     private let overlay = HighlightOverlay()
+    private let modeBanner = ModeBanner()
     private var pickingStrip: StageStrip?
     private var pickedIndex = 0
 
@@ -29,13 +33,28 @@ final class StageNavigator {
         guard strip.items.indices.contains(pickedIndex), !points(direction, towardStripOf: strip) else { return }
         let item = strip.items[pickedIndex]
         stopPickingStage(cursor: .putBackLater)
+        let started = CACurrentMediaTime()
         afterModifiersAreReleased {
+            timingLog.notice("add: modifiers released after \(CACurrentMediaTime() - started, format: .fixed(precision: 3))s")
             let windowsBefore = StageWindows.visibleSortedLeftToRight()
             StageStrip.addToCurrentStage(item, droppingAt: Self.currentStageCenter) {
                 StageStripReveal.putCursorBack()
-                Self.makeRoomForAddedWindows(previousWindowIDs: Set(windowsBefore.map(\.id)), strip: strip)
+                timingLog.notice("add: drag done after \(CACurrentMediaTime() - started, format: .fixed(precision: 3))s")
+                Self.makeRoomForAddedWindows(previousWindowIDs: Set(windowsBefore.map(\.id)), strip: strip, started: started)
             }
         }
+    }
+
+    /// Switches only the current stage to the next tiling mode and tiles it right away.
+    func cycleTilingModeOfCurrentStage() {
+        guard !isPickingStage else { return }
+        let windows = StageWindows.visibleSortedLeftToRight()
+        guard let first = windows.first else { return }
+        let focusedFrame = windows.first { $0.id == StageWindows.focusedWindowID() }?.frame ?? first.frame
+        let nextMode = StageLayout.mode(for: windows).next
+        StageTilingModes.choose(nextMode, for: windows.map(\.id))
+        StageLayout.arrange(windows, besides: StageStrip.closest(to: focusedFrame))
+        modeBanner.show(nextMode.label, near: focusedFrame)
     }
 
     func confirmStage() {
@@ -105,15 +124,17 @@ final class StageNavigator {
 
     /// Polls until Stage Manager shows the dropped window full size, then lays out right away.
     /// Existing windows keep their left-to-right order and the newcomers take the columns on the right.
-    private static func makeRoomForAddedWindows(previousWindowIDs: Set<CGWindowID>, strip: StageStrip, attemptsLeft: Int = addedWindowPollAttempts) {
+    private static func makeRoomForAddedWindows(previousWindowIDs: Set<CGWindowID>, strip: StageStrip, started: CFTimeInterval, attemptsLeft: Int = addedWindowPollAttempts) {
         DispatchQueue.main.asyncAfter(deadline: .now() + addedWindowPollInterval) {
             let windows = StageWindows.visibleSortedLeftToRight()
             let added = windows.filter { !previousWindowIDs.contains($0.id) }
             guard !added.isEmpty else {
-                if attemptsLeft > 0 { makeRoomForAddedWindows(previousWindowIDs: previousWindowIDs, strip: strip, attemptsLeft: attemptsLeft - 1) }
+                if attemptsLeft > 0 { makeRoomForAddedWindows(previousWindowIDs: previousWindowIDs, strip: strip, started: started, attemptsLeft: attemptsLeft - 1) }
                 return
             }
             let existing = windows.filter { previousWindowIDs.contains($0.id) }
+            if let chosen = StageTilingModes.chosenMode(for: existing.map(\.id)) { StageTilingModes.choose(chosen, for: added.map(\.id)) }
+            timingLog.notice("add: new window seen after \(CACurrentMediaTime() - started, format: .fixed(precision: 3))s")
             StageLayout.arrange(existing + added, besides: strip)
         }
     }

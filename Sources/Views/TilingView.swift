@@ -1,41 +1,62 @@
 import SwiftUI
 
+private enum ScreenKind: String, CaseIterable {
+    case laptop = "Laptop"
+    case external = "External"
+}
+
 struct TilingView: View {
     @ObservedObject private var configStore = ConfigStore.shared
     @State private var windowCount = 2
+    @State private var screenKind: ScreenKind = .laptop
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            SectionHeaderView(title: "Tiling", icon: "square.grid.2x2")
-
-            CaptionedRow(title: "Mode", icon: "rectangle.split.2x2", caption: modeCaption) {
+            HStack(spacing: 10) {
+                SectionHeaderView(title: "Tiling", icon: "square.grid.2x2")
+                Spacer(minLength: 0)
                 HStack(spacing: 4) {
-                    ForEach(TilingMode.allCases, id: \.self) { mode in
-                        Pill(label: mode.label, isOn: configStore.config.tilingMode == mode) {
-                            configStore.update { $0.tilingMode = mode }
+                    ForEach(ScreenKind.allCases, id: \.self) { kind in
+                        Pill(label: kind.rawValue, isOn: screenKind == kind) { screenKind = kind }
+                    }
+                }
+            }
+
+            if screenKind == .external {
+                PreferenceToggleRow(
+                    title: "Own settings",
+                    subtitle: "Off uses the Laptop settings",
+                    icon: "display",
+                    isOn: configStore.binding(\.externalScreensHaveOwnTiling)
+                )
+            }
+
+            Group {
+                CaptionedRow(title: "Mode", icon: "rectangle.split.2x2", caption: "Default for every stage. " + modeCaption) {
+                    HStack(spacing: 4) {
+                        ForEach(TilingMode.allCases, id: \.self) { mode in
+                            Pill(label: mode.label, isOn: settings.mode == mode) {
+                                updateSettings { $0.mode = mode }
+                            }
                         }
                     }
                 }
-            }
 
-            CaptionedRow(
-                title: "Leave room on",
-                icon: "sidebar.left",
-                caption: "Keep windows clear of Stage Manager on these screens. Off lets windows cover it."
-            ) {
-                HStack(spacing: 4) {
-                    Pill(label: "Laptop", isOn: configStore.config.leaveRoomForStageManagerOnBuiltInScreen) {
-                        configStore.update { $0.leaveRoomForStageManagerOnBuiltInScreen.toggle() }
-                    }
-                    Pill(label: "External", isOn: configStore.config.leaveRoomForStageManagerOnExternalScreens) {
-                        configStore.update { $0.leaveRoomForStageManagerOnExternalScreens.toggle() }
-                    }
-                }
+                PreferenceToggleRow(
+                    title: "Leave room",
+                    subtitle: "Keep clear of Stage Manager",
+                    icon: "sidebar.left",
+                    isOn: Binding(get: { settings.leaveRoomForStageManager }, set: { isOn in updateSettings { $0.leaveRoomForStageManager = isOn } })
+                )
             }
+            .disabled(!isEditable)
+            .opacity(isEditable ? 1 : 0.45)
+
+            CycleShortcutRow()
 
             WindowCountStepper(count: $windowCount)
 
-            if configStore.config.tilingMode == .custom {
+            if settings.mode == .custom {
                 CustomLayoutEditor(windowCount: windowCount)
             } else {
                 LayoutPreview(rects: previewRects)
@@ -44,16 +65,53 @@ struct TilingView: View {
         .padding(14)
     }
 
+    private var editsExternalSettings: Bool {
+        screenKind == .external && configStore.config.externalScreensHaveOwnTiling
+    }
+
+    private var isEditable: Bool {
+        screenKind == .laptop || configStore.config.externalScreensHaveOwnTiling
+    }
+
+    private var settings: TilingSettings {
+        editsExternalSettings ? configStore.config.externalTiling : configStore.config.tiling
+    }
+
+    private func updateSettings(_ change: @escaping (inout TilingSettings) -> Void) {
+        let editsExternal = editsExternalSettings
+        configStore.update { config in
+            if editsExternal { change(&config.externalTiling) } else { change(&config.tiling) }
+        }
+    }
+
     private var previewRects: [UnitRect] {
-        TilingLayouts.unitRects(for: windowCount, mode: configStore.config.tilingMode, customLayouts: configStore.config.customLayouts)
+        TilingLayouts.unitRects(for: windowCount, mode: settings.mode, customLayouts: configStore.config.customLayouts)
     }
 
     private var modeCaption: String {
-        switch configStore.config.tilingMode {
+        switch settings.mode {
         case .even: "Every window gets the same space, in rows."
         case .bsp: "Each new window splits the last one in half."
         case .messy: "Loose layouts where windows can overlap."
         case .custom: "Draw where windows go for 1 to 6 windows. Drag to move, drag the corner to resize. Tile 1 is the leftmost window."
+        }
+    }
+}
+
+private struct CycleShortcutRow: View {
+    @ObservedObject private var configStore = ConfigStore.shared
+
+    var body: some View {
+        CaptionedRow(
+            title: "Switch mode",
+            icon: "arrow.triangle.2.circlepath",
+            caption: "Changes the mode of the current stage only. Other stages keep the default."
+        ) {
+            Text(configStore.config.modifiers.map(\.symbol).joined() + " Space")
+                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Capsule().fill(Color.secondary.opacity(0.15)))
         }
     }
 }

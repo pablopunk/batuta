@@ -1,4 +1,7 @@
 import AppKit
+import os
+
+private let timingLog = Logger(subsystem: "com.pablopunk.batuta", category: "timing")
 
 /// Places the windows of the stage with the chosen tiling mode, in the given order.
 @MainActor
@@ -7,14 +10,18 @@ enum StageLayout {
     private static let fallbackStripWidth: CGFloat = 260
 
     static func arrange(_ windows: [StageWindow], besides strip: StageStrip?) {
-        guard !windows.isEmpty, let area = usableArea(near: windows[0].frame, besides: strip) else { return }
+        guard let screen = windows.first.flatMap({ screen(containing: $0.frame) }) else { return }
         let config = ConfigStore.shared.config
-        let rects = TilingLayouts.unitRects(for: windows.count, mode: config.tilingMode, customLayouts: config.customLayouts)
+        let settings = config.tilingSettings(onBuiltInScreen: screen.isBuiltIn)
+        let area = usableArea(on: screen, leavingRoom: settings.leaveRoomForStageManager, besides: strip)
+        let rects = TilingLayouts.unitRects(for: windows.count, mode: mode(for: windows), customLayouts: config.customLayouts)
         let areaIncludingHalfGaps = area.insetBy(dx: -gap / 2, dy: -gap / 2)
         let targets = zip(windows, rects).map { window, rect in
             (window: window, frame: rect.placed(in: areaIncludingHalfGaps).insetBy(dx: gap / 2, dy: gap / 2))
         }
+        let started = CACurrentMediaTime()
         WindowAnimator.shared.animate(targets) {
+            timingLog.notice("layout: landed after \(CACurrentMediaTime() - started, format: .fixed(precision: 3))s")
             refitWindowsThatRefusedToShrink(targets)
         }
     }
@@ -22,15 +29,26 @@ enum StageLayout {
     private static func refitWindowsThatRefusedToShrink(_ targets: [(window: StageWindow, frame: CGRect)]) {
         let landed = targets.map { $0.window.element.frame ?? $0.frame }
         guard let refitted = MinimumWidthRefit.refit(targets: targets.map(\.frame), landed: landed, gap: gap) else { return }
+        timingLog.notice("layout: refitting windows that refused to shrink")
         WindowAnimator.shared.animate(zip(targets, refitted).map { (window: $0.window, frame: $1) })
     }
 
-    /// The screen's visible frame, in top-left coordinates, minus the side where the Stage Manager strip lives when that setting is on.
-    private static func usableArea(near frame: CGRect, besides strip: StageStrip?) -> CGRect? {
+    /// The mode the stage switched to with the shortcut, or else the one set for its screen.
+    static func mode(for windows: [StageWindow]) -> TilingMode {
+        if let chosen = StageTilingModes.chosenMode(for: windows.map(\.id)) { return chosen }
+        let isBuiltIn = windows.first.flatMap { screen(containing: $0.frame) }?.isBuiltIn ?? true
+        return ConfigStore.shared.config.tilingSettings(onBuiltInScreen: isBuiltIn).mode
+    }
+
+    private static func screen(containing frame: CGRect) -> NSScreen? {
         let appKitFrame = frame.convertedToAppKit
-        guard let screen = NSScreen.screens.first(where: { $0.frame.intersects(appKitFrame) }) ?? NSScreen.main else { return nil }
+        return NSScreen.screens.first { $0.frame.intersects(appKitFrame) } ?? NSScreen.main
+    }
+
+    /// The screen's visible frame, in top-left coordinates, minus the side where Stage Manager lives when room is left for it.
+    private static func usableArea(on screen: NSScreen, leavingRoom: Bool, besides strip: StageStrip?) -> CGRect {
         let visible = screen.visibleFrame.convertedFromAppKit.insetBy(dx: gap, dy: gap)
-        guard ConfigStore.shared.config.leavesRoomForStageManager(onBuiltInScreen: screen.isBuiltIn) else { return visible }
+        guard leavingRoom else { return visible }
         let stripWidth = strip.map { $0.thumbnailsFrame.maxX - visible.minX + gap } ?? fallbackStripWidth
 
         if strip?.isOnLeftEdge ?? true {

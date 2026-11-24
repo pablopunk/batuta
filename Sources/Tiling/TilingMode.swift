@@ -45,3 +45,10 @@ struct UnitRect: Codable, Equatable, Hashable {
         )
     }
 }
+
+extension TilingMode {
+    var next: TilingMode {
+        let all = Self.allCases
+        return all[(all.firstIndex(of: self)! + 1) % all.count]
+    }
+}

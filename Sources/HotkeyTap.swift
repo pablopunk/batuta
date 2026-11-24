@@ -19,6 +19,7 @@ private enum KeyCode {
     static let returnKey: Int64 = 36
     static let keypadEnter: Int64 = 76
     static let escape: Int64 = 53
+    static let space: Int64 = 49
 }
 
 /// Global keyboard tap. It only swallows direction keys held with the chosen modifier, plus Return/Escape/direction keys while a stage is being picked.
@@ -26,6 +27,7 @@ private enum KeyCode {
 final class HotkeyTap {
     var onDirection: ((Direction) -> Void)?
     var onMoveDirection: ((Direction) -> Void)?
+    var onCycleTilingMode: (() -> Void)?
     var onConfirm: (() -> Void)?
     var onCancel: (() -> Void)?
     var onPointerTookOver: (() -> Void)?
@@ -114,6 +116,12 @@ final class HotkeyTap {
                 onMoveDirection?(direction)
                 return true
             }
+        }
+
+        if keyCode == KeyCode.space, !picking, holdsExactlyRequiredModifiers(event.flags) {
+            swallowedKeyCodes.insert(keyCode)
+            onCycleTilingMode?()
+            return true
         }
 
         guard picking else { return false }
