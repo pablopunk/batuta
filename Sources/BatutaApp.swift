@@ -4,10 +4,10 @@ import AppKit
 @main
 struct BatutaApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    @AppStorage(SettingsKeys.showMenuBarIcon) private var showMenuBarIcon = true
+    @ObservedObject private var configStore = ConfigStore.shared
 
     var body: some Scene {
-        MenuBarExtra(isInserted: $showMenuBarIcon) {
+        MenuBarExtra(isInserted: $configStore.config.showMenuBarIcon) {
             AppPanelView(onQuit: { NSApplication.shared.terminate(nil) })
         } label: {
             Image(nsImage: .menuBarIcon)

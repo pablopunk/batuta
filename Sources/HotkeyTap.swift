@@ -125,12 +125,12 @@ final class HotkeyTap {
     }
 
     private func holdsExactlyRequiredModifiers(_ flags: CGEventFlags) -> Bool {
-        let required = Settings.requiredModifierFlags
+        let required = ConfigStore.shared.config.requiredModifierFlags
         return !required.isEmpty && flags.intersection(ModifierKey.allEventFlags) == required
     }
 
     private func holdsRequiredModifiers(_ flags: CGEventFlags) -> Bool {
-        flags.contains(Settings.requiredModifierFlags)
+        flags.contains(ConfigStore.shared.config.requiredModifierFlags)
     }
 
     private func holdsNoModifiers(_ flags: CGEventFlags) -> Bool {

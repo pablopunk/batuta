@@ -8,7 +8,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var permissionPollTimer: Timer?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        Settings.registerDefaults()
         wireHotkeysToNavigator()
         startHotkeysOnceAccessibilityIsGranted()
     }
@@ -32,7 +31,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         hotkeyTap.onConfirm = { [navigator] in navigator.confirmStage() }
         hotkeyTap.onCancel = { [navigator] in navigator.stopPickingStage() }
         hotkeyTap.onModifierReleased = { [navigator] in
-            guard Settings.stageConfirmMode == .releaseModifier else { return }
+            guard ConfigStore.shared.config.openStageOn == .releaseModifier else { return }
             navigator.confirmStage()
         }
     }
@@ -54,8 +53,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func restoreMenuBarIconIfNeeded() {
-        guard !UserDefaults.standard.bool(forKey: SettingsKeys.showMenuBarIcon) else { return }
-        UserDefaults.standard.set(true, forKey: SettingsKeys.showMenuBarIcon)
+        ConfigStore.shared.config.showMenuBarIcon = true
     }
 }
 

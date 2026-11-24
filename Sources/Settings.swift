@@ -1,11 +1,7 @@
-import AppKit
 import CoreGraphics
 
-enum ModifierKey: Int, CaseIterable {
-    case control = 1
-    case option = 2
-    case shift = 4
-    case command = 8
+enum ModifierKey: String, CaseIterable, Codable {
+    case control, option, shift, command
 
     var symbol: String {
         switch self {
@@ -25,44 +21,41 @@ enum ModifierKey: Int, CaseIterable {
         }
     }
 
-    static let hyperMask = allCases.reduce(0) { $0 | $1.rawValue }
     static let allEventFlags: CGEventFlags = [.maskControl, .maskAlternate, .maskShift, .maskCommand]
 }
 
-enum StageConfirmMode: String, CaseIterable {
-    case releaseModifier
-    case pressReturn
+enum StageConfirmMode: String, CaseIterable, Codable {
+    case releaseModifier = "release"
+    case pressReturn = "return"
 }
 
-enum SettingsKeys {
-    static let modifierMask = "modifierMask"
-    static let stageConfirmMode = "stageConfirmMode"
-    static let highlightFocusedWindow = "highlightFocusedWindow"
-    static let showMenuBarIcon = "showMenuBarIcon"
-}
+/// Everything in ~/.config/batuta/config.json. Missing keys fall back to defaults so the file can stay partial.
+struct BatutaConfig: Codable, Equatable {
+    var modifiers: [ModifierKey] = ModifierKey.allCases
+    var openStageOn: StageConfirmMode = .releaseModifier
+    var highlightFocusedWindow = true
+    var showMenuBarIcon = true
 
-enum Settings {
-    static func registerDefaults() {
-        UserDefaults.standard.register(defaults: [
-            SettingsKeys.modifierMask: ModifierKey.hyperMask,
-            SettingsKeys.stageConfirmMode: StageConfirmMode.releaseModifier.rawValue,
-            SettingsKeys.highlightFocusedWindow: true,
-            SettingsKeys.showMenuBarIcon: true,
-        ])
+    init() {}
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let defaults = BatutaConfig()
+        modifiers = try container.decodeIfPresent([ModifierKey].self, forKey: .modifiers) ?? defaults.modifiers
+        openStageOn = try container.decodeIfPresent(StageConfirmMode.self, forKey: .openStageOn) ?? defaults.openStageOn
+        highlightFocusedWindow = try container.decodeIfPresent(Bool.self, forKey: .highlightFocusedWindow) ?? defaults.highlightFocusedWindow
+        showMenuBarIcon = try container.decodeIfPresent(Bool.self, forKey: .showMenuBarIcon) ?? defaults.showMenuBarIcon
     }
 
-    static var requiredModifierFlags: CGEventFlags {
-        let mask = UserDefaults.standard.integer(forKey: SettingsKeys.modifierMask)
-        return ModifierKey.allCases
-            .filter { mask & $0.rawValue != 0 }
-            .reduce(into: CGEventFlags()) { $0.insert($1.eventFlag) }
+    var requiredModifierFlags: CGEventFlags {
+        modifiers.reduce(into: CGEventFlags()) { $0.insert($1.eventFlag) }
     }
 
-    static var stageConfirmMode: StageConfirmMode {
-        StageConfirmMode(rawValue: UserDefaults.standard.string(forKey: SettingsKeys.stageConfirmMode) ?? "") ?? .releaseModifier
-    }
-
-    static var highlightFocusedWindow: Bool {
-        UserDefaults.standard.bool(forKey: SettingsKeys.highlightFocusedWindow)
+    func toggling(_ modifier: ModifierKey) -> BatutaConfig {
+        var copy = self
+        let toggled = modifiers.contains(modifier) ? modifiers.filter { $0 != modifier } : modifiers + [modifier]
+        guard !toggled.isEmpty else { return self }
+        copy.modifiers = ModifierKey.allCases.filter(toggled.contains)
+        return copy
     }
 }

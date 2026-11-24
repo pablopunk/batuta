@@ -1,8 +1,7 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @AppStorage(SettingsKeys.showMenuBarIcon) private var showMenuBarIcon = true
-    @AppStorage(SettingsKeys.highlightFocusedWindow) private var highlightFocusedWindow = true
+    @ObservedObject private var configStore = ConfigStore.shared
     @State private var hasAccessibilityPermission = AccessibilityPermission.isGranted
     @State private var isStageManagerEnabled = StageStrip.isStageManagerEnabled
     let onQuit: () -> Void
@@ -16,7 +15,7 @@ struct SettingsView: View {
                     title: "Show menu bar icon",
                     subtitle: "Reopen app to re-enable",
                     icon: "menubar.rectangle",
-                    isOn: $showMenuBarIcon
+                    isOn: $configStore.config.showMenuBarIcon
                 )
             }
 
@@ -30,8 +29,10 @@ struct SettingsView: View {
                     title: "Highlight focused window",
                     subtitle: "Flash a frame around it",
                     icon: "sparkles",
-                    isOn: $highlightFocusedWindow
+                    isOn: $configStore.config.highlightFocusedWindow
                 )
+
+                ConfigFileButton()
 
                 if !hasAccessibilityPermission {
                     WarningButton(title: "Accessibility permissions needed", action: AccessibilityPermission.openSettings)
@@ -70,7 +71,7 @@ struct SettingsView: View {
 }
 
 private struct ModifierPickerRow: View {
-    @AppStorage(SettingsKeys.modifierMask) private var modifierMask = ModifierKey.hyperMask
+    @ObservedObject private var configStore = ConfigStore.shared
 
     var body: some View {
         CaptionedRow(
@@ -80,27 +81,24 @@ private struct ModifierPickerRow: View {
         ) {
             HStack(spacing: 4) {
                 ForEach(ModifierKey.allCases, id: \.self) { key in
-                    Pill(label: key.symbol, isOn: modifierMask & key.rawValue != 0) { toggle(key) }
+                    Pill(label: key.symbol, isOn: configStore.config.modifiers.contains(key)) {
+                        configStore.config = configStore.config.toggling(key)
+                    }
                 }
             }
         }
     }
-
-    private func toggle(_ key: ModifierKey) {
-        let toggledMask = modifierMask ^ key.rawValue
-        guard toggledMask != 0 else { return }
-        modifierMask = toggledMask
-    }
 }
 
 private struct StageConfirmModeRow: View {
-    @AppStorage(SettingsKeys.stageConfirmMode) private var confirmMode = StageConfirmMode.releaseModifier
+    @ObservedObject private var configStore = ConfigStore.shared
+    private var confirmMode: StageConfirmMode { configStore.config.openStageOn }
 
     var body: some View {
         CaptionedRow(title: "Open stage", icon: "checkmark.circle", caption: caption) {
             HStack(spacing: 4) {
-                Pill(label: "Release", isOn: confirmMode == .releaseModifier) { confirmMode = .releaseModifier }
-                Pill(label: "↩", isOn: confirmMode == .pressReturn) { confirmMode = .pressReturn }
+                Pill(label: "Release", isOn: confirmMode == .releaseModifier) { configStore.config.openStageOn = .releaseModifier }
+                Pill(label: "↩", isOn: confirmMode == .pressReturn) { configStore.config.openStageOn = .pressReturn }
             }
         }
     }
@@ -110,5 +108,19 @@ private struct StageConfirmModeRow: View {
         case .releaseModifier: "Let go of the modifier to open the selected stage. Esc cancels."
         case .pressReturn: "Press ↩ to open the selected stage. Esc cancels."
         }
+    }
+}
+
+private struct ConfigFileButton: View {
+    var body: some View {
+        Button {
+            NSWorkspace.shared.activateFileViewerSelecting([ConfigStore.fileURL])
+        } label: {
+            Label("~/.config/batuta/config.json", systemImage: "doc.text")
+                .font(.system(size: 11, design: .monospaced))
+                .foregroundStyle(.secondary)
+        }
+        .buttonStyle(.plain)
+        .help("Reveal the config file in Finder")
     }
 }

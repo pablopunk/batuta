@@ -79,7 +79,7 @@ final class StageNavigator {
 
     private func focus(_ window: StageWindow) {
         StageWindows.focus(window)
-        if Settings.highlightFocusedWindow { overlay.flash(around: window.frame) }
+        if ConfigStore.shared.config.highlightFocusedWindow { overlay.flash(around: window.frame) }
     }
 
     private func points(_ direction: Direction, towardStripOf strip: StageStrip) -> Bool {
