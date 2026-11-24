@@ -63,6 +63,11 @@ mkdir -p "$STAGING_APP_DIR/Contents/MacOS"
 mkdir -p "$STAGING_APP_DIR/Contents/Resources"
 
 cp "$EXECUTABLE" "$STAGING_APP_DIR/Contents/MacOS/$EXECUTABLE_NAME"
+
+# SwiftPM stamps the deployment target as the SDK version, so macOS treats the app as old and
+# skips the current system look (rounded menu bar panels). Stamp the real SDK instead.
+xcrun vtool -set-build-version macos 14.0 "$(xcrun --show-sdk-version)" \
+  -replace -output "$STAGING_APP_DIR/Contents/MacOS/$EXECUTABLE_NAME" "$EXECUTABLE" 2>/dev/null
 if [[ -f "$APP_ICON_FILE" ]]; then
   cp "$APP_ICON_FILE" "$STAGING_APP_DIR/Contents/Resources/$APP_ICON_NAME.icns"
 fi
