@@ -44,9 +44,15 @@ struct StageStrip {
 
     private static let log = Logger(subsystem: "com.pablopunk.batuta", category: "stage")
 
+    /// AXPress on a strip button reports success but Stage Manager ignores it, so the stage opens by focusing one of its windows instead.
+    @MainActor
     static func open(_ item: StageStripItem) {
-        let opened = item.element.perform(kAXPressAction)
-        log.info("open stage \(item.title, privacy: .public): \(opened ? "ok" : "failed", privacy: .public)")
+        guard let window = StageWindows.windowShownAsThumbnail(inside: item.frame) else {
+            log.info("no window found for stage \(item.title, privacy: .public)")
+            return
+        }
+        StageWindows.focus(window)
+        log.info("opened stage \(item.title, privacy: .public) via window \(window.id)")
     }
 
     @MainActor

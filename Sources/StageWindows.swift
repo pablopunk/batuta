@@ -20,6 +20,14 @@ enum StageWindows {
             .sorted { ($0.frame.midX, $0.frame.minY) < ($1.frame.midX, $1.frame.minY) }
     }
 
+    static func windowShownAsThumbnail(inside stripItemFrame: CGRect) -> StageWindow? {
+        onScreenNormalWindows()
+            .filter { stripItemFrame.contains(CGPoint(x: $0.bounds.midX, y: $0.bounds.midY)) }
+            .lazy
+            .compactMap { thumbnail in standardWindows(of: thumbnail.pid).first { $0.id == thumbnail.id } }
+            .first
+    }
+
     static func focusedWindowID() -> CGWindowID? {
         guard let app = NSWorkspace.shared.frontmostApplication else { return nil }
         return AXUIElementCreateApplication(app.processIdentifier)
