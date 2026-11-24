@@ -14,7 +14,15 @@ enum StageLayout {
         let targets = zip(windows, rects).map { window, rect in
             (window: window, frame: rect.placed(in: areaIncludingHalfGaps).insetBy(dx: gap / 2, dy: gap / 2))
         }
-        WindowAnimator.shared.animate(targets)
+        WindowAnimator.shared.animate(targets) {
+            refitWindowsThatRefusedToShrink(targets)
+        }
+    }
+
+    private static func refitWindowsThatRefusedToShrink(_ targets: [(window: StageWindow, frame: CGRect)]) {
+        let landed = targets.map { $0.window.element.frame ?? $0.frame }
+        guard let refitted = MinimumWidthRefit.refit(targets: targets.map(\.frame), landed: landed, gap: gap) else { return }
+        WindowAnimator.shared.animate(zip(targets, refitted).map { (window: $0.window, frame: $1) })
     }
 
     /// The screen's visible frame, in top-left coordinates, minus the side where the Stage Manager strip lives when that setting is on.
@@ -23,13 +31,20 @@ enum StageLayout {
         guard let screen = NSScreen.screens.first(where: { $0.frame.intersects(appKitFrame) }) ?? NSScreen.main else { return nil }
         let visible = screen.visibleFrame.convertedFromAppKit.insetBy(dx: gap, dy: gap)
         guard ConfigStore.shared.config.leavesRoomForStageManager(onBuiltInScreen: screen.isBuiltIn) else { return visible }
-        let stripWidth = strip.map { $0.frame.maxX - visible.minX + gap } ?? fallbackStripWidth
+        let stripWidth = strip.map { $0.thumbnailsFrame.maxX - visible.minX + gap } ?? fallbackStripWidth
 
         if strip?.isOnLeftEdge ?? true {
             return CGRect(x: visible.minX + stripWidth, y: visible.minY, width: visible.width - stripWidth, height: visible.height)
         }
-        let rightStripWidth = strip.map { visible.maxX - $0.frame.minX + gap } ?? fallbackStripWidth
+        let rightStripWidth = strip.map { visible.maxX - $0.thumbnailsFrame.minX + gap } ?? fallbackStripWidth
         return CGRect(x: visible.minX, y: visible.minY, width: visible.width - rightStripWidth, height: visible.height)
+    }
+}
+
+private extension StageStrip {
+    /// The strip element spans much wider than the thumbnails it shows, so the room left for it follows the thumbnails.
+    var thumbnailsFrame: CGRect {
+        items.map(\.frame).reduce(nil) { union, frame in union?.union(frame) ?? frame } ?? frame
     }
 }
 

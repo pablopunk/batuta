@@ -21,9 +21,12 @@ final class WindowAnimator: NSObject {
     private var startTime: CFTimeInterval = 0
     private var displayLink: CADisplayLink?
     private var pidsWithEnhancedUserInterface: Set<pid_t> = []
+    private var afterLanding: (@MainActor () -> Void)?
 
-    func animate(_ targets: [(window: StageWindow, frame: CGRect)]) {
+    func animate(_ targets: [(window: StageWindow, frame: CGRect)], afterLanding: (@MainActor () -> Void)? = nil) {
+        self.afterLanding = nil
         finishImmediately()
+        self.afterLanding = afterLanding
         disableEnhancedUserInterface(for: Set(targets.map(\.window.pid)))
 
         guard ConfigStore.shared.config.animateWindowMoves else {
@@ -66,8 +69,13 @@ final class WindowAnimator: NSObject {
         let landed = DispatchGroup()
         for move in moves { move.pump.land(on: move.target, group: landed) }
         moves = []
+        let afterLanding = self.afterLanding
+        self.afterLanding = nil
         landed.notify(queue: .main) { [weak self] in
-            MainActor.assumeIsolated { self?.restoreEnhancedUserInterface() }
+            MainActor.assumeIsolated {
+                self?.restoreEnhancedUserInterface()
+                afterLanding?()
+            }
         }
     }
 
