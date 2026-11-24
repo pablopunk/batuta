@@ -5,9 +5,9 @@ import CoreGraphics
 /// Points use the top-left global coordinates of Accessibility and CoreGraphics. The cursor goes back where it was.
 @MainActor
 enum SyntheticMouse {
-    private static let stepDelay: TimeInterval = 0.012
-    private static let dragSteps = 12
-    private static let pressHoldDelay: TimeInterval = 0.08
+    private static let stepDelay: TimeInterval = 0.008
+    private static let dragSteps = 6
+    private static let pressHoldDelay: TimeInterval = 0.04
 
     static func click(at point: CGPoint) {
         let original = currentCursorPosition

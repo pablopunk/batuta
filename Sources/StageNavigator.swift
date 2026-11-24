@@ -83,15 +83,20 @@ final class StageNavigator {
         }
     }
 
-    private static let stageManagerSettleDelay: TimeInterval = 0.45
+    private static let addedWindowPollInterval: TimeInterval = 0.03
+    private static let addedWindowPollAttempts = 50
 
+    /// Polls until Stage Manager shows the dropped window full size, then lays out right away.
     /// Existing windows keep their left-to-right order and the newcomers take the columns on the right.
-    private static func makeRoomForAddedWindows(previousWindowIDs: Set<CGWindowID>, strip: StageStrip) {
-        DispatchQueue.main.asyncAfter(deadline: .now() + stageManagerSettleDelay) {
+    private static func makeRoomForAddedWindows(previousWindowIDs: Set<CGWindowID>, strip: StageStrip, attemptsLeft: Int = addedWindowPollAttempts) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + addedWindowPollInterval) {
             let windows = StageWindows.visibleSortedLeftToRight()
-            let existing = windows.filter { previousWindowIDs.contains($0.id) }
             let added = windows.filter { !previousWindowIDs.contains($0.id) }
-            guard !added.isEmpty else { return }
+            guard !added.isEmpty else {
+                if attemptsLeft > 0 { makeRoomForAddedWindows(previousWindowIDs: previousWindowIDs, strip: strip, attemptsLeft: attemptsLeft - 1) }
+                return
+            }
+            let existing = windows.filter { previousWindowIDs.contains($0.id) }
             StageLayout.arrangeInColumns(existing + added, besides: strip)
         }
     }
