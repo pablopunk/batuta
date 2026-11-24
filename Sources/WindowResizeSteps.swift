@@ -14,7 +14,9 @@ enum WindowResizeSteps {
     static func shrink() { resize(grows: false) }
 
     private static func resize(grows: Bool) {
-        let windows = StageWindows.visibleSortedLeftToRight()
+        let windows = StageWindows.visibleSortedLeftToRight().map { window in
+            StageWindow(element: window.element, pid: window.pid, id: window.id, frame: WindowAnimator.shared.frameIncludingAnimation(of: window))
+        }
         guard let focusedID = StageWindows.focusedWindowID(),
               let focused = windows.first(where: { $0.id == focusedID }),
               let area = StageLayout.usableArea(around: focused.frame, besides: StageStrip.closest(to: focused.frame)) else { return }

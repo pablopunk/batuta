@@ -12,6 +12,7 @@ final class WindowAnimator: NSObject {
     private static let enhancedUserInterfaceAttribute = "AXEnhancedUserInterface"
 
     private struct Move {
+        let windowID: CGWindowID
         let pump: WindowPositionPump
         let startOrigin: CGPoint
         let target: CGRect
@@ -23,6 +24,11 @@ final class WindowAnimator: NSObject {
     private var pidsWithEnhancedUserInterface: Set<pid_t> = []
     private var afterLanding: (@MainActor () -> Void)?
 
+    /// Mid-animation a window has moved but not resized yet, so its live frame is neither old nor new.
+    func frameIncludingAnimation(of window: StageWindow) -> CGRect {
+        moves.first { $0.windowID == window.id }?.target ?? window.frame
+    }
+
     func animate(_ targets: [(window: StageWindow, frame: CGRect)], afterLanding: (@MainActor () -> Void)? = nil) {
         self.afterLanding = nil
         finishImmediately()
@@ -30,7 +36,7 @@ final class WindowAnimator: NSObject {
         disableEnhancedUserInterface(for: Set(targets.map(\.window.pid)))
 
         guard ConfigStore.shared.config.animateWindowMoves else {
-            moves = targets.map { Move(pump: WindowPositionPump(element: $0.window.element), startOrigin: $0.window.frame.origin, target: $0.frame) }
+            moves = targets.map { Move(windowID: $0.window.id, pump: WindowPositionPump(element: $0.window.element), startOrigin: $0.window.frame.origin, target: $0.frame) }
             finishImmediately()
             return
         }
@@ -38,7 +44,7 @@ final class WindowAnimator: NSObject {
         moves = targets.map { window, frame in
             let pump = WindowPositionPump(element: window.element)
             shrinkUpFront(window, toward: frame, using: pump)
-            return Move(pump: pump, startOrigin: window.frame.origin, target: frame)
+            return Move(windowID: window.id, pump: pump, startOrigin: window.frame.origin, target: frame)
         }
         startTime = CACurrentMediaTime()
 
