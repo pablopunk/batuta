@@ -83,16 +83,14 @@ final class StageNavigator {
         !CGEventSource.flagsState(.combinedSessionState).intersection(ModifierKey.allEventFlags).isEmpty
     }
 
-    /// Swaps the focused window with its neighbour; past the edge next to the strip, it leaves the stage.
+    /// Swaps the focused window with its neighbour; past the edge next to Stage Manager, it leaves the stage.
     private func moveFocusedWindow(_ direction: Direction) {
-        guard direction == .left || direction == .right else { return }
         let windows = StageWindows.visibleSortedLeftToRight()
         guard let focusedID = StageWindows.focusedWindowID(),
               let focusedIndex = windows.firstIndex(where: { $0.id == focusedID }) else { return }
         let focused = windows[focusedIndex]
-        let neighbourIndex = focusedIndex + (direction == .left ? -1 : 1)
 
-        if windows.indices.contains(neighbourIndex) {
+        if let neighbourIndex = SpatialNeighbor.index(of: direction, from: focused.frame, among: windows.map(\.frame), excluding: focusedIndex) {
             let neighbour = windows[neighbourIndex]
             WindowAnimator.shared.animate([(focused, neighbour.frame), (neighbour, focused.frame)])
             if ConfigStore.shared.config.highlightFocusedWindow { overlay.flash(around: neighbour.frame) }
@@ -139,28 +137,34 @@ final class StageNavigator {
         return CGPoint(x: screen.midX, y: screen.midY)
     }
 
+    /// Moves to the window on that side. With none there, left or right toward Stage Manager, or up and down, opens the stage picker.
     private func moveAmongWindows(_ direction: Direction) {
         let windows = StageWindows.visibleSortedLeftToRight()
-        let focusedIndex = StageWindows.focusedWindowID().flatMap { id in windows.firstIndex { $0.id == id } }
-        let focusedFrame = focusedIndex.map { windows[$0].frame }
+        guard let focusedIndex = StageWindows.focusedWindowID().flatMap({ id in windows.firstIndex { $0.id == id } }) else {
+            focusFirstWindow(from: direction, among: windows)
+            return
+        }
+        let focusedFrame = windows[focusedIndex].frame
+        if let neighbourIndex = SpatialNeighbor.index(of: direction, from: focusedFrame, among: windows.map(\.frame), excluding: focusedIndex) {
+            focus(windows[neighbourIndex])
+            return
+        }
+        let strip = StageStrip.closest(to: focusedFrame)
+        let opensStagePicker = switch direction {
+        case .up, .down: true
+        case .left, .right: strip.map { points(direction, towardStripOf: $0) } ?? (direction == .left)
+        }
+        guard opensStagePicker else { return }
+        pickedIndex = 0
+        startPickingStage(strip, near: focusedFrame)
+    }
 
+    private func focusFirstWindow(from direction: Direction, among windows: [StageWindow]) {
         switch direction {
-        case .up, .down:
-            pickedIndex = 0
-            startPickingStage(near: focusedFrame)
-        case .left, .right:
-            let step = direction == .left ? -1 : 1
-            let targetIndex = focusedIndex.map { $0 + step } ?? (direction == .left ? windows.count - 1 : 0)
-
-            if windows.indices.contains(targetIndex) {
-                focus(windows[targetIndex])
-            } else {
-                let strip = StageStrip.closest(to: focusedFrame)
-                let pointsTowardStrip = strip.map { points(direction, towardStripOf: $0) } ?? (direction == .left)
-                guard pointsTowardStrip else { return }
-                pickedIndex = 0
-                startPickingStage(strip, near: focusedFrame)
-            }
+        case .left, .up:
+            if let last = windows.last { focus(last) } else { startPickingStage(nil, near: nil) }
+        case .right, .down:
+            if let first = windows.first { focus(first) } else { startPickingStage(nil, near: nil) }
         }
     }
 
@@ -176,19 +180,21 @@ final class StageNavigator {
     }
 
     private func returnToWindowNearest(_ strip: StageStrip) {
+        let pickedFrame = strip.items.indices.contains(pickedIndex) ? strip.items[pickedIndex].frame : strip.frame
         pickingStrip = nil
         revealGeneration += 1
         StageStripReveal.putCursorBack()
         let windows = StageWindows.visibleSortedLeftToRight()
-        guard let edgeWindow = strip.isOnLeftEdge ? windows.first : windows.last else {
+        let closest = windows.min { Self.distance($0.frame, pickedFrame) < Self.distance($1.frame, pickedFrame) }
+        guard let closest else {
             overlay.hide()
             return
         }
-        focus(edgeWindow, alwaysHighlight: true)
+        focus(closest, alwaysHighlight: true)
     }
 
-    private func startPickingStage(near frame: CGRect?) {
-        startPickingStage(StageStrip.closest(to: frame), near: frame)
+    private static func distance(_ a: CGRect, _ b: CGRect) -> CGFloat {
+        hypot(a.midX - b.midX, a.midY - b.midY)
     }
 
     /// The strip may be hidden behind edge-to-edge windows, so it is revealed first and read again once it slides in.

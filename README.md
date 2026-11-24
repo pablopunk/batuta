@@ -2,8 +2,8 @@
 
 Keyboard navigation for macOS Stage Manager, without moving windows.
 
-- **Modifier + h/l** focuses the window to the left/right in the current stage.
-- Go past the edge window toward Stage Manager (or press **Modifier + k/j**) to start picking a stage.
+- **Modifier + h/j/k/l** focuses the window on that side in the current stage, following what is on screen.
+- With no window on that side, going toward Stage Manager (or up/down) starts picking a stage.
 - **Move modifier + h/l** (default: navigate keys + ⇧) swaps the focused window with its neighbour; at the edge next to Stage Manager it sends the window out of the stage.
 - While a stage is selected, **Move modifier + l** pulls it into the current stage (release the keys to drop it).
 - **k/j** moves through the stages, **release the modifier** (or press **↩**, set in settings) to open it, **Esc** cancels.
