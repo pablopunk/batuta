@@ -1,7 +1,7 @@
 <h1 align="center">Batuta</h1>
 
 <p align="center">
-  <i align="center">Keyboard control for Stage Manager</i>
+  <i align="center">macOS Stage Manager is great, it was just missing Batuta</i>
 </p>
 
 > [!IMPORTANT]
