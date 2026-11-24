@@ -5,6 +5,7 @@ import ApplicationServices
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private let navigator = StageNavigator()
     private let hotkeyTap = HotkeyTap()
+    private let stageSwitchWatcher = StageSwitchWatcher()
     private var permissionPollTimer: Timer?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -39,9 +40,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    private func startWatching() {
+        hotkeyTap.start()
+        stageSwitchWatcher.onStageSwitched = { windows in
+            guard ConfigStore.shared.config.tileWhenSwitchingStages else { return }
+            StageLayout.arrange(windows, besides: StageStrip.closest(to: windows.first?.frame))
+        }
+        stageSwitchWatcher.start()
+        StageLayout.onArranged = { [stageSwitchWatcher] in stageSwitchWatcher.acceptCurrentStage() }
+    }
+
     private func startHotkeysOnceAccessibilityIsGranted() {
         if AXIsProcessTrusted() {
-            hotkeyTap.start()
+            startWatching()
             return
         }
 
@@ -50,7 +61,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             MainActor.assumeIsolated {
                 guard AXIsProcessTrusted(), let self else { return }
                 self.permissionPollTimer?.invalidate()
-                self.hotkeyTap.start()
+                self.startWatching()
             }
         }
     }

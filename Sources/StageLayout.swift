@@ -8,6 +8,7 @@ private let timingLog = Logger(subsystem: "com.pablopunk.batuta", category: "tim
 enum StageLayout {
     private static let gap: CGFloat = 12
     private static let fallbackStripWidth: CGFloat = 260
+    static var onArranged: (() -> Void)?
 
     static func arrange(_ windows: [StageWindow], besides strip: StageStrip?) {
         guard let screen = windows.first.flatMap({ screen(containing: $0.frame) }) else { return }
@@ -23,6 +24,7 @@ enum StageLayout {
         WindowAnimator.shared.animate(targets) {
             timingLog.notice("layout: landed after \(CACurrentMediaTime() - started, format: .fixed(precision: 3))s")
             refitWindowsThatRefusedToShrink(targets)
+            onArranged?()
         }
     }
 

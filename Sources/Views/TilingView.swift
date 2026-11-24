@@ -52,6 +52,13 @@ struct TilingView: View {
             .disabled(!isEditable)
             .opacity(isEditable ? 1 : 0.45)
 
+            PreferenceToggleRow(
+                title: "Tile on stage switch",
+                subtitle: "Also when you click a stage",
+                icon: "rectangle.stack",
+                isOn: configStore.binding(\.tileWhenSwitchingStages)
+            )
+
             CycleShortcutRow()
 
             WindowCountStepper(count: $windowCount)

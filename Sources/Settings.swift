@@ -83,6 +83,7 @@ struct BatutaConfig: Codable, Equatable {
     var tiling = TilingSettings()
     var externalScreensHaveOwnTiling = false
     var externalTiling = TilingSettings()
+    var tileWhenSwitchingStages = true
     /// Keyed by window count ("1" to "6"); each value has one unit rect per window, left to right.
     var customLayouts: [String: [UnitRect]] = TilingLayouts.defaultCustomLayouts
     var highlightFocusedWindow = true
@@ -117,6 +118,7 @@ struct BatutaConfig: Codable, Equatable {
         )
         externalScreensHaveOwnTiling = try container.decodeIfPresent(Bool.self, forKey: .externalScreensHaveOwnTiling) ?? false
         externalTiling = try container.decodeIfPresent(TilingSettings.self, forKey: .externalTiling) ?? tiling
+        tileWhenSwitchingStages = try container.decodeIfPresent(Bool.self, forKey: .tileWhenSwitchingStages) ?? defaults.tileWhenSwitchingStages
         highlightFocusedWindow = try container.decodeIfPresent(Bool.self, forKey: .highlightFocusedWindow) ?? defaults.highlightFocusedWindow
         animateWindowMoves = try container.decodeIfPresent(Bool.self, forKey: .animateWindowMoves) ?? defaults.animateWindowMoves
         showMenuBarIcon = try container.decodeIfPresent(Bool.self, forKey: .showMenuBarIcon) ?? defaults.showMenuBarIcon
