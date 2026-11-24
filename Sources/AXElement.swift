@@ -60,6 +60,8 @@ extension AXUIElement {
 }
 
 extension CGRect {
+    var center: CGPoint { CGPoint(x: midX, y: midY) }
+
     /// Accessibility and CGWindow frames start at the top-left of the primary screen; AppKit starts at its bottom-left.
     var convertedToAppKit: CGRect {
         let primaryScreenHeight = NSScreen.screens.first?.frame.height ?? 0

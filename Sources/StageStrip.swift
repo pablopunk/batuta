@@ -44,16 +44,19 @@ struct StageStrip {
 
     private static let log = Logger(subsystem: "com.pablopunk.batuta", category: "stage")
 
-    static func addToCurrentStage(_ item: StageStripItem) {
-        let added = item.element.perform("AXAddToStage")
-        log.info("add stage \(item.title, privacy: .public) to current: \(added ? "ok" : "failed", privacy: .public)")
+    /// AXAddToStage reports success but is ignored too, so the thumbnail is dragged onto the current stage like a person would.
+    @MainActor
+    static func addToCurrentStage(_ item: StageStripItem, droppingAt stageCenter: CGPoint) {
+        SyntheticMouse.drag(from: item.frame.center, to: stageCenter)
+        log.info("dragged stage \(item.title, privacy: .public) into current stage")
     }
 
     /// AXPress on a strip button reports success but Stage Manager ignores it, so the stage opens by focusing one of its windows instead.
     @MainActor
     static func open(_ item: StageStripItem) {
         guard let window = StageWindows.windowShownAsThumbnail(inside: item.frame) else {
-            log.info("no window found for stage \(item.title, privacy: .public)")
+            SyntheticMouse.click(at: item.frame.center)
+            log.info("opened stage \(item.title, privacy: .public) by clicking it, no window matched")
             return
         }
         StageWindows.focus(window)

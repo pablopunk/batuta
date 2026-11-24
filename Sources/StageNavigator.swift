@@ -22,14 +22,14 @@ final class StageNavigator {
               !points(direction, towardStripOf: strip) else { return }
         let item = strip.items[pickedIndex]
         stopPickingStage()
-        StageStrip.addToCurrentStage(item)
+        openOnceModifiersAreReleased(item) { StageStrip.addToCurrentStage($0, droppingAt: Self.currentStageCenter) }
     }
 
     func confirmStage() {
         guard let strip = pickingStrip, strip.items.indices.contains(pickedIndex) else { return }
         let item = strip.items[pickedIndex]
         stopPickingStage()
-        openOnceModifiersAreReleased(item)
+        openOnceModifiersAreReleased(item) { StageStrip.open($0) }
     }
 
     func stopPickingStage() {
@@ -39,14 +39,26 @@ final class StageNavigator {
     }
 
     /// Stage Manager reads held modifiers as "add to stage" style clicks, so the press waits until every modifier is up.
-    private func openOnceModifiersAreReleased(_ item: StageStripItem, attemptsLeft: Int = 50) {
+    private func openOnceModifiersAreReleased(
+        _ item: StageStripItem,
+        attemptsLeft: Int = 50,
+        action: @escaping @MainActor (StageStripItem) -> Void
+    ) {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.02) { [weak self] in
             if Self.isAnyModifierHeld, attemptsLeft > 0 {
-                self?.openOnceModifiersAreReleased(item, attemptsLeft: attemptsLeft - 1)
+                self?.openOnceModifiersAreReleased(item, attemptsLeft: attemptsLeft - 1, action: action)
             } else {
-                StageStrip.open(item)
+                action(item)
             }
         }
+    }
+
+    private static var currentStageCenter: CGPoint {
+        let focusedID = StageWindows.focusedWindowID()
+        let windows = StageWindows.visibleSortedLeftToRight()
+        if let frame = (windows.first { $0.id == focusedID } ?? windows.first)?.frame { return frame.center }
+        let screen = NSScreen.main?.frame ?? .zero
+        return CGPoint(x: screen.midX, y: screen.midY)
     }
 
     private static var isAnyModifierHeld: Bool {
