@@ -1,16 +1,22 @@
 import CoreGraphics
 
 enum TilingMode: String, CaseIterable, Codable {
-    case bsp
+    case even
     case messy
     case custom
 
     var label: String {
         switch self {
-        case .bsp: "BSP"
+        case .even: "Even"
         case .messy: "Messy"
         case .custom: "Custom"
         }
+    }
+
+    /// "bsp" was the old name of Even.
+    init(from decoder: Decoder) throws {
+        let rawValue = try decoder.singleValueContainer().decode(String.self)
+        self = rawValue == "bsp" ? .even : TilingMode(rawValue: rawValue) ?? .even
     }
 }
 

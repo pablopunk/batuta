@@ -33,7 +33,7 @@ struct CustomLayoutEditor: View {
                     .font(.system(size: 11))
                     .foregroundStyle(.tertiary)
                 Spacer(minLength: 0)
-                Button("Reset to BSP", action: resetToBinarySpacePartition)
+                Button("Reset to Even", action: resetToEvenGrid)
                     .buttonStyle(.plain)
                     .font(.system(size: 11, weight: .medium))
                     .foregroundStyle(.secondary)
@@ -43,7 +43,7 @@ struct CustomLayoutEditor: View {
 
     private var savedRects: [UnitRect] {
         let saved = configStore.config.customLayouts[TilingLayouts.customLayoutKey(windowCount)] ?? []
-        return saved.count == windowCount ? saved : TilingLayouts.binarySpacePartition(windowCount)
+        return saved.count == windowCount ? saved : TilingLayouts.evenGrid(windowCount)
     }
 
     private var rects: [UnitRect] { draftRects ?? savedRects }
@@ -99,8 +99,8 @@ struct CustomLayoutEditor: View {
         configStore.update { $0.customLayouts[key] = rects }
     }
 
-    private func resetToBinarySpacePartition() {
-        save(TilingLayouts.binarySpacePartition(windowCount))
+    private func resetToEvenGrid() {
+        save(TilingLayouts.evenGrid(windowCount))
     }
 }
 

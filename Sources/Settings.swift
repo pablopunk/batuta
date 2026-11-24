@@ -62,7 +62,7 @@ struct BatutaConfig: Codable, Equatable {
     var moveModifier: ModifierKey = .shift
     var directionKeys: DirectionKeys = .hjkl
     var openStageOn: StageConfirmMode = .releaseModifier
-    var tilingMode: TilingMode = .bsp
+    var tilingMode: TilingMode = .even
     /// Keyed by window count ("1" to "5"); each value has one unit rect per window, left to right.
     var customLayouts: [String: [UnitRect]] = TilingLayouts.defaultCustomLayouts
     var highlightFocusedWindow = true
