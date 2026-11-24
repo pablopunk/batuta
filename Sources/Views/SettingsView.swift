@@ -27,6 +27,8 @@ struct SettingsView: View {
                 MoveModifierPickerRow()
                 DirectionKeysRow()
                 StageConfirmModeRow()
+                ResizeHintRow()
+                StageNumbersHintRow()
                 PreferenceToggleRow(
                     title: "Highlight focused window",
                     subtitle: "Flash a frame around it",
@@ -174,5 +176,45 @@ private struct ConfigFileButton: View {
         }
         .buttonStyle(.plain)
         .help("Reveal the config file in Finder")
+    }
+}
+
+private struct ResizeHintRow: View {
+    @ObservedObject private var configStore = ConfigStore.shared
+
+    var body: some View {
+        CaptionedRow(
+            title: "Resize",
+            icon: "arrow.up.left.and.arrow.down.right",
+            caption: "Grows the current window by a third of the free space each press; three presses fill it. − walks back, then shrinks."
+        ) {
+            KeyHint(text: configStore.config.modifiers.map(\.symbol).joined() + " + −")
+        }
+    }
+}
+
+private struct StageNumbersHintRow: View {
+    @ObservedObject private var configStore = ConfigStore.shared
+
+    var body: some View {
+        CaptionedRow(
+            title: "Jump to stage",
+            icon: "number",
+            caption: "Hold the keys to see numbers on Stage Manager, then press one to open that stage."
+        ) {
+            KeyHint(text: configStore.config.modifiers.map(\.symbol).joined() + " 1–9")
+        }
+    }
+}
+
+struct KeyHint: View {
+    let text: String
+
+    var body: some View {
+        Text(text)
+            .font(.system(size: 11, weight: .semibold, design: .rounded))
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(Capsule().fill(Color.secondary.opacity(0.15)))
     }
 }
