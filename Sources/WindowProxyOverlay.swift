@@ -11,6 +11,7 @@ final class WindowProxyOverlay {
 
     func slide(
         _ proxies: [(image: CGImage, from: CGRect, to: CGRect)],
+        over wallpaper: CGImage,
         on screen: NSScreen,
         duration: CFTimeInterval,
         completion: @escaping @MainActor () -> Void
@@ -19,6 +20,8 @@ final class WindowProxyOverlay {
         root.sublayers?.forEach { $0.removeFromSuperlayer() }
         panel.setFrame(screen.frame, display: false)
         screenOriginInTopLeftCoordinates = screen.frame.convertedFromAppKit.origin
+
+        root.addSublayer(wallpaperCover(wallpaper, hiding: proxies.flatMap { [$0.from, $0.to] }, screenSize: screen.frame.size))
 
         let layers = proxies.map { proxy in
             let layer = CALayer()
@@ -48,6 +51,22 @@ final class WindowProxyOverlay {
     func hide() {
         panel.orderOut(nil)
         panel.contentView?.layer?.sublayers?.forEach { $0.removeFromSuperlayer() }
+    }
+
+    /// Covers where the real windows were and where they land, so their jump stays hidden until the pictures arrive.
+    private func wallpaperCover(_ wallpaper: CGImage, hiding frames: [CGRect], screenSize: CGSize) -> CALayer {
+        let area = local(frames.reduce(CGRect.null) { $0.union($1) }).insetBy(dx: -24, dy: -24)
+        let layer = CALayer()
+        layer.contents = wallpaper
+        layer.contentsGravity = .resize
+        layer.frame = area
+        layer.contentsRect = CGRect(
+            x: area.minX / screenSize.width,
+            y: area.minY / screenSize.height,
+            width: area.width / screenSize.width,
+            height: area.height / screenSize.height
+        )
+        return layer
     }
 
     private func local(_ rect: CGRect) -> CGRect {
