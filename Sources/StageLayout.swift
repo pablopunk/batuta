@@ -65,9 +65,13 @@ enum StageLayout {
 }
 
 private extension StageStrip {
-    /// The strip element spans much wider than the thumbnails it shows, so the room left for it follows the thumbnails.
+    /// The strip buttons are wider than the window pictures they draw, so the room left follows the pictures.
+    @MainActor
     var thumbnailsFrame: CGRect {
-        items.map(\.frame).reduce(nil) { union, frame in union?.union(frame) ?? frame } ?? frame
+        let itemFrames = items.map(\.frame)
+        return StageWindows.thumbnailBounds(inside: itemFrames)
+            ?? itemFrames.reduce(nil) { union, frame in union?.union(frame) ?? frame }
+            ?? frame
     }
 }
 

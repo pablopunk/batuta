@@ -28,6 +28,14 @@ enum StageWindows {
             .first
     }
 
+    /// Where the small window pictures are drawn inside the strip, which is narrower than the strip buttons.
+    static func thumbnailBounds(inside stripItemFrames: [CGRect]) -> CGRect? {
+        onScreenNormalWindows()
+            .map(\.bounds)
+            .filter { bounds in stripItemFrames.contains { $0.contains(CGPoint(x: bounds.midX, y: bounds.midY)) } }
+            .reduce(nil) { union, bounds in union?.union(bounds) ?? bounds }
+    }
+
     static func focusedWindowID() -> CGWindowID? {
         guard let app = NSWorkspace.shared.frontmostApplication else { return nil }
         return AXUIElementCreateApplication(app.processIdentifier)
