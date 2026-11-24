@@ -38,7 +38,7 @@ struct TilingView: View {
         case .even: "Every window gets the same space, in rows."
         case .bsp: "Each new window splits the last one in half."
         case .messy: "Loose layouts where windows can overlap."
-        case .custom: "Draw where windows go for 1 to 6 windows. Drag to move, drag the corner to resize."
+        case .custom: "Draw where windows go for 1 to 6 windows. Drag to move, drag the corner to resize. Tile 1 is the leftmost window."
         }
     }
 }

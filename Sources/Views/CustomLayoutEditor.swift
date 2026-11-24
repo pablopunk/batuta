@@ -18,15 +18,15 @@ struct CustomLayoutEditor: View {
                 }
             }
 
-            HStack {
-                Text("Tile 1 is the leftmost window.")
+            HStack(spacing: 4) {
+                Spacer(minLength: 0)
+                Text("Copy")
                     .font(.system(size: 11))
                     .foregroundStyle(.tertiary)
-                Spacer(minLength: 0)
-                Button("Reset to Even", action: resetToEvenGrid)
-                    .buttonStyle(.plain)
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(.secondary)
+                ForEach(Self.modesToCopyFrom, id: \.self) { mode in
+                    Pill(label: mode.label, isOn: false) { copyLayout(from: mode) }
+                        .help("Replace this layout with the \(mode.label) one")
+                }
             }
         }
     }
@@ -89,8 +89,10 @@ struct CustomLayoutEditor: View {
         configStore.update { $0.customLayouts[key] = rects }
     }
 
-    private func resetToEvenGrid() {
-        save(TilingLayouts.evenGrid(windowCount))
+    private static let modesToCopyFrom = TilingMode.allCases.filter { $0 != .custom }
+
+    private func copyLayout(from mode: TilingMode) {
+        save(TilingLayouts.unitRects(for: windowCount, mode: mode, customLayouts: [:]))
     }
 }
 
