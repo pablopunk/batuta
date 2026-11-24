@@ -8,11 +8,11 @@ import QuartzCore
 final class WindowAnimator: NSObject {
     static let shared = WindowAnimator()
 
-    private static let duration: CFTimeInterval = 0.25
+    private static let duration: CFTimeInterval = 0.3
     private static let enhancedUserInterfaceAttribute = "AXEnhancedUserInterface"
 
     private struct Move {
-        let window: StageWindow
+        let pump: WindowPositionPump
         let startOrigin: CGPoint
         let target: CGRect
     }
@@ -27,8 +27,9 @@ final class WindowAnimator: NSObject {
         disableEnhancedUserInterface(for: Set(targets.map(\.window.pid)))
 
         moves = targets.map { window, frame in
-            shrinkUpFront(window, toward: frame)
-            return Move(window: window, startOrigin: window.frame.origin, target: frame)
+            let pump = WindowPositionPump(element: window.element)
+            shrinkUpFront(window, toward: frame, using: pump)
+            return Move(pump: pump, startOrigin: window.frame.origin, target: frame)
         }
         startTime = CACurrentMediaTime()
 
@@ -48,23 +49,27 @@ final class WindowAnimator: NSObject {
         }
         let progress = Self.easeOut(linear)
         for move in moves {
-            move.window.element.setPosition(Self.interpolate(move.startOrigin, move.target.origin, progress))
+            move.pump.move(to: Self.interpolate(move.startOrigin, move.target.origin, progress))
         }
     }
 
     private func finishImmediately() {
         displayLink?.invalidate()
         displayLink = nil
-        for move in moves { move.window.element.setFrame(move.target, settleSize: true) }
+        guard !moves.isEmpty else { return }
+        let landed = DispatchGroup()
+        for move in moves { move.pump.land(on: move.target, group: landed) }
         moves = []
-        restoreEnhancedUserInterface()
+        landed.notify(queue: .main) { [weak self] in
+            MainActor.assumeIsolated { self?.restoreEnhancedUserInterface() }
+        }
     }
 
     /// Shrinking first keeps a window from covering its neighbour while it slides; growing waits until the end.
-    private func shrinkUpFront(_ window: StageWindow, toward target: CGRect) {
+    private func shrinkUpFront(_ window: StageWindow, toward target: CGRect, using pump: WindowPositionPump) {
         let size = CGSize(width: min(window.frame.width, target.width), height: min(window.frame.height, target.height))
         guard size != window.frame.size else { return }
-        window.element.setSize(size)
+        pump.resize(to: size)
     }
 
     /// Chromium and Electron apps animate their own AX resizes while this is on, which makes stepped moves very slow.
