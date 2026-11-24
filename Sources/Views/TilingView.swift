@@ -18,6 +18,13 @@ struct TilingView: View {
                 }
             }
 
+            PreferenceToggleRow(
+                title: "Leave room for the strip",
+                subtitle: "Off lets windows cover the stages",
+                icon: "sidebar.left",
+                isOn: configStore.binding(\.leaveRoomForStrip)
+            )
+
             WindowCountStepper(count: $windowCount)
 
             if configStore.config.tilingMode == .custom {

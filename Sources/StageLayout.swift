@@ -17,11 +17,12 @@ enum StageLayout {
         WindowAnimator.shared.animate(targets)
     }
 
-    /// The screen's visible frame, in top-left coordinates, minus the side where the Stage Manager strip lives.
+    /// The screen's visible frame, in top-left coordinates, minus the side where the Stage Manager strip lives when that setting is on.
     private static func usableArea(near frame: CGRect, besides strip: StageStrip?) -> CGRect? {
         let appKitFrame = frame.convertedToAppKit
         guard let screen = NSScreen.screens.first(where: { $0.frame.intersects(appKitFrame) }) ?? NSScreen.main else { return nil }
         let visible = screen.visibleFrame.convertedFromAppKit.insetBy(dx: gap, dy: gap)
+        guard ConfigStore.shared.config.leaveRoomForStrip else { return visible }
         let stripWidth = strip.map { $0.frame.maxX - visible.minX + gap } ?? fallbackStripWidth
 
         if strip?.isOnLeftEdge ?? true {

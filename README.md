@@ -28,4 +28,6 @@ Pick a mode in the Tiling tab (saved as `tilingMode` in the config):
 - **Messy**: loose hand-drawn layouts for 1 to 6 windows that can overlap; more windows use Even.
 - **Custom**: draw tiles for 1 to 6 windows; saved as `customLayouts`, keyed by window count, as 0–1 rects (`x`, `y`, `width`, `height`, top-left origin). Tile 1 is the leftmost window.
 
+**Leave room for the strip** (`leaveRoomForStrip`, on by default) keeps windows clear of the Stage Manager strip; turn it off to tile over the whole screen.
+
 Batuta tiles when a stage window is pulled in, and when a window leaves the stage.

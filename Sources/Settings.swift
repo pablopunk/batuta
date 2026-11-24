@@ -65,6 +65,7 @@ struct BatutaConfig: Codable, Equatable {
     var tilingMode: TilingMode = .even
     /// Keyed by window count ("1" to "6"); each value has one unit rect per window, left to right.
     var customLayouts: [String: [UnitRect]] = TilingLayouts.defaultCustomLayouts
+    var leaveRoomForStrip = true
     var highlightFocusedWindow = true
     var animateWindowMoves = true
     var showMenuBarIcon = true
@@ -89,6 +90,7 @@ struct BatutaConfig: Codable, Equatable {
         customLayouts = defaults.customLayouts.merging(
             try container.decodeIfPresent([String: [UnitRect]].self, forKey: .customLayouts) ?? [:]
         ) { _, fromFile in fromFile }
+        leaveRoomForStrip = try container.decodeIfPresent(Bool.self, forKey: .leaveRoomForStrip) ?? defaults.leaveRoomForStrip
         highlightFocusedWindow = try container.decodeIfPresent(Bool.self, forKey: .highlightFocusedWindow) ?? defaults.highlightFocusedWindow
         animateWindowMoves = try container.decodeIfPresent(Bool.self, forKey: .animateWindowMoves) ?? defaults.animateWindowMoves
         showMenuBarIcon = try container.decodeIfPresent(Bool.self, forKey: .showMenuBarIcon) ?? defaults.showMenuBarIcon
