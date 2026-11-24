@@ -79,7 +79,7 @@ final class StageNavigator {
             WindowAnimator.shared.animate([(focused, neighbour.frame), (neighbour, focused.frame)])
             if ConfigStore.shared.config.highlightFocusedWindow { overlay.flash(around: neighbour.frame) }
         } else if let strip = StageStrip.closest(to: focused.frame), points(direction, towardStripOf: strip) {
-            afterModifiersAreReleased { StageStrip.removeFromCurrentStage(focused, strip: strip) }
+            StageStrip.removeFromCurrentStage(focused)
         }
     }
 

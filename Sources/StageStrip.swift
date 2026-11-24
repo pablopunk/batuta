@@ -52,20 +52,11 @@ struct StageStrip {
         log.info("dragged stage \(item.title, privacy: .public) into current stage")
     }
 
-    /// Stage Manager has no API for this either, so the window is dragged by its title bar onto the strip.
+    /// With Stage Manager on, a minimized window leaves the stage and shows up in the strip.
     @MainActor
-    static func removeFromCurrentStage(_ window: StageWindow, strip: StageStrip) {
-        SyntheticMouse.drag(from: titleBarGrabPoint(of: window), to: strip.frame.center) {}
-        log.info("dragged window \(window.id) out of the current stage")
-    }
-
-    /// Just right of the zoom button is title bar in most apps, and it avoids the traffic lights.
-    @MainActor
-    private static func titleBarGrabPoint(of window: StageWindow) -> CGPoint {
-        if let zoomButton = window.element.element(kAXZoomButtonAttribute)?.frame {
-            return CGPoint(x: zoomButton.maxX + 8, y: zoomButton.midY)
-        }
-        return CGPoint(x: window.frame.minX + 90, y: window.frame.minY + 14)
+    static func removeFromCurrentStage(_ window: StageWindow) {
+        window.element.set(kAXMinimizedAttribute, to: kCFBooleanTrue)
+        log.info("minimized window \(window.id) out of the current stage")
     }
 
     /// AXPress on a strip button reports success but Stage Manager ignores it, so the stage opens by focusing one of its windows instead.
