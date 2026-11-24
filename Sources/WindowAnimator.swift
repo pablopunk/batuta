@@ -22,54 +22,7 @@ final class WindowAnimator: NSObject {
     private var displayLink: CADisplayLink?
     private var pidsWithEnhancedUserInterface: Set<pid_t> = []
 
-    private let proxyOverlay = WindowProxyOverlay()
-    private static let proxyDuration: CFTimeInterval = 0.32
-    private static let proxyRevealDelay: TimeInterval = 0.06
-
-    /// Prefers sliding pictures of the windows (smooth, needs Screen Recording) and falls back to stepping real windows.
     func animate(_ targets: [(window: StageWindow, frame: CGRect)]) {
-        guard WindowSnapshotter.hasPermission else {
-            WindowSnapshotter.requestPermission()
-            animateThroughAccessibility(targets)
-            return
-        }
-
-        Task { @MainActor in
-            guard let images = await WindowSnapshotter.snapshots(of: targets.map(\.window)) else {
-                animateThroughAccessibility(targets)
-                return
-            }
-            slidePictures(images, targets)
-        }
-    }
-
-    /// Real windows jump to their targets right away, hidden under their pictures, which then slide there too.
-    private func slidePictures(_ images: [CGImage], _ targets: [(window: StageWindow, frame: CGRect)]) {
-        finishImmediately()
-        let screen = NSScreen.screens.first { $0.frame.intersects(targets[0].window.frame.convertedToAppKit) } ?? NSScreen.main
-        guard let screen else { return animateThroughAccessibility(targets) }
-
-        let proxies = zip(images, targets).map { image, target in (image: image, from: target.window.frame, to: target.frame) }
-        let landed = DispatchGroup()
-
-        proxyOverlay.slide(proxies, on: screen, duration: Self.proxyDuration) { [weak self] in
-            landed.notify(queue: .main) {
-                DispatchQueue.main.asyncAfter(deadline: .now() + Self.proxyRevealDelay) {
-                    MainActor.assumeIsolated { self?.proxyOverlay.hide() }
-                }
-            }
-        }
-
-        disableEnhancedUserInterface(for: Set(targets.map(\.window.pid)))
-        for target in targets {
-            WindowPositionPump(element: target.window.element).land(on: target.frame, group: landed)
-        }
-        landed.notify(queue: .main) { [weak self] in
-            MainActor.assumeIsolated { self?.restoreEnhancedUserInterface() }
-        }
-    }
-
-    private func animateThroughAccessibility(_ targets: [(window: StageWindow, frame: CGRect)]) {
         finishImmediately()
         disableEnhancedUserInterface(for: Set(targets.map(\.window.pid)))
 
