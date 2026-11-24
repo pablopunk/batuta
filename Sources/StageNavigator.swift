@@ -18,11 +18,18 @@ final class StageNavigator {
     }
 
     func moveItem(_ direction: Direction) {
-        guard let strip = pickingStrip, strip.items.indices.contains(pickedIndex),
-              !points(direction, towardStripOf: strip) else { return }
+        if let strip = pickingStrip {
+            addPickedStageToCurrentStage(strip, direction)
+        } else {
+            moveFocusedWindow(direction)
+        }
+    }
+
+    private func addPickedStageToCurrentStage(_ strip: StageStrip, _ direction: Direction) {
+        guard strip.items.indices.contains(pickedIndex), !points(direction, towardStripOf: strip) else { return }
         let item = strip.items[pickedIndex]
         stopPickingStage()
-        openOnceModifiersAreReleased(item) { item in
+        afterModifiersAreReleased {
             let windowsBefore = StageWindows.visibleSortedLeftToRight()
             StageStrip.addToCurrentStage(item, droppingAt: Self.currentStageCenter) {
                 Self.makeRoomForAddedWindows(previousWindowIDs: Set(windowsBefore.map(\.id)), strip: strip)
@@ -34,7 +41,7 @@ final class StageNavigator {
         guard let strip = pickingStrip, strip.items.indices.contains(pickedIndex) else { return }
         let item = strip.items[pickedIndex]
         stopPickingStage()
-        openOnceModifiersAreReleased(item) { StageStrip.open($0) }
+        afterModifiersAreReleased { StageStrip.open(item) }
     }
 
     func stopPickingStage() {
@@ -44,17 +51,35 @@ final class StageNavigator {
     }
 
     /// Stage Manager reads held modifiers as "add to stage" style clicks, so the press waits until every modifier is up.
-    private func openOnceModifiersAreReleased(
-        _ item: StageStripItem,
-        attemptsLeft: Int = 50,
-        action: @escaping @MainActor (StageStripItem) -> Void
-    ) {
+    private func afterModifiersAreReleased(attemptsLeft: Int = 50, _ action: @escaping @MainActor () -> Void) {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.02) { [weak self] in
             if Self.isAnyModifierHeld, attemptsLeft > 0 {
-                self?.openOnceModifiersAreReleased(item, attemptsLeft: attemptsLeft - 1, action: action)
+                self?.afterModifiersAreReleased(attemptsLeft: attemptsLeft - 1, action)
             } else {
-                action(item)
+                action()
             }
+        }
+    }
+
+    private static var isAnyModifierHeld: Bool {
+        !CGEventSource.flagsState(.combinedSessionState).intersection(ModifierKey.allEventFlags).isEmpty
+    }
+
+    /// Swaps the focused window with its neighbour; past the edge next to the strip, it leaves the stage.
+    private func moveFocusedWindow(_ direction: Direction) {
+        guard direction == .left || direction == .right else { return }
+        let windows = StageWindows.visibleSortedLeftToRight()
+        guard let focusedID = StageWindows.focusedWindowID(),
+              let focusedIndex = windows.firstIndex(where: { $0.id == focusedID }) else { return }
+        let focused = windows[focusedIndex]
+        let neighbourIndex = focusedIndex + (direction == .left ? -1 : 1)
+
+        if windows.indices.contains(neighbourIndex) {
+            let neighbour = windows[neighbourIndex]
+            WindowAnimator.shared.animate([(focused, neighbour.frame), (neighbour, focused.frame)])
+            if ConfigStore.shared.config.highlightFocusedWindow { overlay.flash(around: neighbour.frame) }
+        } else if let strip = StageStrip.closest(to: focused.frame), points(direction, towardStripOf: strip) {
+            afterModifiersAreReleased { StageStrip.removeFromCurrentStage(focused, strip: strip) }
         }
     }
 
@@ -77,10 +102,6 @@ final class StageNavigator {
         if let frame = (windows.first { $0.id == focusedID } ?? windows.first)?.frame { return frame.center }
         let screen = NSScreen.main?.frame ?? .zero
         return CGPoint(x: screen.midX, y: screen.midY)
-    }
-
-    private static var isAnyModifierHeld: Bool {
-        !CGEventSource.flagsState(.combinedSessionState).intersection(ModifierKey.allEventFlags).isEmpty
     }
 
     private func moveAmongWindows(_ direction: Direction) {
