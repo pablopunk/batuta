@@ -1,39 +1,87 @@
 {
   "fill" : {
-    "automatic-gradient" : "srgb:0.66588,0.62296,0.00060,1.00000"
+    "linear-gradient" : [
+      "srgb:0.24706,0.63529,1.00000,1.00000",
+      "srgb:0.06667,0.40392,0.90980,1.00000"
+    ]
   },
   "groups" : [
     {
-      "blur-material" : null,
+      "blur-material" : 0.5,
       "layers" : [
         {
-          "glass" : false,
-          "hidden" : false,
-          "image-name" : "icon.png",
-          "name" : "icon",
+          "blend-mode" : "plus-lighter",
+          "fill" : "none",
+          "glass" : true,
+          "image-name" : "baton.png",
+          "name" : "baton",
+          "opacity" : 0.33,
           "position" : {
-            "scale" : 0.92,
+            "scale" : 0.68,
             "translation-in-points" : [
-              -3.3125,
-              39.90625
+              0,
+              0
             ]
           }
         }
       ],
+      "name" : "Baton",
       "shadow" : {
         "kind" : "neutral",
-        "opacity" : 0.5
+        "opacity" : 0.4
+      },
+      "specular" : true,
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.6
+      }
+    },
+    {
+      "layers" : [
+        {
+          "image-name" : "window-front.png",
+          "name" : "window-front"
+        },
+        {
+          "image-name" : "window-middle.png",
+          "name" : "window-middle"
+        },
+        {
+          "image-name" : "window-back.png",
+          "name" : "window-back"
+        }
+      ],
+      "name" : "Stage",
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.4
       },
       "translucency" : {
         "enabled" : true,
-        "value" : 0.5
+        "value" : 0.3
+      }
+    },
+    {
+      "layers" : [
+        {
+          "image-name" : "strip.png",
+          "name" : "strip"
+        }
+      ],
+      "name" : "Stage Manager",
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.3
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.3
       }
     }
   ],
   "supported-platforms" : {
-    "circles" : [
-      "watchOS"
-    ],
-    "squares" : "shared"
+    "squares" : [
+      "macOS"
+    ]
   }
 }
