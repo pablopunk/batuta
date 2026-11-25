@@ -1,4 +1,5 @@
 ---
+import ThemeToggle from "../components/ThemeToggle.astro";
 import Demo from "../demo/Demo";
 ---
 
@@ -9,12 +10,19 @@ import Demo from "../demo/Demo";
     <link rel="icon" href="/icon.png" />
     <title>Batuta</title>
     <meta name="description" content="Keyboard control for macOS Stage Manager." />
+    <script is:inline>
+      try {
+        const theme = localStorage.getItem("theme");
+        if (theme === "light" || theme === "dark") document.documentElement.dataset.theme = theme;
+      } catch {}
+    </script>
   </head>
   <body>
     <header class="bar">
       <img src="/icon.png" alt="" width="28" height="28" />
       <h1>Batuta</h1>
       <h2>macOS Stage Manager is great, it was just missing Batuta.</h2>
+      <ThemeToggle />
     </header>
     <main>
       <Demo client:load />
@@ -29,6 +37,8 @@ import Demo from "../demo/Demo";
     --text: light-dark(#1d1d1f, #f2f3f7);
     --muted: light-dark(#6e6e73, #9a9cab);
   }
+  :root[data-theme="light"] { color-scheme: light; }
+  :root[data-theme="dark"] { color-scheme: dark; }
   * { box-sizing: border-box; }
   body {
     margin: 0;
@@ -40,7 +50,7 @@ import Demo from "../demo/Demo";
   .bar { max-width: 1180px; margin: 0 auto; padding: 16px; display: flex; align-items: center; gap: 10px; }
   .bar img { border-radius: 7px; }
   .bar h1 { margin: 0; font-size: 17px; letter-spacing: -0.01em; }
-  .bar h2 { margin: 0 0 0 6px; padding-left: 16px; border-left: 1px solid color-mix(in srgb, var(--muted) 40%, transparent); font-size: 14px; font-weight: 400; color: var(--muted); }
+  .bar h2 { flex: 1; margin: 0 0 0 6px; padding-left: 16px; border-left: 1px solid color-mix(in srgb, var(--muted) 40%, transparent); font-size: 14px; font-weight: 400; color: var(--muted); }
   main { max-width: 1180px; margin: 0 auto; padding: 8px 16px 96px; }
-  @media (max-width: 640px) { .bar h2 { display: none; } }
+  @media (max-width: 640px) { .bar h2 { visibility: hidden; } }
 </style>

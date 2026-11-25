@@ -1,0 +1,75 @@
+---
+const OPTIONS = [
+  { value: "system", label: "System", icon: "M3 4h18v12H3zM8 20h8M12 16v4" },
+  { value: "light", label: "Light", icon: "M12 4V2M12 22v-2M4 12H2M22 12h-2M5.6 5.6 4.2 4.2M19.8 19.8l-1.4-1.4M5.6 18.4l-1.4 1.4M19.8 4.2l-1.4 1.4M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8z" },
+  { value: "dark", label: "Dark", icon: "M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z" },
+];
+---
+
+<div class="theme-toggle" role="radiogroup" aria-label="Theme">
+  {
+    OPTIONS.map((option) => (
+      <button type="button" role="radio" data-theme-option={option.value} aria-label={option.label} title={option.label}>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d={option.icon} />
+        </svg>
+      </button>
+    ))
+  }
+</div>
+
+<script is:inline>
+  (() => {
+    const STORAGE_KEY = "theme";
+    const readTheme = () => {
+      try {
+        return localStorage.getItem(STORAGE_KEY) ?? "system";
+      } catch {
+        return "system";
+      }
+    };
+    const applyTheme = (theme) => {
+      if (theme === "system") delete document.documentElement.dataset.theme;
+      else document.documentElement.dataset.theme = theme;
+      document.querySelectorAll("[data-theme-option]").forEach((button) => {
+        button.setAttribute("aria-checked", String(button.dataset.themeOption === theme));
+      });
+    };
+    applyTheme(readTheme());
+    document.querySelectorAll("[data-theme-option]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const theme = button.dataset.themeOption;
+        try {
+          localStorage.setItem(STORAGE_KEY, theme);
+        } catch {}
+        applyTheme(theme);
+      });
+    });
+  })();
+</script>
+
+<style>
+  .theme-toggle {
+    display: flex;
+    gap: 2px;
+    padding: 2px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--muted) 30%, transparent);
+  }
+  button {
+    width: 28px;
+    height: 24px;
+    display: grid;
+    place-items: center;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+  }
+  button:hover { color: var(--text); }
+  button[aria-checked="true"] {
+    color: var(--text);
+    background: color-mix(in srgb, var(--muted) 22%, transparent);
+  }
+</style>
