@@ -7,6 +7,8 @@ private let appSizesLog = Logger(subsystem: "com.pablopunk.batuta", category: "a
 @MainActor
 enum AppSizes {
     private static let changeTolerance: CGFloat = 3
+    /// Edges within 3% of the mode's own layout count as the layout, so near misses do not become a saved size.
+    private static let layoutTolerance = 0.03
     static let modes: Set<TilingMode> = [.messy, .custom]
 
     static func savedRect(for window: StageWindow) -> UnitRect? {
@@ -27,8 +29,10 @@ enum AppSizes {
         guard !isSameFrame(window.frame, expectedFrame) else { return appSizesLog.debug("skip: frame unchanged") }
         let learned = StageLayout.unitRect(of: window.frame, in: placementArea).clampedToUnitSquare()
         let onBuiltInScreen = StageLayout.isOnBuiltInScreen(window.frame)
-        ConfigStore.shared.update { $0.updateTilingSettings(onBuiltInScreen: onBuiltInScreen) { $0.appSizes[bundleID] = learned } }
-        appSizesLog.notice("saved \(bundleID, privacy: .public)")
+        let layoutRect = TilingLayouts.unitRects(for: 1, mode: mode, customLayouts: ConfigStore.shared.config.customLayouts).first
+        let savedSize = isNearlySame(learned, layoutRect) ? nil : learned
+        ConfigStore.shared.update { $0.updateTilingSettings(onBuiltInScreen: onBuiltInScreen) { $0.appSizes[bundleID] = savedSize } }
+        appSizesLog.notice("\(savedSize == nil ? "forgot" : "saved", privacy: .public) \(bundleID, privacy: .public)")
     }
 
     static func appName(for bundleID: String) -> String {
@@ -38,6 +42,12 @@ enum AppSizes {
 
     private static func bundleID(of pid: pid_t) -> String? {
         NSRunningApplication(processIdentifier: pid)?.bundleIdentifier
+    }
+
+    private static func isNearlySame(_ a: UnitRect, _ b: UnitRect?) -> Bool {
+        guard let b else { return false }
+        return [a.x - b.x, a.y - b.y, (a.x + a.width) - (b.x + b.width), (a.y + a.height) - (b.y + b.height)]
+            .allSatisfy { abs($0) <= layoutTolerance }
     }
 
     private static func isSameFrame(_ a: CGRect, _ b: CGRect) -> Bool {
