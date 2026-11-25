@@ -10,7 +10,8 @@ enum AppSizes {
     static let modes: Set<TilingMode> = [.messy, .custom]
 
     static func savedRect(for window: StageWindow) -> UnitRect? {
-        bundleID(of: window.pid).flatMap { ConfigStore.shared.config.appSizes[$0] }
+        let settings = ConfigStore.shared.config.tilingSettings(onBuiltInScreen: StageLayout.isOnBuiltInScreen(window.frame))
+        return bundleID(of: window.pid).flatMap { settings.appSizes[$0] }
     }
 
     static func rememberLoneWindowIfMoved() {
@@ -25,12 +26,9 @@ enum AppSizes {
         let expectedFrame = StageLayout.frame(of: expected, in: placementArea)
         guard !isSameFrame(window.frame, expectedFrame) else { return appSizesLog.debug("skip: frame unchanged") }
         let learned = StageLayout.unitRect(of: window.frame, in: placementArea).clampedToUnitSquare()
-        ConfigStore.shared.update { $0.appSizes[bundleID] = learned }
+        let onBuiltInScreen = StageLayout.isOnBuiltInScreen(window.frame)
+        ConfigStore.shared.update { $0.updateTilingSettings(onBuiltInScreen: onBuiltInScreen) { $0.appSizes[bundleID] = learned } }
         appSizesLog.notice("saved \(bundleID, privacy: .public)")
-    }
-
-    static func forget(_ bundleID: String) {
-        ConfigStore.shared.update { $0.appSizes[bundleID] = nil }
     }
 
     static func appName(for bundleID: String) -> String {

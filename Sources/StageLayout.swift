@@ -44,8 +44,11 @@ enum StageLayout {
 
     /// The mode set in Settings for the screen these windows are on.
     static func defaultMode(for windows: [StageWindow]) -> TilingMode {
-        let isBuiltIn = windows.first.flatMap { screen(containing: $0.frame) }?.isBuiltIn ?? true
-        return ConfigStore.shared.config.tilingSettings(onBuiltInScreen: isBuiltIn).mode
+        ConfigStore.shared.config.tilingSettings(onBuiltInScreen: isOnBuiltInScreen(windows.first?.frame)).mode
+    }
+
+    static func isOnBuiltInScreen(_ frame: CGRect?) -> Bool {
+        frame.flatMap { screen(containing: $0) }?.isBuiltIn ?? true
     }
 
     /// A lone window in Messy or Custom goes where you last left that app's lone window.

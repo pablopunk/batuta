@@ -59,6 +59,8 @@ enum StageConfirmMode: String, CaseIterable, Codable {
 struct TilingSettings: Codable, Equatable {
     var mode: TilingMode = .even
     var leaveRoomForStageManager = true
+    /// Keyed by bundle ID: where a lone window of that app goes in a Messy or Custom stage, learned from your last move or resize.
+    var appSizes: [String: UnitRect] = [:]
 
     init(mode: TilingMode = .even, leaveRoomForStageManager: Bool = true) {
         self.mode = mode
@@ -69,6 +71,7 @@ struct TilingSettings: Codable, Equatable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         mode = try container.decodeIfPresent(TilingMode.self, forKey: .mode) ?? .even
         leaveRoomForStageManager = try container.decodeIfPresent(Bool.self, forKey: .leaveRoomForStageManager) ?? true
+        appSizes = try container.decodeIfPresent([String: UnitRect].self, forKey: .appSizes) ?? [:]
     }
 }
 
@@ -94,8 +97,6 @@ struct BatutaConfig: Codable, Equatable {
     var cycleTilingModeShortcutIsCleared = false
     /// Keyed by mode name. Each shortcut toggles that mode on the current stage. None by default.
     var modeShortcuts: [String: KeyShortcut] = [:]
-    /// Keyed by bundle ID: where a lone window of that app goes in a Messy or Custom stage, learned from your last move or resize.
-    var appSizes: [String: UnitRect] = [:]
 
     init() {}
 
@@ -124,19 +125,22 @@ struct BatutaConfig: Codable, Equatable {
         )
         externalScreensHaveOwnTiling = try container.decodeIfPresent(Bool.self, forKey: .externalScreensHaveOwnTiling) ?? false
         externalTiling = try container.decodeIfPresent(TilingSettings.self, forKey: .externalTiling) ?? tiling
+        if let topLevelAppSizes = try legacy.decodeIfPresent([String: UnitRect].self, forKey: .appSizes) {
+            if tiling.appSizes.isEmpty { tiling.appSizes = topLevelAppSizes }
+            if externalTiling.appSizes.isEmpty { externalTiling.appSizes = topLevelAppSizes }
+        }
         tileWhenSwitchingStages = try container.decodeIfPresent(Bool.self, forKey: .tileWhenSwitchingStages) ?? defaults.tileWhenSwitchingStages
         highlightFocusedWindow = try container.decodeIfPresent(Bool.self, forKey: .highlightFocusedWindow) ?? defaults.highlightFocusedWindow
         animateWindowMoves = try container.decodeIfPresent(Bool.self, forKey: .animateWindowMoves) ?? defaults.animateWindowMoves
         showMenuBarIcon = try container.decodeIfPresent(Bool.self, forKey: .showMenuBarIcon) ?? defaults.showMenuBarIcon
         cycleTilingModeShortcut = try container.decodeIfPresent(KeyShortcut.self, forKey: .cycleTilingModeShortcut)
         cycleTilingModeShortcutIsCleared = try container.decodeIfPresent(Bool.self, forKey: .cycleTilingModeShortcutIsCleared) ?? false
-        appSizes = try container.decodeIfPresent([String: UnitRect].self, forKey: .appSizes) ?? [:]
         modeShortcuts = try container.decodeIfPresent([String: KeyShortcut].self, forKey: .modeShortcuts) ?? [:]
     }
 
     /// Keys from before tiling settings were grouped per screen.
     private enum LegacyCodingKeys: String, CodingKey {
-        case tilingMode, leaveRoomForStrip, leaveRoomForStageManagerOnBuiltInScreen
+        case tilingMode, leaveRoomForStrip, leaveRoomForStageManagerOnBuiltInScreen, appSizes
     }
 
     var effectiveCycleTilingModeShortcut: KeyShortcut? {
@@ -159,7 +163,15 @@ struct BatutaConfig: Codable, Equatable {
     }
 
     func tilingSettings(onBuiltInScreen: Bool) -> TilingSettings {
-        onBuiltInScreen || !externalScreensHaveOwnTiling ? tiling : externalTiling
+        usesLaptopTiling(onBuiltInScreen: onBuiltInScreen) ? tiling : externalTiling
+    }
+
+    mutating func updateTilingSettings(onBuiltInScreen: Bool, _ change: (inout TilingSettings) -> Void) {
+        if usesLaptopTiling(onBuiltInScreen: onBuiltInScreen) { change(&tiling) } else { change(&externalTiling) }
+    }
+
+    private func usesLaptopTiling(onBuiltInScreen: Bool) -> Bool {
+        onBuiltInScreen || !externalScreensHaveOwnTiling
     }
 
     var requiredModifierFlags: CGEventFlags {

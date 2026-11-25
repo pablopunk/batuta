@@ -76,7 +76,11 @@ struct TilingView: View {
 
             ModeShortcutRows()
 
-            if !configStore.config.appSizes.isEmpty { AppSizeRows() }
+            if !settings.appSizes.isEmpty {
+                AppSizeRows(appSizes: settings.appSizes) { bundleID in updateSettings { $0.appSizes[bundleID] = nil } }
+                    .disabled(!isEditable)
+                    .opacity(isEditable ? 1 : 0.45)
+            }
 
             if settings.mode != .off { WindowCountStepper(count: $windowCount) }
 
@@ -139,7 +143,8 @@ private struct CycleShortcutRow: View {
 }
 
 private struct AppSizeRows: View {
-    @ObservedObject private var configStore = ConfigStore.shared
+    let appSizes: [String: UnitRect]
+    let forget: (String) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -160,7 +165,7 @@ private struct AppSizeRows: View {
                             .font(.system(size: 12))
                             .foregroundStyle(.secondary)
                         Spacer(minLength: 0)
-                        Button { AppSizes.forget(bundleID) } label: {
+                        Button { forget(bundleID) } label: {
                             Image(systemName: "xmark.circle.fill")
                                 .foregroundStyle(.tertiary)
                         }
@@ -175,7 +180,7 @@ private struct AppSizeRows: View {
     }
 
     private var sortedBundleIDs: [String] {
-        configStore.config.appSizes.keys.sorted { AppSizes.appName(for: $0) < AppSizes.appName(for: $1) }
+        appSizes.keys.sorted { AppSizes.appName(for: $0) < AppSizes.appName(for: $1) }
     }
 }
 
