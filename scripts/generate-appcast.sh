@@ -6,7 +6,7 @@ cd "$ROOT"
 source "$ROOT/scripts/release-settings.sh"
 
 APP_NAME="Batuta"
-VERSION="$(tr -d '[:space:]' < "$ROOT/VERSION")"
+VERSION="${RELEASE_VERSION:-$(tr -d '[:space:]' < "$ROOT/VERSION")}"
 ZIP_PATH="${1:-$ROOT/dist/$APP_NAME.zip}"
 APPCAST_PATH="$ROOT/appcast.xml"
 DOWNLOAD_URL_PREFIX="https://github.com/$BATUTA_GITHUB_REPOSITORY/releases/download/v$VERSION/"
