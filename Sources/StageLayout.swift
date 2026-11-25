@@ -48,9 +48,9 @@ enum StageLayout {
         return ConfigStore.shared.config.tilingSettings(onBuiltInScreen: isBuiltIn).mode
     }
 
-    /// A lone window in Messy goes where you last left that app's lone window.
+    /// A lone window in Messy or Custom goes where you last left that app's lone window.
     static func unitRects(for windows: [StageWindow], mode: TilingMode) -> [UnitRect] {
-        if mode == .messy, windows.count == 1, let saved = AppSizes.savedRect(for: windows[0]) { return [saved] }
+        if AppSizes.modes.contains(mode), windows.count == 1, let saved = AppSizes.savedRect(for: windows[0]) { return [saved] }
         return TilingLayouts.unitRects(for: windows.count, mode: mode, customLayouts: ConfigStore.shared.config.customLayouts)
     }
 

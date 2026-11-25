@@ -1,21 +1,23 @@
 import AppKit
 
-/// Remembers where you put an app's window when it is alone in a Messy stage, and puts it there next time.
+/// Remembers where you put an app's window when it is alone in a Messy or Custom stage, and puts it there next time.
 @MainActor
 enum AppSizes {
     private static let changeTolerance: CGFloat = 3
+    static let modes: Set<TilingMode> = [.messy, .custom]
 
     static func savedRect(for window: StageWindow) -> UnitRect? {
         bundleID(of: window.pid).flatMap { ConfigStore.shared.config.appSizes[$0] }
     }
 
-    static func rememberLoneMessyWindowIfMoved() {
+    static func rememberLoneWindowIfMoved() {
         guard !WindowAnimator.shared.isAnimating else { return }
         let windows = StageWindows.visibleSortedLeftToRight()
-        guard windows.count == 1, let window = windows.first, StageLayout.mode(for: windows) == .messy,
+        let mode = StageLayout.mode(for: windows)
+        guard windows.count == 1, let window = windows.first, modes.contains(mode),
               let bundleID = bundleID(of: window.pid),
               let placementArea = StageLayout.placementArea(around: window.frame, besides: StageStrip.closest(to: window.frame)),
-              let expected = StageLayout.unitRects(for: windows, mode: .messy).first else { return }
+              let expected = StageLayout.unitRects(for: windows, mode: mode).first else { return }
         let expectedFrame = StageLayout.frame(of: expected, in: placementArea)
         guard !isSameFrame(window.frame, expectedFrame) else { return }
         let learned = StageLayout.unitRect(of: window.frame, in: placementArea).clampedToUnitSquare()

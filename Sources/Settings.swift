@@ -94,7 +94,7 @@ struct BatutaConfig: Codable, Equatable {
     var cycleTilingModeShortcutIsCleared = false
     /// Keyed by mode name. Each shortcut toggles that mode on the current stage. None by default.
     var modeShortcuts: [String: KeyShortcut] = [:]
-    /// Keyed by bundle ID: where a lone window of that app goes in a Messy stage, learned from your last move or resize.
+    /// Keyed by bundle ID: where a lone window of that app goes in a Messy or Custom stage, learned from your last move or resize.
     var appSizes: [String: UnitRect] = [:]
 
     init() {}

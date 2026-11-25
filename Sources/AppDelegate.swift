@@ -41,7 +41,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         hotkeyTap.onConfirm = { [navigator] in navigator.confirmStage() }
         hotkeyTap.onCancel = { [navigator] in navigator.stopPickingStage() }
         hotkeyTap.onLeftMouseDragEnded = {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { AppSizes.rememberLoneMessyWindowIfMoved() }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { AppSizes.rememberLoneWindowIfMoved() }
         }
         hotkeyTap.onPointerTookOver = { [navigator] in navigator.stopPickingStage(cursor: .leaveWherePersonMovedIt) }
         hotkeyTap.onModifierReleased = { [navigator] in

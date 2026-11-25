@@ -148,7 +148,7 @@ private struct AppSizeRows: View {
                 Text("App sizes")
                     .font(.system(size: 13, weight: .medium))
             }
-            Text("Where a lone window goes in Messy, learned when you move or resize it.")
+            Text("Where a lone window goes in Messy and Custom, learned when you move or resize it.")
                 .font(.system(size: 11))
                 .foregroundStyle(.tertiary)
                 .fixedSize(horizontal: false, vertical: true)
