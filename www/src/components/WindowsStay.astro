@@ -74,7 +74,7 @@ const EVENTS: [day: number, start: number, length: number, hue: number][] = [
     --cycle: 10s;
     margin: 0;
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
   }
   .screen-card {
@@ -237,7 +237,7 @@ const EVENTS: [day: number, start: number, length: number, hue: number][] = [
     .ws-window, .ws-pointer { animation: none; }
     .stays .ws-calendar { left: 12%; top: 18%; width: 78%; height: 64%; }
   }
-  @media (max-width: 480px) {
+  @media (max-width: 640px) {
     .windows-stay { grid-template-columns: 1fr; }
   }
 </style>
