@@ -100,6 +100,7 @@ final class StageNavigator {
         guard StageWindows.windowShownAsThumbnail(inside: item.frame) != nil else {
             pickingStrip = strip
             pickedIndex = number - 1
+            startsAtLastStage = false
             confirmStage()
             return
         }
@@ -228,10 +229,13 @@ final class StageNavigator {
         }
         guard opensStagePicker else { return }
         pickedIndex = 0
+        startsAtLastStage = direction == .up
         startPickingStage(strip, near: focusedFrame)
     }
 
     private func focusFirstWindow(from direction: Direction, among windows: [StageWindow]) {
+        pickedIndex = 0
+        startsAtLastStage = direction == .up
         switch direction {
         case .left, .up:
             if let last = windows.last { focus(last) } else { startPickingStage(nil, near: nil) }
@@ -243,9 +247,11 @@ final class StageNavigator {
     private func moveInsideStrip(_ strip: StageStrip, _ direction: Direction) {
         switch direction {
         case .up:
-            select(max(pickedIndex - 1, 0), in: strip)
+            startsAtLastStage = false
+            select(pickedIndex > 0 ? pickedIndex - 1 : strip.items.count - 1, in: strip)
         case .down:
-            select(min(pickedIndex + 1, strip.items.count - 1), in: strip)
+            startsAtLastStage = false
+            select(pickedIndex < strip.items.count - 1 ? pickedIndex + 1 : 0, in: strip)
         case .left, .right:
             if !points(direction, towardStripOf: strip) { returnToWindowNearest(strip) }
         }
@@ -274,13 +280,19 @@ final class StageNavigator {
         StageStripReveal.reveal(near: frame, onLeftEdge: strip?.isOnLeftEdge ?? true)
         if let strip, !strip.items.isEmpty {
             pickingStrip = strip
-            select(0, in: strip)
+            select(startingIndex(in: strip), in: strip)
         }
         revealGeneration += 1
         refreshStripWhileItSlidesIn(near: frame, generation: revealGeneration)
     }
 
     private var revealGeneration = 0
+    /// Up opens the picker on the last stage, down on the first, until you move inside it.
+    private var startsAtLastStage = false
+
+    private func startingIndex(in strip: StageStrip) -> Int {
+        startsAtLastStage ? strip.items.count - 1 : 0
+    }
     private static let stripRefreshInterval: TimeInterval = 0.05
     private static let stripRefreshAttempts = 10
 
@@ -289,7 +301,7 @@ final class StageNavigator {
             guard let self, generation == self.revealGeneration else { return }
             if let strip = StageStrip.closest(to: frame), !strip.items.isEmpty {
                 self.pickingStrip = strip
-                self.select(min(self.pickedIndex, strip.items.count - 1), in: strip)
+                self.select(self.startsAtLastStage ? strip.items.count - 1 : min(self.pickedIndex, strip.items.count - 1), in: strip)
             }
             if attemptsLeft > 0 {
                 self.refreshStripWhileItSlidesIn(near: frame, generation: generation, attemptsLeft: attemptsLeft - 1)

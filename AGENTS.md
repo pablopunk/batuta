@@ -20,7 +20,7 @@ Keyboard navigation for macOS Stage Manager, without moving windows.
 - While a stage is selected, **Move modifier + l** pulls it into the current stage (release the keys to drop it).
 - Hold **Navigate** for a moment to see numbers on the Stage Manager thumbnails; **Navigate + 1–9** opens that stage (1 is the top one).
 - **Navigate + +/-** resizes the focused window by 1/12 of the screen per press. In Even and BSP stages its neighbours give or take the same space, so tiles never overlap; in other modes, or alone, it grows or shrinks around its center.
-- **k/j** moves through the stages, **release the modifier** (or press **↩**, set in settings) to open it, **Esc** cancels.
+- **k/j** moves through the stages and wraps around (up from the window opens the last stage, down the first), **release the modifier** (or press **↩**, set in settings) to open it, **Esc** cancels.
 
 Navigate defaults to ⌃⌘, Move adds ⇧, and the keys to the arrows (hjkl is an option). Settings live in `~/.config/batuta/config.json`.
 
