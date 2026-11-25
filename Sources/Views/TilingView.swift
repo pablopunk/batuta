@@ -63,8 +63,8 @@ struct TilingView: View {
                 )
 
                 PreferenceToggleRow(
-                    title: "Remember app sizes",
-                    subtitle: "Lone windows in Messy and Custom",
+                    title: "Learn app size",
+                    subtitle: "For 1-window stages",
                     icon: "macwindow",
                     isOn: Binding(get: { settings.rememberAppSizes }, set: { isOn in updateSettings { $0.rememberAppSizes = isOn } })
                 )
