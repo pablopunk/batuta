@@ -74,9 +74,9 @@ const configHtml = highlightJson(compactArrays(JSON.stringify(CONFIG, null, 2)))
     --card: light-dark(#ffffff, #15161c);
     --line: color-mix(in srgb, var(--muted) 24%, transparent);
     display: grid;
-    grid-template-columns: 1fr 1.2fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
     align-items: center;
-    gap: 56px;
+    gap: clamp(32px, 5vw, 56px);
     padding: 72px 0;
   }
   .feature + .feature { border-top: 1px solid color-mix(in srgb, var(--muted) 10%, transparent); }
@@ -116,7 +116,7 @@ const configHtml = highlightJson(compactArrays(JSON.stringify(CONFIG, null, 2)))
   .code-window :global(.number) { color: light-dark(#7c3aed, #c4a7ff); }
   .code-window :global(.literal) { color: light-dark(#a15c00, #ffc66d); }
 
-  @media (max-width: 760px) {
+  @media (max-width: 900px) {
     .feature { grid-template-columns: 1fr; gap: 28px; padding: 48px 0; }
     .feature.flipped .copy { order: 0; }
     .copy h3 { font-size: 24px; }

@@ -56,12 +56,13 @@ import Demo from "../demo/Demo";
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
-  .bar { max-width: 1180px; margin: 0 auto; padding: 16px; display: flex; align-items: center; gap: 10px; }
+  .bar { max-width: 1180px; margin: 0 auto; padding: 16px var(--gutter); display: flex; align-items: center; gap: 10px; }
   .bar img { border-radius: 7px; }
   .github { display: grid; place-items: center; color: var(--muted); }
   .github:hover { color: var(--text); }
   .bar h1 { margin: 0; font-size: 17px; letter-spacing: -0.01em; }
   .bar h2 { flex: 1; margin: 0 0 0 6px; padding-left: 16px; border-left: 1px solid color-mix(in srgb, var(--muted) 40%, transparent); font-size: 14px; font-weight: 400; color: var(--muted); }
-  main { max-width: 1180px; margin: 0 auto; padding: 8px 16px 96px; }
+  main { max-width: 1180px; margin: 0 auto; padding: 8px var(--gutter) 96px; }
+  :root { --gutter: clamp(16px, 5vw, 48px); }
   @media (max-width: 640px) { .bar h2 { visibility: hidden; } }
 </style>
