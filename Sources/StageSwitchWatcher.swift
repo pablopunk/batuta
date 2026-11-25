@@ -15,9 +15,11 @@ final class StageSwitchWatcher {
     private var lastStageWindowIDs = Set<CGWindowID>()
     private var focusObserver: AXObserver?
     private var checkGeneration = 0
+    private let closeWatcher = WindowCloseWatcher()
 
     func start() {
-        lastStageWindowIDs = Set(StageWindows.visibleSortedLeftToRight().map(\.id))
+        closeWatcher.onWindowClosed = { [weak self] in self?.checkSoon() }
+        rememberCurrentStage(StageWindows.visibleSortedLeftToRight())
         NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.didActivateApplicationNotification, object: nil, queue: .main) { [weak self] notification in
             let pid = (notification.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication)?.processIdentifier
             MainActor.assumeIsolated {
@@ -30,7 +32,12 @@ final class StageSwitchWatcher {
 
     /// Batuta tiles on its own after it adds or removes a window, so it reports the new set instead of a switch.
     func acceptCurrentStage() {
-        lastStageWindowIDs = Set(StageWindows.visibleSortedLeftToRight().map(\.id))
+        rememberCurrentStage(StageWindows.visibleSortedLeftToRight())
+    }
+
+    private func rememberCurrentStage(_ windows: [StageWindow]) {
+        lastStageWindowIDs = Set(windows.map(\.id))
+        closeWatcher.watch(windows)
     }
 
     private func checkSoon() {
@@ -56,7 +63,7 @@ final class StageSwitchWatcher {
         let ids = Set(windows.map(\.id))
         guard !ids.isEmpty, ids != lastStageWindowIDs else { return }
         let isAnotherStage = ids.intersection(lastStageWindowIDs).count * 2 < max(ids.count, lastStageWindowIDs.count)
-        lastStageWindowIDs = ids
+        rememberCurrentStage(windows)
         if isAnotherStage { onStageSwitched?(windows) } else { onStageWindowsChanged?(windows) }
     }
 
