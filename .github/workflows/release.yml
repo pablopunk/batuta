@@ -1,56 +1,88 @@
 name: Release
 
 on:
-  release:
-    types: [published]
+  push:
+    tags: ["v*"]
   workflow_dispatch:
-    inputs:
-      tag:
-        description: Git tag to sync to Homebrew (for example v0.1.2)
-        required: true
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
 
 jobs:
-  update-homebrew:
-    runs-on: macos-latest
-    if: github.event_name != 'release' || github.event.release.draft == false
+  release:
+    runs-on: xcode-27
     env:
+      PUBLISH: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}
       GH_TOKEN: ${{ github.token }}
-      GH_PAT: ${{ secrets.GH_PAT }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Ensure Homebrew PAT is configured
+      - name: Check the tag matches VERSION
+        if: env.PUBLISH == 'true'
         run: |
-          if [[ -z "${GH_PAT:-}" ]]; then
-            echo "Missing repository secret GH_PAT" >&2
+          version="$(tr -d '[:space:]' < VERSION)"
+          if [[ "v$version" != "$GITHUB_REF_NAME" ]]; then
+            echo "Tag $GITHUB_REF_NAME does not match VERSION $version" >&2
             exit 1
           fi
 
-      - name: Resolve release metadata
-        id: meta
+      - name: Import the signing certificate
+        env:
+          MACOS_CERT_P12_BASE64: ${{ secrets.MACOS_CERT_P12_BASE64 }}
+          MACOS_CERT_PASSWORD: ${{ secrets.MACOS_CERT_PASSWORD }}
+        run: bash scripts/ci/import-signing-certificate.sh
+
+      - name: Store the notary credentials
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+        run: bash scripts/ci/store-notary-credentials.sh
+
+      - name: Build, sign and notarize
+        run: make build-release
+
+      - name: Check the notarized app
         run: |
-          if [[ "${{ github.event_name }}" == "release" ]]; then
-            TAG='${{ github.event.release.tag_name }}'
-          else
-            TAG='${{ inputs.tag }}'
-          fi
+          spctl --assess --type execute --verbose=2 .build/release/Batuta.app
+          xcrun stapler validate .build/release/Batuta.app
 
-          VERSION="${TAG#v}"
-
-          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
-
-      - name: Download release asset
+      - name: Write the Sparkle key
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
         run: |
-          rm -rf dist
-          mkdir -p dist
-          gh release download "${{ steps.meta.outputs.tag }}" \
-            --repo "$GITHUB_REPOSITORY" \
-            --pattern "Batuta.zip" \
-            --dir dist
+          key_file="$RUNNER_TEMP/sparkle-private-key"
+          printf '%s' "$SPARKLE_PRIVATE_KEY" > "$key_file"
+          echo "SPARKLE_PRIVATE_KEY_FILE=$key_file" >> "$GITHUB_ENV"
 
-      - name: Update Homebrew tap
+      - name: Check the Sparkle key matches the app
+        run: bash scripts/ci/check-sparkle-key.sh dist/Batuta.zip
+
+      - name: Keep the build (dry run)
+        if: env.PUBLISH != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: Batuta-dry-run
+          path: dist/
+
+      - name: Publish the release and appcast
+        if: env.PUBLISH == 'true'
+        run: bash scripts/publish-release.sh "$GITHUB_REF_NAME"
+
+      - name: Update the Homebrew cask
+        if: env.PUBLISH == 'true'
+        env:
+          GH_PAT: ${{ secrets.GH_PAT }}
+        run: bash scripts/update-homebrew-cask.sh "${GITHUB_REF_NAME#v}" "$PWD/dist/Batuta.zip"
+
+      - name: Remove the signing keychain and keys
+        if: always()
         run: |
-          bash ./scripts/update-homebrew-cask.sh \
-            "${{ steps.meta.outputs.version }}" \
-            "$PWD/dist/Batuta.zip"
+          [[ -n "${SIGNING_KEYCHAIN:-}" ]] && security delete-keychain "$SIGNING_KEYCHAIN" || true
+          rm -f "$RUNNER_TEMP/sparkle-private-key"

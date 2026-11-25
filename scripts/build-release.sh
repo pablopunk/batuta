@@ -13,6 +13,7 @@ ZIP_PATH="$ARTIFACTS_DIR/$APP_NAME.zip"
 CODESIGN_IDENTITY="${CODESIGN_IDENTITY:--}"
 NOTARY_PROFILE="${NOTARY_PROFILE:-$DEFAULT_NOTARY_KEYCHAIN_PROFILE}"
 NOTARY_KEYCHAIN_PROFILE="${NOTARY_KEYCHAIN_PROFILE:-$NOTARY_PROFILE}"
+NOTARY_KEYCHAIN="${NOTARY_KEYCHAIN:-}"
 SKIP_NOTARIZE="${SKIP_NOTARIZE:-0}"
 
 INSTALL_APP=0 CONFIGURATION="$CONFIGURATION" CODESIGN_IDENTITY="$CODESIGN_IDENTITY" "$ROOT/scripts/build-app.sh"
@@ -31,9 +32,17 @@ should_notarize() {
 
 zip_release
 
+notary_profile_arguments() {
+  NOTARY_PROFILE_ARGUMENTS=(--keychain-profile "$NOTARY_KEYCHAIN_PROFILE")
+  if [[ -n "$NOTARY_KEYCHAIN" ]]; then
+    NOTARY_PROFILE_ARGUMENTS+=(--keychain "$NOTARY_KEYCHAIN")
+  fi
+}
+
 if should_notarize; then
   echo "Submitting for notarization with profile: $NOTARY_KEYCHAIN_PROFILE"
-  xcrun notarytool submit "$ZIP_PATH" --keychain-profile "$NOTARY_KEYCHAIN_PROFILE" --wait
+  notary_profile_arguments
+  xcrun notarytool submit "$ZIP_PATH" "${NOTARY_PROFILE_ARGUMENTS[@]}" --wait
   xcrun stapler staple "$APP_PATH"
   zip_release
 fi

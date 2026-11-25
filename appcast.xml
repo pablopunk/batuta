@@ -3,6 +3,15 @@
     <channel>
         <title>Batuta</title>
         <item>
+            <title>0.1.1</title>
+            <pubDate>Wed, 25 Nov 2026 12:32:00 +0100</pubDate>
+            <sparkle:version>0.1.1</sparkle:version>
+            <sparkle:shortVersionString>0.1.1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <enclosure url="https://github.com/pablopunk/batuta/releases/download/v0.1.1/Batuta.zip" length="1630355" type="application/octet-stream" sparkle:edSignature="gvmcjRW67wcZ3npdoDBovb6GLOjb5M4LkvZv56r5955vZHhjnhT+Kvvly8t8b6U8GCUyoH9w+JxFbcHj1JONCQ=="/>
+        </item>
+        <item>
             <title>0.1.0</title>
             <pubDate>Wed, 25 Nov 2026 12:06:24 +0100</pubDate>
             <sparkle:version>0.1.0</sparkle:version>

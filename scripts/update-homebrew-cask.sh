@@ -65,7 +65,7 @@ pushd "$TAP_DIR" >/dev/null
 git config user.name "github-actions[bot]"
 git config user.email "github-actions[bot]@users.noreply.github.com"
 
-if ! git diff --quiet -- Casks/batuta.rb; then
+if [[ -n "$(git status --porcelain -- Casks/batuta.rb)" ]]; then
   git add Casks/batuta.rb
   git commit -m "batuta: update to v$VERSION"
   git push

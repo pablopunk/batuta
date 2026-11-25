@@ -3,7 +3,6 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
-source "$ROOT/scripts/release-settings.sh"
 
 RAW_VERSION="${1:-}"
 if [[ -z "$RAW_VERSION" ]]; then
@@ -13,139 +12,58 @@ fi
 
 VERSION="${RAW_VERSION#v}"
 TAG="v$VERSION"
-APP_NAME="Batuta"
-ZIP_PATH="$ROOT/dist/$APP_NAME.zip"
-SHA_PATH="$ZIP_PATH.sha256"
-CODESIGN_IDENTITY="${CODESIGN_IDENTITY:-}"
-NOTARY_KEYCHAIN_PROFILE="${NOTARY_KEYCHAIN_PROFILE:-${NOTARY_PROFILE:-$DEFAULT_NOTARY_KEYCHAIN_PROFILE}}"
 
-find_codesign_identity() {
-  security find-identity -v -p codesigning 2>/dev/null \
-    | grep '"Developer ID Application:' \
-    | sed -E 's/^.*"(Developer ID Application:[^"]+)"$/\1/' \
-    | sort -u
-}
-
-generate_release_notes_prefix() {
-  local previous_tag="$1"
-  local range
-  local commits
-
-  if [[ -n "$previous_tag" ]]; then
-    range="$previous_tag..$TAG"
-  else
-    range="$TAG"
-  fi
-
-  commits="$(git log --pretty=format:'- %s (%h)' "$range")"
-
-  if [[ -z "$commits" ]]; then
-    return 0
-  fi
-
-  printf '## All Commits\n%s\n\n' "$commits"
-}
-
-if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-  echo "Version must look like x.y.z"
-  exit 1
-fi
-
-fail_if_release_settings_have_todos
-
-if [[ -z "$CODESIGN_IDENTITY" ]]; then
-  mapfile -t AVAILABLE_IDENTITIES < <(find_codesign_identity)
-
-  if [[ ${#AVAILABLE_IDENTITIES[@]} -eq 1 ]]; then
-    CODESIGN_IDENTITY="${AVAILABLE_IDENTITIES[0]}"
-    echo "Using signing identity: $CODESIGN_IDENTITY"
-  elif [[ ${#AVAILABLE_IDENTITIES[@]} -gt 1 ]]; then
-    echo "Found multiple Developer ID Application identities. Set CODESIGN_IDENTITY explicitly:" >&2
-    printf '  %s\n' "${AVAILABLE_IDENTITIES[@]}" >&2
-    exit 1
-  else
-    echo "No Developer ID Application signing identity found in your keychain." >&2
-    echo "Install a Developer ID Application certificate, or set CODESIGN_IDENTITY explicitly." >&2
+fail_unless_version_looks_like_semver() {
+  if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    echo "Version must look like x.y.z" >&2
     exit 1
   fi
-fi
-
-if [[ -z "$NOTARY_KEYCHAIN_PROFILE" ]]; then
-  echo "Missing NOTARY_KEYCHAIN_PROFILE" >&2
-  exit 1
-fi
-
-if ! xcrun notarytool history --keychain-profile "$NOTARY_KEYCHAIN_PROFILE" >/dev/null 2>&1; then
-  echo "Notary profile '$NOTARY_KEYCHAIN_PROFILE' is not available." >&2
-  echo "Create it once with:" >&2
-  echo "  xcrun notarytool store-credentials \"$NOTARY_KEYCHAIN_PROFILE\" --apple-id YOUR_APPLE_ID --team-id YOUR_TEAM_ID" >&2
-  exit 1
-fi
-
-CURRENT_BRANCH="$(git branch --show-current)"
-if [[ "$CURRENT_BRANCH" != "main" ]]; then
-  echo "Release from main only. Current branch: $CURRENT_BRANCH"
-  exit 1
-fi
-
-if [[ -n "$(git status --porcelain)" ]]; then
-  echo "Working tree must be clean before releasing."
-  git status --short
-  exit 1
-fi
-
-if git rev-parse "$TAG" >/dev/null 2>&1; then
-  echo "Tag already exists: $TAG"
-  exit 1
-fi
-
-printf '%s\n' "$VERSION" > "$ROOT/VERSION"
-git add VERSION
-
-if git diff --cached --quiet; then
-  echo "VERSION already at $VERSION"
-else
-  git commit -m "Release $TAG"
-fi
-
-echo "Building signed + notarized release..."
-CODESIGN_IDENTITY="$CODESIGN_IDENTITY" NOTARY_KEYCHAIN_PROFILE="$NOTARY_KEYCHAIN_PROFILE" make build-release
-
-echo "Updating appcast..."
-"$ROOT/scripts/generate-appcast.sh" "$ZIP_PATH"
-git add appcast.xml
-git commit -m "Update appcast for $TAG"
-
-PREV_TAG="$(git tag --sort=-v:refname | grep -v "^$TAG$" | head -1 || true)"
-
-git tag "$TAG"
-git push origin "$TAG"
-
-if gh release view "$TAG" >/dev/null 2>&1; then
-  echo "GitHub release already exists: $TAG"
-  exit 1
-fi
-
-echo "Creating GitHub release..."
-RELEASE_NOTES_PREFIX="$(generate_release_notes_prefix "$PREV_TAG")"
-if [[ -n "$PREV_TAG" ]]; then
-  gh release create "$TAG" "$ZIP_PATH" "$SHA_PATH" \
-    --title "$TAG" \
-    --generate-notes \
-    --notes "$RELEASE_NOTES_PREFIX" \
-    --notes-start-tag "$PREV_TAG"
-else
-  gh release create "$TAG" "$ZIP_PATH" "$SHA_PATH" \
-    --title "$TAG" \
-    --generate-notes \
-    --notes "$RELEASE_NOTES_PREFIX"
-fi
-
-publish_appcast_after_release_assets_exist() {
-  git push origin main
 }
-publish_appcast_after_release_assets_exist
 
-echo "GitHub release published. Homebrew tap will be updated by GitHub Actions."
+fail_unless_on_clean_main_matching_origin() {
+  if [[ "$(git branch --show-current)" != "main" ]]; then
+    echo "Release from main only. Current branch: $(git branch --show-current)" >&2
+    exit 1
+  fi
+  if [[ -n "$(git status --porcelain)" ]]; then
+    echo "Working tree must be clean before releasing." >&2
+    git status --short
+    exit 1
+  fi
+  git fetch --tags origin main
+  if [[ "$(git rev-parse HEAD)" != "$(git rev-parse origin/main)" ]]; then
+    echo "Local main differs from origin/main. Pull or push first." >&2
+    exit 1
+  fi
+}
 
-echo "✅ Release $TAG complete"
+fail_if_tag_exists() {
+  if git rev-parse "$TAG" >/dev/null 2>&1; then
+    echo "Tag already exists: $TAG" >&2
+    exit 1
+  fi
+}
+
+commit_version_bump() {
+  printf '%s\n' "$VERSION" > "$ROOT/VERSION"
+  git add VERSION
+  if git diff --cached --quiet; then
+    echo "VERSION already at $VERSION"
+  else
+    git commit -m "Release $TAG"
+  fi
+}
+
+push_main_and_tag_to_start_the_release_workflow() {
+  git tag "$TAG"
+  git push --atomic origin main "refs/tags/$TAG"
+}
+
+fail_unless_version_looks_like_semver
+fail_unless_on_clean_main_matching_origin
+fail_if_tag_exists
+commit_version_bump
+push_main_and_tag_to_start_the_release_workflow
+
+echo "Pushed $TAG. The Release workflow now builds, notarizes and publishes it:"
+echo "  gh run list --workflow Release --limit 1"
