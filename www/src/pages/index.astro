@@ -11,13 +11,13 @@ import Demo from "../demo/Demo";
     <meta name="description" content="Keyboard control for macOS Stage Manager." />
   </head>
   <body>
+    <header class="bar">
+      <img src="/icon.png" alt="" width="28" height="28" />
+      <h1>Batuta</h1>
+      <h2>macOS Stage Manager is great, it was just missing Batuta.</h2>
+    </header>
     <main>
       <Demo client:load />
-      <header class="hero">
-        <img src="/icon.png" alt="" width="72" height="72" />
-        <h1>Batuta</h1>
-        <p>macOS Stage Manager is great, it was just missing Batuta.</p>
-      </header>
     </main>
   </body>
 </html>
@@ -37,9 +37,10 @@ import Demo from "../demo/Demo";
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
-  .hero { text-align: center; padding: 72px 0 0; }
-  .hero img { border-radius: 16px; }
-  .hero h1 { font-size: clamp(40px, 7vw, 64px); margin: 12px 0 8px; letter-spacing: -0.03em; }
-  .hero p { color: var(--muted); font-size: 18px; margin: 0; }
-  main { max-width: 1180px; margin: 0 auto; padding: 40px 16px 96px; }
+  .bar { max-width: 1180px; margin: 0 auto; padding: 16px; display: flex; align-items: center; gap: 10px; }
+  .bar img { border-radius: 7px; }
+  .bar h1 { margin: 0; font-size: 17px; letter-spacing: -0.01em; }
+  .bar h2 { margin: 0 0 0 6px; padding-left: 16px; border-left: 1px solid color-mix(in srgb, var(--muted) 40%, transparent); font-size: 14px; font-weight: 400; color: var(--muted); }
+  main { max-width: 1180px; margin: 0 auto; padding: 8px 16px 96px; }
+  @media (max-width: 640px) { .bar h2 { display: none; } }
 </style>
