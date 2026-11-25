@@ -48,7 +48,7 @@ enum AppSizes {
         NSRunningApplication(processIdentifier: pid)?.bundleIdentifier
     }
 
-    private static func isNearlySame(_ a: UnitRect, _ b: UnitRect?) -> Bool {
+    static func isNearlySame(_ a: UnitRect, _ b: UnitRect?) -> Bool {
         guard let b else { return false }
         return [a.x - b.x, a.y - b.y, (a.x + a.width) - (b.x + b.width), (a.y + a.height) - (b.y + b.height)]
             .allSatisfy { abs($0) <= layoutTolerance }
