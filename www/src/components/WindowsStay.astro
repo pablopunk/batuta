@@ -71,7 +71,7 @@ const EVENTS: [day: number, start: number, length: number, hue: number][] = [
 
 <style>
   .windows-stay {
-    --cycle: 9s;
+    --cycle: 10s;
     margin: 0;
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -164,6 +164,9 @@ const EVENTS: [day: number, start: number, length: number, hue: number][] = [
     background: hsl(var(--hue) 75% 60% / 0.85);
   }
 
+  .ws-editor { animation: editor var(--cycle) ease-in-out infinite; }
+  .ws-chat { animation: chat var(--cycle) ease-in-out infinite; }
+  .ws-photos { animation: photos var(--cycle) ease-in-out infinite; }
   .ws-calendar { animation: snap-back var(--cycle) ease-in-out infinite; }
   .stays .ws-calendar { animation-name: stay; }
   .ws-pointer {
@@ -186,36 +189,52 @@ const EVENTS: [day: number, start: number, length: number, hue: number][] = [
   .stays figcaption span { color: light-dark(#15803d, #4ade80); }
 
   @keyframes pointer {
-    0%, 6% { left: 90%; top: 92%; transform: scale(1); }
-    14% { left: 74.5%; top: 54%; transform: scale(1); }
-    16%, 23% { transform: scale(0.75); }
-    16% { left: 74.5%; top: 54%; }
-    23% { left: 35.5%; top: 20.5%; }
-    25% { transform: scale(1); }
-    31% { left: 59%; top: 63.5%; transform: scale(1); }
-    33%, 40% { transform: scale(0.75); }
-    33% { left: 59%; top: 63.5%; }
-    40% { left: 90%; top: 82%; }
-    42% { transform: scale(1); }
-    50%, 100% { left: 90%; top: 92%; transform: scale(1); }
+    0%, 16% { left: 90%; top: 92%; transform: scale(1); }
+    24% { left: 74.5%; top: 54%; transform: scale(1); }
+    26%, 33% { transform: scale(0.75); }
+    26% { left: 74.5%; top: 54%; }
+    33% { left: 35.5%; top: 20.5%; }
+    35% { transform: scale(1); }
+    41% { left: 59%; top: 63.5%; transform: scale(1); }
+    43%, 50% { transform: scale(0.75); }
+    43% { left: 59%; top: 63.5%; }
+    50% { left: 90%; top: 82%; }
+    52% { transform: scale(1); }
+    60%, 100% { left: 90%; top: 92%; transform: scale(1); }
+  }
+  @keyframes editor {
+    0%, 8% { left: 2%; top: 3%; width: 30.67%; height: 94%; }
+    13%, 90% { left: 2%; top: 3%; width: 47%; height: 45.5%; }
+    95%, 100% { left: 2%; top: 3%; width: 30.67%; height: 94%; }
+  }
+  @keyframes chat {
+    0%, 8% { left: 34.67%; top: 3%; width: 30.67%; height: 94%; }
+    13%, 90% { left: 51%; top: 3%; width: 47%; height: 45.5%; }
+    95%, 100% { left: 34.67%; top: 3%; width: 30.67%; height: 94%; }
+  }
+  @keyframes photos {
+    0%, 8% { left: 67.33%; top: 3%; width: 30.67%; height: 94%; }
+    13%, 90% { left: 2%; top: 51.5%; width: 47%; height: 45.5%; }
+    95%, 100% { left: 67.33%; top: 3%; width: 30.67%; height: 94%; }
   }
   @keyframes snap-back {
-    0%, 16% { left: 51%; top: 51.5%; width: 47%; height: 45.5%; }
-    23%, 33% { left: 12%; top: 18%; width: 47%; height: 45.5%; }
-    40%, 60% { left: 12%; top: 18%; width: 78%; height: 64%; }
-    63%, 100% { left: 51%; top: 51.5%; width: 47%; height: 45.5%; }
+    0%, 8% { left: 51%; top: 51.5%; width: 47%; height: 45.5%; opacity: 0; transform: scale(0.9); }
+    13%, 26% { left: 51%; top: 51.5%; width: 47%; height: 45.5%; opacity: 1; transform: scale(1); }
+    33%, 43% { left: 12%; top: 18%; width: 47%; height: 45.5%; }
+    50%, 70% { left: 12%; top: 18%; width: 78%; height: 64%; }
+    73%, 90% { left: 51%; top: 51.5%; width: 47%; height: 45.5%; opacity: 1; }
+    93%, 100% { left: 51%; top: 51.5%; width: 47%; height: 45.5%; opacity: 0; }
   }
   @keyframes stay {
-    0%, 16% { left: 51%; top: 51.5%; width: 47%; height: 45.5%; opacity: 1; }
-    23%, 33% { left: 12%; top: 18%; width: 47%; height: 45.5%; opacity: 1; }
-    40%, 90% { left: 12%; top: 18%; width: 78%; height: 64%; opacity: 1; }
-    94% { left: 12%; top: 18%; width: 78%; height: 64%; opacity: 0; }
-    95% { left: 51%; top: 51.5%; width: 47%; height: 45.5%; opacity: 0; }
-    100% { left: 51%; top: 51.5%; width: 47%; height: 45.5%; opacity: 1; }
+    0%, 8% { left: 51%; top: 51.5%; width: 47%; height: 45.5%; opacity: 0; transform: scale(0.9); }
+    13%, 26% { left: 51%; top: 51.5%; width: 47%; height: 45.5%; opacity: 1; transform: scale(1); }
+    33%, 43% { left: 12%; top: 18%; width: 47%; height: 45.5%; }
+    50%, 90% { left: 12%; top: 18%; width: 78%; height: 64%; opacity: 1; }
+    93%, 100% { left: 12%; top: 18%; width: 78%; height: 64%; opacity: 0; }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .ws-calendar, .ws-pointer { animation: none; }
+    .ws-window, .ws-pointer { animation: none; }
     .stays .ws-calendar { left: 12%; top: 18%; width: 78%; height: 64%; }
   }
   @media (max-width: 480px) {
