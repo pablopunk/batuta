@@ -11,4 +11,5 @@
 
 ```sh
 make run
+make test   # runs the unit tests with swift test
 ```
