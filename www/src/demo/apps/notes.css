@@ -1,21 +1,21 @@
-.notes { display: flex; background: #fff; color: #1d1d1f; }
-.notes-list { width: 230px; flex-shrink: 0; padding-top: 40px; background: #f6f6f6; border-right: 1px solid #e2e2e2; overflow: hidden; }
-.notes-header { padding: 0 16px 8px; font-size: 13px; font-weight: 700; color: #6e6e73; }
-.note-row { margin: 0 8px; padding: 8px 10px; border-radius: 7px; border-bottom: 1px solid #ececec; font-size: 13px; white-space: nowrap; overflow: hidden; }
-.note-row.active { background: #fbd75b; border-bottom-color: transparent; }
+.notes { display: flex; background: var(--window); color: var(--label); }
+.notes-list { width: 230px; flex-shrink: 0; padding-top: 40px; background: var(--window-secondary); border-right: 1px solid var(--separator); overflow: hidden; }
+.notes-header { padding: 0 16px 8px; font-size: 13px; font-weight: 700; color: var(--label-secondary); }
+.note-row { margin: 0 8px; padding: 8px 10px; border-radius: 7px; border-bottom: 1px solid var(--separator); font-size: 13px; white-space: nowrap; overflow: hidden; }
+.note-row.active { background: var(--note-selection); color: var(--note-selection-label); border-bottom-color: transparent; }
 .note-row b { display: block; font-weight: 700; }
-.note-row span { color: #6e6e73; font-size: 12px; }
-.note-row em { font-style: normal; color: #1d1d1f; margin-right: 4px; }
-.note-row.active span { color: #5b4a10; }
+.note-row span { color: var(--label-secondary); font-size: 12px; }
+.note-row em { font-style: normal; color: var(--label); margin-right: 4px; }
+.note-row.active span, .note-row.active em { color: var(--note-selection-label); }
 
 .note-body { flex: 1; min-width: 0; padding: 18px 28px; overflow: hidden; font-size: 14px; line-height: 1.6; }
-.note-date { text-align: center; color: #8e8e93; font-size: 11.5px; margin-bottom: 12px; }
+.note-date { text-align: center; color: var(--label-tertiary); font-size: 11.5px; margin-bottom: 12px; }
 .note-body h1 { margin: 0 0 6px; font-size: 24px; }
 .note-body ul { list-style: none; padding: 0; }
 .note-body li { position: relative; padding-left: 26px; margin: 4px 0; }
-.note-body li::before { content: ""; position: absolute; left: 0; top: 4px; width: 15px; height: 15px; border-radius: 50%; border: 1.5px solid #c7c7cc; }
-.note-body li.done { color: #8e8e93; }
-.note-body li.done::before { background: #e5b400; border-color: #e5b400; }
+.note-body li::before { content: ""; position: absolute; left: 0; top: 4px; width: 15px; height: 15px; border-radius: 50%; border: 1.5px solid var(--label-tertiary); }
+.note-body li.done { color: var(--label-secondary); }
+.note-body li.done::before { background: var(--note-check); border-color: var(--note-check); }
 
 @container window (max-width: 560px) {
   .notes-list { display: none; }

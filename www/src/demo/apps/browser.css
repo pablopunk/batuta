@@ -1,17 +1,17 @@
-.browser { display: flex; flex-direction: column; background: #fff; color: #1d1d1f; }
-.browser-toolbar { height: 44px; flex-shrink: 0; display: flex; align-items: center; gap: 14px; padding: 0 14px 0 84px; background: #f2f2f4; border-bottom: 1px solid #dcdce0; }
-.browser-toolbar .nav { color: #8a8a90; font-size: 16px; letter-spacing: 6px; white-space: nowrap; }
-.browser-toolbar .address { flex: 1; min-width: 0; height: 28px; line-height: 28px; text-align: center; border-radius: 8px; background: #e3e3e8; font-size: 12.5px; color: #3a3a3c; white-space: nowrap; overflow: hidden; }
+.browser { display: flex; flex-direction: column; background: var(--window); color: var(--label); }
+.browser-toolbar { height: 44px; flex-shrink: 0; display: flex; align-items: center; gap: 14px; padding: 0 14px 0 84px; background: var(--window-tertiary); border-bottom: 1px solid var(--separator); }
+.browser-toolbar .nav { color: var(--label-secondary); font-size: 16px; letter-spacing: 6px; white-space: nowrap; }
+.browser-toolbar .address { flex: 1; min-width: 0; height: 28px; line-height: 28px; text-align: center; border-radius: 8px; background: var(--fill-strong); font-size: 12.5px; color: var(--label); white-space: nowrap; overflow: hidden; }
 
 .browser .page { flex: 1; overflow: hidden; }
-.browser nav { display: flex; gap: 18px; align-items: center; padding: 14px 32px; border-bottom: 1px solid #eee; font-size: 13px; color: #6e6e73; }
-.browser nav b { flex: 1; color: #1d1d1f; font-size: 15px; letter-spacing: -0.01em; }
+.browser nav { display: flex; gap: 18px; align-items: center; padding: 14px 32px; border-bottom: 1px solid var(--separator); font-size: 13px; color: var(--label-secondary); }
+.browser nav b { flex: 1; color: var(--label); font-size: 15px; letter-spacing: -0.01em; }
 .browser article { max-width: 620px; margin: 0 auto; padding: 26px 32px; }
-.browser small { color: #e0533d; font-weight: 600; font-size: 12px; }
+.browser small { color: var(--article-kicker); font-weight: 600; font-size: 12px; }
 .browser h1 { margin: 6px 0 10px; font: 700 30px/1.15 Georgia, "New York", serif; letter-spacing: -0.01em; }
-.browser .lede { margin: 0 0 18px; font-size: 16px; line-height: 1.5; color: #48484a; }
+.browser .lede { margin: 0 0 18px; font-size: 16px; line-height: 1.5; color: var(--label-secondary); }
 .browser .figure { height: 190px; margin-bottom: 18px; border-radius: 10px; background: radial-gradient(circle at 72% 38%, #fff2c4 0 7%, transparent 8%), linear-gradient(180deg, #8ec5fc 0%, #e0c3fc 55%, #6a8d73 56%, #3e5c45 100%); }
-.browser p { font-size: 14.5px; line-height: 1.65; color: #3a3a3c; }
+.browser p { font-size: 14.5px; line-height: 1.65; color: var(--label); opacity: 0.85; }
 
 @container window (max-width: 560px) {
   .browser-toolbar .nav:last-child { display: none; }

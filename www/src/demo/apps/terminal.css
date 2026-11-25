@@ -1,8 +1,8 @@
-.app.terminal { padding: 12px 14px; background: #0e1014; color: #d7dae0; font: 13px/1.75 "SF Mono", ui-monospace, Menlo, monospace; white-space: nowrap; }
-.terminal b { color: #61afef; font-weight: 600; }
-.terminal i { color: #c678dd; font-style: normal; }
-.terminal .dim { color: #6b7280; }
-.terminal .ok { color: #98c379; }
-.terminal .sha { color: #e5c07b; }
-.terminal .cursor { display: inline-block; width: 8px; height: 15px; vertical-align: middle; background: #d7dae0; animation: blink 1s steps(1) infinite; }
+.app.terminal { padding: 12px 14px; background: var(--terminal-bg); color: var(--terminal-text); font: 13px/1.75 "SF Mono", ui-monospace, Menlo, monospace; white-space: nowrap; }
+.terminal b { color: var(--terminal-path); font-weight: 600; }
+.terminal i { color: var(--terminal-branch); font-style: normal; }
+.terminal .dim { color: var(--terminal-dim); }
+.terminal .ok { color: var(--terminal-ok); }
+.terminal .sha { color: var(--terminal-sha); }
+.terminal .cursor { display: inline-block; width: 8px; height: 15px; vertical-align: middle; background: var(--terminal-text); animation: blink 1s steps(1) infinite; }
 @keyframes blink { 50% { opacity: 0; } }

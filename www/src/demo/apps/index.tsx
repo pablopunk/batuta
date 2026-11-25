@@ -11,15 +11,15 @@ import { Photos } from "./Photos";
 import { Terminal } from "./Terminal";
 
 /** `title` draws a classic title bar; without it the app draws its own top and the traffic lights float over it. */
-type App = { name: string; title?: string; dark: boolean; content: ReactNode };
+type App = { name: string; title?: string; content: ReactNode };
 
 export const APPS: Record<AppId, App> = {
-  editor: { name: "Editor", title: "HotkeyTap.swift — batuta", dark: true, content: <Editor /> },
-  terminal: { name: "Terminal", title: "~/batuta — zsh — 96×32", dark: true, content: <Terminal /> },
-  browser: { name: "Browser", dark: false, content: <Browser /> },
-  notes: { name: "Notes", dark: false, content: <Notes /> },
-  music: { name: "Music", dark: true, content: <Music /> },
-  mail: { name: "Mail", dark: false, content: <Mail /> },
-  chat: { name: "Chat", dark: false, content: <Chat /> },
-  photos: { name: "Photos", dark: false, content: <Photos /> },
+  editor: { name: "Editor", title: "HotkeyTap.swift — batuta", content: <Editor /> },
+  terminal: { name: "Terminal", title: "~/batuta — zsh — 96×32", content: <Terminal /> },
+  browser: { name: "Browser", content: <Browser /> },
+  notes: { name: "Notes", content: <Notes /> },
+  music: { name: "Music", content: <Music /> },
+  mail: { name: "Mail", content: <Mail /> },
+  chat: { name: "Chat", content: <Chat /> },
+  photos: { name: "Photos", content: <Photos /> },
 };

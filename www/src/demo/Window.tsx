@@ -11,7 +11,7 @@ const TrafficLights = ({ floating }: { floating?: boolean }) => (
 export function Window({ id, placement, focused }: Props) {
   const app = APPS[id];
   const tilt = placement.inStrip ? 24 : 0;
-  const className = ["window", app.dark && "dark", focused && "focused", placement.inStrip && "in-strip"]
+  const className = ["window", focused && "focused", placement.inStrip && "in-strip"]
     .filter(Boolean)
     .join(" ");
   return (

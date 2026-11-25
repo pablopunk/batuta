@@ -1,5 +1,6 @@
+@import "./tokens.css";
+
 .demo {
-  --accent: #0a84ff;
   --window-motion: 0.42s cubic-bezier(0.25, 0.9, 0.3, 1);
 }
 
@@ -8,8 +9,8 @@
 .device {
   padding: 12px;
   border-radius: 22px;
-  background: linear-gradient(#24252b, #141519);
-  box-shadow: 0 0 0 1px #2c2d34, 0 40px 120px -20px rgba(80, 90, 255, 0.25), 0 30px 60px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(var(--device-top), var(--device-bottom));
+  box-shadow: 0 0 0 1px var(--device-outline), 0 40px 120px -20px var(--device-glow), 0 30px 60px var(--window-shadow);
 }
 
 .screen-fit {
@@ -36,12 +37,7 @@
 .wallpaper {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(at 18% 22%, #7b61ff 0, transparent 48%),
-    radial-gradient(at 82% 18%, #ff7a59 0, transparent 42%),
-    radial-gradient(at 70% 85%, #1fb6ff 0, transparent 50%),
-    radial-gradient(at 25% 90%, #ff4f9a 0, transparent 40%),
-    #20184a;
+  background: var(--wallpaper);
 }
 
 /* Menu bar */
@@ -54,9 +50,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  color: #fff;
+  color: var(--menubar-label);
   font-size: 13.5px;
-  background: rgba(20, 16, 50, 0.28);
+  background: var(--menubar);
   backdrop-filter: blur(30px) saturate(1.6);
   z-index: 900;
 }
@@ -74,7 +70,7 @@
   display: flex;
   padding: 3px 6px;
   border-radius: 5px;
-  background: rgba(255, 255, 255, 0.18);
+  background: var(--menubar-pill);
 }
 
 /* Windows */
@@ -85,10 +81,10 @@
   flex-direction: column;
   overflow: hidden;
   border-radius: 12px;
-  background: #fff;
-  color: #222;
+  background: var(--window);
+  color: var(--label);
   transform-origin: 0 0;
-  box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.35), 0 16px 40px rgba(0, 0, 0, 0.28);
+  box-shadow: 0 0 0 0.5px var(--window-outline), 0 16px 40px var(--window-shadow);
   transition:
     left var(--window-motion),
     top var(--window-motion),
@@ -98,9 +94,8 @@
     box-shadow var(--window-motion);
 }
 
-.window.dark { background: #1e1f24; color: #e6e6e6; }
-.window.focused { box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.4), 0 24px 70px rgba(0, 0, 0, 0.45); }
-.window.in-strip { box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3), 0 30px 60px rgba(0, 0, 0, 0.35); }
+.window.focused { box-shadow: 0 0 0 0.5px var(--window-outline), 0 24px 70px var(--window-shadow); }
+.window.in-strip { box-shadow: 0 0 0 1px var(--window-outline), 0 30px 60px var(--window-shadow); }
 
 .titlebar {
   height: 30px;
@@ -110,14 +105,12 @@
   padding: 0 12px;
   font-size: 13px;
   font-weight: 600;
-  color: #888;
-  background: #ececef;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  color: var(--label-tertiary);
+  background: var(--window-tertiary);
+  border-bottom: 1px solid var(--separator);
 }
 
-.dark .titlebar { background: #2a2b31; color: #8b8d96; border-bottom-color: rgba(0, 0, 0, 0.4); }
-.focused .titlebar { color: #333; }
-.dark.focused .titlebar { color: #d6d7dc; }
+.focused .titlebar { color: var(--label-secondary); }
 
 .titlebar .title {
   flex: 1;
@@ -130,11 +123,10 @@
 
 .lights { display: flex; gap: 8px; }
 .lights.floating { position: absolute; top: 15px; left: 16px; z-index: 2; }
-.lights i { width: 12px; height: 12px; border-radius: 50%; background: #d3d3d8; }
-.dark .lights i { background: #4a4b52; }
-.focused .lights i:nth-child(1) { background: #ff5f57; }
-.focused .lights i:nth-child(2) { background: #febc2e; }
-.focused .lights i:nth-child(3) { background: #28c840; }
+.lights i { width: 12px; height: 12px; border-radius: 50%; background: var(--traffic-inactive); }
+.focused .lights i:nth-child(1) { background: var(--traffic-close); }
+.focused .lights i:nth-child(2) { background: var(--traffic-minimize); }
+.focused .lights i:nth-child(3) { background: var(--traffic-zoom); }
 
 .content { position: relative; flex: 1; overflow: hidden; container: window / inline-size; }
 
@@ -152,7 +144,7 @@
   inset: 0;
   border-radius: 16px;
   border: 3px solid var(--accent);
-  background: rgba(10, 132, 255, 0.12);
+  background: var(--highlight-fill);
   opacity: 0;
 }
 
@@ -174,7 +166,7 @@
   place-items: center;
   font-size: 12px;
   font-weight: 700;
-  color: #fff;
+  color: var(--on-accent);
   background: var(--accent);
   animation: appear 0.15s ease-out;
 }
@@ -192,10 +184,10 @@
   border-radius: 12px;
   font-size: 18px;
   font-weight: 600;
-  color: #fff;
-  background: rgba(40, 40, 48, 0.7);
+  color: var(--hud-label);
+  background: var(--hud);
   backdrop-filter: blur(30px) saturate(1.5);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 10px 30px var(--window-shadow);
   transform: translate(-50%, -50%);
   animation: banner 0.85s linear forwards;
 }
@@ -217,7 +209,7 @@
   gap: 10px;
   padding: 12px;
   border-radius: 20px;
-  background: rgba(16, 16, 22, 0.55);
+  background: var(--keycaps-tray);
   backdrop-filter: blur(24px);
   transform: translate(-50%, 12px);
   opacity: 0;
@@ -234,16 +226,16 @@
   place-items: center;
   border-radius: 12px;
   font: 600 26px -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  color: #1d1d22;
-  background: linear-gradient(#ffffff, #e4e4ea);
-  box-shadow: 0 4px 0 #a9a9b3, 0 6px 12px rgba(0, 0, 0, 0.3);
+  color: var(--keycap-label);
+  background: linear-gradient(var(--keycap-top), var(--keycap-bottom));
+  box-shadow: 0 4px 0 var(--keycap-edge), 0 6px 12px var(--window-shadow);
 }
 
 .keycaps kbd.wide { min-width: 150px; font-size: 20px; }
 .keycaps kbd.pressed { animation: press 0.22s ease-out; }
 
 @keyframes press {
-  0%, 40% { transform: translateY(4px); box-shadow: 0 0 0 #a9a9b3, 0 2px 4px rgba(0, 0, 0, 0.3); }
+  0%, 40% { transform: translateY(4px); box-shadow: 0 0 0 var(--keycap-edge), 0 2px 4px var(--window-shadow); }
 }
 
 /* Around the screen */
@@ -275,16 +267,15 @@
 .chapters button {
   padding: 8px 14px;
   border-radius: 999px;
-  border: 1px solid #262833;
-  background: #15161c;
-  color: #a6a8b6;
+  border: 1px solid var(--chip-border);
+  background: var(--chip);
+  color: var(--label-secondary);
   font: inherit;
   font-size: 14px;
   cursor: pointer;
   transition: background 0.2s, color 0.2s, border-color 0.2s;
 }
 
-.chapters button:hover { color: #fff; border-color: #3a3d4a; }
-.chapters button.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.chapters button:hover { color: var(--label); border-color: var(--chip-border-hover); }
+.chapters button.active { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
 .chapters .index { margin-right: 8px; opacity: 0.6; font-variant-numeric: tabular-nums; }
-
