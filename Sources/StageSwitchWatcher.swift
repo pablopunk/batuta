@@ -71,7 +71,7 @@ final class StageSwitchWatcher {
 
     private func compareWithLastStage(_ windows: [StageWindow]) {
         let ids = Set(windows.map(\.id))
-        stageLog.notice("compare \(ids.count) windows with \(self.lastStageWindowIDs.count)")
+        stageLog.debug("compare \(ids.count) windows with \(self.lastStageWindowIDs.count)")
         guard !ids.isEmpty, ids != lastStageWindowIDs else { return }
         let isAnotherStage = ids.intersection(lastStageWindowIDs).count * 2 < max(ids.count, lastStageWindowIDs.count)
         rememberCurrentStage(windows)
