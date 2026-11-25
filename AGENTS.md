@@ -46,14 +46,19 @@ Batuta tiles when a stage window is pulled in, when a window leaves the stage, a
 
 ## Release
 
-Release from a clean `main` with `make release VERSION=x.y.z`. It bumps `VERSION`, builds a Developer ID signed, hardened-runtime `Batuta.app`, notarizes and staples it, zips it to `dist/Batuta.zip` with a `.sha256`, adds the version to `appcast.xml`, tags `vx.y.z`, publishes the GitHub release and then pushes `main` (so the appcast only points at assets that exist). The `Release` GitHub Action then updates the `batuta` cask in `pablopunk/homebrew-brew` (needs the `GH_PAT` repository secret).
+Release from a clean `main` that matches `origin/main` with `make release VERSION=x.y.z`. It only bumps `VERSION`, commits "Release vx.y.z", tags `vx.y.z` and pushes `main` and the tag together. The tag starts the `Release` GitHub Action (`.github/workflows/release.yml`, on the `xcode-27` runner), which:
 
-One-time setup:
+1. imports the Developer ID certificate into a temporary keychain and stores notary credentials there (`scripts/ci/`),
+2. runs `make build-release`: Developer ID signed, hardened-runtime `Batuta.app`, notarized, stapled, zipped to `dist/Batuta.zip` with a `.sha256`,
+3. checks that the Sparkle key matches `SPARKLE_PUBLIC_ED_KEY`,
+4. runs `scripts/publish-release.sh`: creates the GitHub release with the zip, the sha256 and generated notes, then commits the signed `appcast.xml` to `main` (so the appcast only points at assets that exist),
+5. updates the `batuta` cask in `pablopunk/homebrew-brew`.
 
-- Fill the TODOs in `scripts/release-settings.sh`: `BATUTA_GITHUB_REPOSITORY` and `SPARKLE_PUBLIC_ED_KEY` (`SPARKLE_APPCAST_URL` follows from the repository). Release scripts refuse to run while a TODO is left.
-- A `Developer ID Application` certificate in the login keychain. With more than one, set `CODESIGN_IDENTITY`.
-- Notarization credentials stored as the `Batuta` keychain profile (or set `NOTARY_KEYCHAIN_PROFILE`): `xcrun notarytool store-credentials "Batuta" --apple-id YOUR_APPLE_ID --team-id YOUR_TEAM_ID`.
-- Sparkle EdDSA keys: `make generate-keys` stores the private key in the login keychain and prints the public key. The same keychain key that Swift Shift uses works too. To sign from a file instead, set `SPARKLE_PRIVATE_KEY_FILE`.
+Run the workflow by hand (`gh workflow run Release`) for a dry run: it builds, signs, notarizes and checks the Sparkle key, uploads `dist/` as a run artifact, and publishes nothing.
+
+Repository secrets the workflow needs: `MACOS_CERT_P12_BASE64` and `MACOS_CERT_PASSWORD` (only the "Developer ID Application" identity, as p12), `APPLE_ID`, `APPLE_TEAM_ID`, `APPLE_APP_SPECIFIC_PASSWORD`, `SPARKLE_PRIVATE_KEY` (export it with `.build/artifacts/sparkle/Sparkle/bin/generate_keys -x <file>`) and `GH_PAT` (a fine-grained token with contents write on `pablopunk/homebrew-brew`).
+
+The release build must use the Xcode 27 toolchain: Swift 6.3 (Xcode 26) crashes compiling Batuta with `-O`.
 
 Sparkle is only active in release builds: `build-app.sh` writes `SUFeedURL`/`SUPublicEDKey` into `Info.plist` when `CONFIGURATION=release` (override with `ENABLE_SPARKLE_UPDATES`), and `AppUpdater` does nothing without them, so `make run` ("Batuta Dev.app") never updates itself. `scripts/embed-sparkle.sh` copies `Sparkle.framework` into `Contents/Frameworks` and signs its parts inside out; keep signing the app without `--deep`.
 

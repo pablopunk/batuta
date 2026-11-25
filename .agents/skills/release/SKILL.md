@@ -5,13 +5,15 @@ description: Cut a Batuta release from a bump word (patch/minor/major) or a vers
 
 # Release
 
-`make release VERSION=x.y.z` runs everything locally from a clean `main`: bumps `VERSION`, builds and notarizes `Batuta.app`, updates `appcast.xml`, tags `vX.Y.Z`, creates the GitHub release with generated notes and pushes `main`. The `Release` GitHub Action then updates the Homebrew cask. See "Release" in `AGENTS.md` for the one-time setup.
+`make release VERSION=x.y.z` only bumps `VERSION`, commits, tags `vX.Y.Z` and pushes `main` and the tag. The tag starts the `Release` GitHub Action, which builds, signs and notarizes `Batuta.app`, creates the GitHub release with generated notes, commits the signed `appcast.xml` to `main` and updates the Homebrew cask. See "Release" in `AGENTS.md` for the secrets it needs.
 
 ## Cut
 
 1. `git fetch --tags origin`; read the latest tag with `git tag --sort=-v:refname | head -1`.
 2. Bump it for the word used: *patch* (`0.1.4` → `0.1.5`), *minor* (`0.1.4` → `0.2.0`), *major* (`0.1.4` → `1.0.0`).
-3. Say the computed version, then run `make release VERSION=x.y.z` (it takes a few minutes while Apple notarizes).
+3. Say the computed version, then run `make release VERSION=x.y.z` from a clean `main` that matches `origin/main`.
+4. Watch the action: `gh run watch "$(gh run list --workflow Release --limit 1 --json databaseId -q '.[0].databaseId')" --exit-status` (a few minutes while Apple notarizes). If it fails, read `gh run view <id> --log-failed`, fix, and re-run it with `gh run rerun <id> --failed`; publishing is safe to repeat.
+5. `git pull` so local `main` has the appcast commit the action pushed.
 
 ## Notes
 
@@ -32,7 +34,7 @@ description: Cut a Batuta release from a bump word (patch/minor/major) or a vers
    ```
 
    One bullet per area with an emoji and a bold label; write for users, not as a commit dump. Keep the summary true for the whole release.
-5. Stage the body in a scratch file and publish it:
+5. Once the action has created the release, stage the body in a scratch file and publish it:
 
    ```sh
    gh release edit vX.Y.Z --title "vX.Y.Z - <Name>" --notes-file <path>
@@ -40,4 +42,4 @@ description: Cut a Batuta release from a bump word (patch/minor/major) or a vers
 
 ## After
 
-- Check the `Release` action with `gh run list --workflow Release --limit 1`. It fails without the `GH_PAT` secret (a token that can push to `pablopunk/homebrew-brew`).
+- To check the pipeline without cutting a version, run the dry run: `gh workflow run Release`. It builds, signs and notarizes but publishes nothing.
