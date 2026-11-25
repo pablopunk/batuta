@@ -61,12 +61,17 @@ const OPTIONS = [
     height: 24px;
     display: grid;
     place-items: center;
+    overflow: hidden;
+    padding: 0;
     border: 0;
     border-radius: 999px;
     background: transparent;
     color: var(--muted);
     cursor: pointer;
+    transition: width 0.2s ease, opacity 0.2s ease;
   }
+  .theme-toggle:not(:hover, :focus-within) { gap: 0; }
+  .theme-toggle:not(:hover, :focus-within) button:not([aria-checked="true"]) { width: 0; opacity: 0; }
   button:hover { color: var(--text); }
   button[aria-checked="true"] {
     color: var(--text);
