@@ -13,7 +13,9 @@ enum AppSizes {
 
     static func savedRect(for window: StageWindow) -> UnitRect? {
         let settings = ConfigStore.shared.config.tilingSettings(onBuiltInScreen: StageLayout.isOnBuiltInScreen(window.frame))
-        return bundleID(of: window.pid).flatMap { settings.appSizes[$0] }
+        guard settings.rememberAppSizes else { return nil }
+        let onBuiltInScreen = StageLayout.isOnBuiltInScreen(window.frame)
+        return bundleID(of: window.pid).flatMap { AppSizeStore.shared.sizes(onBuiltInScreen: onBuiltInScreen)[$0] }
     }
 
     /// Saves only when the window that moved is still the only one in its stage, so a quick stage switch cannot
@@ -22,6 +24,7 @@ enum AppSizes {
         guard !WindowAnimator.shared.isAnimating else { return appSizesLog.debug("skip: animating") }
         let visible = StageWindows.visibleSortedLeftToRight()
         guard let moved = visible.first(where: { $0.id == windowID }) else { return appSizesLog.debug("skip: window gone") }
+        guard isRememberingAppSizes(onScreenOf: moved) else { return appSizesLog.debug("skip: setting off") }
         let windows = StageLayout.windowsOnSameScreen(as: moved, among: visible)
         let mode = StageLayout.mode(for: windows)
         guard windows.count == 1, let window = windows.first else { return appSizesLog.debug("skip: \(windows.count) windows") }
@@ -33,9 +36,9 @@ enum AppSizes {
         guard !isSameFrame(window.frame, expectedFrame) else { return appSizesLog.debug("skip: frame unchanged") }
         let learned = StageLayout.unitRect(of: window.frame, in: placementArea).clampedToUnitSquare()
         let onBuiltInScreen = StageLayout.isOnBuiltInScreen(window.frame)
-        let layoutRect = TilingLayouts.unitRects(for: 1, mode: mode, customLayouts: ConfigStore.shared.config.customLayouts).first
+        let layoutRect = TilingLayouts.unitRects(for: 1, mode: mode, customLayouts: ConfigStore.shared.config.tilingSettings(onBuiltInScreen: onBuiltInScreen).customLayouts).first
         let savedSize = isNearlySame(learned, layoutRect) ? nil : learned
-        ConfigStore.shared.update { $0.updateTilingSettings(onBuiltInScreen: onBuiltInScreen) { $0.appSizes[bundleID] = savedSize } }
+        AppSizeStore.shared.set(savedSize, for: bundleID, onBuiltInScreen: onBuiltInScreen)
         appSizesLog.notice("\(savedSize == nil ? "forgot" : "saved", privacy: .public) \(bundleID, privacy: .public)")
     }
 
@@ -44,11 +47,15 @@ enum AppSizes {
         return FileManager.default.displayName(atPath: url.path).replacingOccurrences(of: ".app", with: "")
     }
 
+    private static func isRememberingAppSizes(onScreenOf window: StageWindow) -> Bool {
+        ConfigStore.shared.config.tilingSettings(onBuiltInScreen: StageLayout.isOnBuiltInScreen(window.frame)).rememberAppSizes
+    }
+
     private static func bundleID(of pid: pid_t) -> String? {
         NSRunningApplication(processIdentifier: pid)?.bundleIdentifier
     }
 
-    private static func isNearlySame(_ a: UnitRect, _ b: UnitRect?) -> Bool {
+    static func isNearlySame(_ a: UnitRect, _ b: UnitRect?) -> Bool {
         guard let b else { return false }
         return [a.x - b.x, a.y - b.y, (a.x + a.width) - (b.x + b.width), (a.y + a.height) - (b.y + b.height)]
             .allSatisfy { abs($0) <= layoutTolerance }

@@ -69,9 +69,10 @@ final class StageNavigator {
         let windows = StageOrders.ordered(StageLayout.windowsOnSameScreen(as: focused, among: allWindows))
         let focusedFrame = focused.frame
         let newMode = pickMode(windows)
-        StageTilingModes.choose(newMode, for: windows.map(\.id), replacing: StageLayout.mode(for: windows))
+        let previousMode = StageLayout.mode(for: windows)
+        StageTilingModes.choose(newMode, for: windows.map(\.id), replacing: previousMode)
         StageLayout.arrange(windows, besides: StageStrip.closest(to: focusedFrame))
-        modeBanner.show(newMode.label, near: focusedFrame)
+        modeBanner.show(switchingFrom: previousMode, to: newMode, near: focusedFrame)
     }
 
     /// Waits a moment so other shortcuts that use the same keys do not flash the numbers.

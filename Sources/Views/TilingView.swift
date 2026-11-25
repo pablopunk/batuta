@@ -14,6 +14,7 @@ private enum ScreenKind: String, CaseIterable {
 
 struct TilingView: View {
     @ObservedObject private var configStore = ConfigStore.shared
+    @ObservedObject private var appSizeStore = AppSizeStore.shared
     @State private var windowCount = 2
     @State private var screenKind: ScreenKind = .laptop
 
@@ -54,12 +55,36 @@ struct TilingView: View {
                         .foregroundStyle(.tertiary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+            }
+            .disabled(!isEditable)
+            .opacity(isEditable ? 1 : 0.45)
 
+            if settings.mode != .off { WindowCountStepper(count: $windowCount) }
+
+            if settings.mode == .custom {
+                if isEditable {
+                    CustomLayoutEditor(windowCount: windowCount, layouts: settings.customLayouts) { key, rects in updateSettings { $0.customLayouts[key] = rects } }
+                        .id("\(editsExternalSettings)-\(windowCount)")
+                } else {
+                    LayoutPreview(rects: previewRects).opacity(0.45)
+                }
+            } else if settings.mode != .off {
+                LayoutPreview(rects: previewRects).opacity(isEditable ? 1 : 0.45)
+            }
+
+            Group {
                 PreferenceToggleRow(
                     title: "Don't cover Stage Manager",
                     subtitle: "Tile beside the thumbnails",
                     icon: "sidebar.left",
                     isOn: Binding(get: { settings.leaveRoomForStageManager }, set: { isOn in updateSettings { $0.leaveRoomForStageManager = isOn } })
+                )
+
+                PreferenceToggleRow(
+                    title: "Learn app size",
+                    subtitle: "For 1-window stages",
+                    icon: "macwindow",
+                    isOn: Binding(get: { settings.rememberAppSizes }, set: { isOn in updateSettings { $0.rememberAppSizes = isOn } })
                 )
             }
             .disabled(!isEditable)
@@ -76,22 +101,20 @@ struct TilingView: View {
 
             ModeShortcutRows()
 
-            if !settings.appSizes.isEmpty {
-                AppSizeRows(appSizes: settings.appSizes) { bundleID in updateSettings { $0.appSizes[bundleID] = nil } }
+            if settings.rememberAppSizes && !appSizesForThisTab.isEmpty {
+                AppSizeRows(appSizes: appSizesForThisTab) { bundleID in
+                    appSizeStore.set(nil, for: bundleID, onBuiltInScreen: !editsExternalSettings)
+                }
                     .disabled(!isEditable)
                     .opacity(isEditable ? 1 : 0.45)
-            }
-
-            if settings.mode != .off { WindowCountStepper(count: $windowCount) }
-
-            if settings.mode == .custom {
-                CustomLayoutEditor(windowCount: windowCount)
-            } else if settings.mode != .off {
-                LayoutPreview(rects: previewRects)
             }
         }
         .padding(14)
         .onAppear { screenKind = ScreenKind.underMouse }
+    }
+
+    private var appSizesForThisTab: [String: UnitRect] {
+        appSizeStore.sizes(onBuiltInScreen: !editsExternalSettings)
     }
 
     private var editsExternalSettings: Bool {
@@ -114,7 +137,7 @@ struct TilingView: View {
     }
 
     private var previewRects: [UnitRect] {
-        TilingLayouts.unitRects(for: windowCount, mode: settings.mode, customLayouts: configStore.config.customLayouts)
+        TilingLayouts.unitRects(for: windowCount, mode: settings.mode, customLayouts: settings.customLayouts)
     }
 
     private var modeCaption: String {

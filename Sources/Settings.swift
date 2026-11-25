@@ -59,8 +59,9 @@ enum StageConfirmMode: String, CaseIterable, Codable {
 struct TilingSettings: Codable, Equatable {
     var mode: TilingMode = .even
     var leaveRoomForStageManager = true
-    /// Keyed by bundle ID: where a lone window of that app goes in a Messy or Custom stage, learned from your last move or resize.
-    var appSizes: [String: UnitRect] = [:]
+    var rememberAppSizes = false
+    /// Keyed by window count ("1" to "6"); each value has one unit rect per window, left to right.
+    var customLayouts: [String: [UnitRect]] = TilingLayouts.defaultCustomLayouts
 
     init(mode: TilingMode = .even, leaveRoomForStageManager: Bool = true) {
         self.mode = mode
@@ -71,7 +72,28 @@ struct TilingSettings: Codable, Equatable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         mode = try container.decodeIfPresent(TilingMode.self, forKey: .mode) ?? .even
         leaveRoomForStageManager = try container.decodeIfPresent(Bool.self, forKey: .leaveRoomForStageManager) ?? true
-        appSizes = try container.decodeIfPresent([String: UnitRect].self, forKey: .appSizes) ?? [:]
+        rememberAppSizes = try container.decodeIfPresent(Bool.self, forKey: .rememberAppSizes) ?? false
+        customLayouts = TilingLayouts.defaultCustomLayouts.merging(
+            try container.decodeIfPresent([String: [UnitRect]].self, forKey: .customLayouts) ?? [:]
+        ) { _, fromFile in fromFile }
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case mode, leaveRoomForStageManager, rememberAppSizes, customLayouts
+    }
+
+    /// Only layouts you drew go in the file; the rest are the defaults.
+    private var customLayoutsDrawnByYou: [String: [UnitRect]] {
+        customLayouts.filter { TilingLayouts.defaultCustomLayouts[$0.key] != $0.value }
+    }
+
+    /// Leaves out default layouts, so the config only shows the ones you drew.
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(mode, forKey: .mode)
+        try container.encode(leaveRoomForStageManager, forKey: .leaveRoomForStageManager)
+        try container.encode(rememberAppSizes, forKey: .rememberAppSizes)
+        if !customLayoutsDrawnByYou.isEmpty { try container.encode(customLayoutsDrawnByYou, forKey: .customLayouts) }
     }
 }
 
@@ -87,8 +109,6 @@ struct BatutaConfig: Codable, Equatable {
     var externalScreensHaveOwnTiling = false
     var externalTiling = TilingSettings()
     var tileWhenSwitchingStages = true
-    /// Keyed by window count ("1" to "6"); each value has one unit rect per window, left to right.
-    var customLayouts: [String: [UnitRect]] = TilingLayouts.defaultCustomLayouts
     var highlightFocusedWindow = true
     var animateWindowMoves = true
     var showMenuBarIcon = true
@@ -114,9 +134,6 @@ struct BatutaConfig: Codable, Equatable {
         }
         directionKeys = try container.decodeIfPresent(DirectionKeys.self, forKey: .directionKeys) ?? defaults.directionKeys
         openStageOn = try container.decodeIfPresent(StageConfirmMode.self, forKey: .openStageOn) ?? defaults.openStageOn
-        customLayouts = defaults.customLayouts.merging(
-            try container.decodeIfPresent([String: [UnitRect]].self, forKey: .customLayouts) ?? [:]
-        ) { _, fromFile in fromFile }
         let legacy = try decoder.container(keyedBy: LegacyCodingKeys.self)
         tiling = try container.decodeIfPresent(TilingSettings.self, forKey: .tiling) ?? TilingSettings(
             mode: try legacy.decodeIfPresent(TilingMode.self, forKey: .tilingMode) ?? .even,
@@ -125,9 +142,13 @@ struct BatutaConfig: Codable, Equatable {
         )
         externalScreensHaveOwnTiling = try container.decodeIfPresent(Bool.self, forKey: .externalScreensHaveOwnTiling) ?? false
         externalTiling = try container.decodeIfPresent(TilingSettings.self, forKey: .externalTiling) ?? tiling
-        if let topLevelAppSizes = try legacy.decodeIfPresent([String: UnitRect].self, forKey: .appSizes) {
-            if tiling.appSizes.isEmpty { tiling.appSizes = topLevelAppSizes }
-            if externalTiling.appSizes.isEmpty { externalTiling.appSizes = topLevelAppSizes }
+        if let topLevelCustomLayouts = try legacy.decodeIfPresent([String: [UnitRect]].self, forKey: .customLayouts) {
+            let laptopKeysInFile = try container.decodeIfPresent(CustomLayoutKeysInFile.self, forKey: .tiling)?.keys ?? []
+            let externalKeysInFile = try container.decodeIfPresent(CustomLayoutKeysInFile.self, forKey: .externalTiling)?.keys ?? laptopKeysInFile
+            for (key, rects) in topLevelCustomLayouts {
+                if !laptopKeysInFile.contains(key) { tiling.customLayouts[key] = rects }
+                if !externalKeysInFile.contains(key) { externalTiling.customLayouts[key] = rects }
+            }
         }
         tileWhenSwitchingStages = try container.decodeIfPresent(Bool.self, forKey: .tileWhenSwitchingStages) ?? defaults.tileWhenSwitchingStages
         highlightFocusedWindow = try container.decodeIfPresent(Bool.self, forKey: .highlightFocusedWindow) ?? defaults.highlightFocusedWindow
@@ -138,9 +159,21 @@ struct BatutaConfig: Codable, Equatable {
         modeShortcuts = try container.decodeIfPresent([String: KeyShortcut].self, forKey: .modeShortcuts) ?? [:]
     }
 
+    /// The window counts a tiling section of the file sets itself, which a legacy top-level layout must not replace.
+    private struct CustomLayoutKeysInFile: Decodable {
+        let keys: Set<String>
+
+        private enum CodingKeys: String, CodingKey { case customLayouts }
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            keys = Set((try container.decodeIfPresent([String: [UnitRect]].self, forKey: .customLayouts) ?? [:]).keys)
+        }
+    }
+
     /// Keys from before tiling settings were grouped per screen.
     private enum LegacyCodingKeys: String, CodingKey {
-        case tilingMode, leaveRoomForStrip, leaveRoomForStageManagerOnBuiltInScreen, appSizes
+        case tilingMode, leaveRoomForStrip, leaveRoomForStageManagerOnBuiltInScreen, customLayouts
     }
 
     var effectiveCycleTilingModeShortcut: KeyShortcut? {
@@ -170,7 +203,7 @@ struct BatutaConfig: Codable, Equatable {
         if usesLaptopTiling(onBuiltInScreen: onBuiltInScreen) { change(&tiling) } else { change(&externalTiling) }
     }
 
-    private func usesLaptopTiling(onBuiltInScreen: Bool) -> Bool {
+    func usesLaptopTiling(onBuiltInScreen: Bool) -> Bool {
         onBuiltInScreen || !externalScreensHaveOwnTiling
     }
 

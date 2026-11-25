@@ -2,7 +2,7 @@ import Foundation
 import Combine
 import SwiftUI
 
-/// Reads and writes ~/.config/batuta/config.json, and reloads it when it is edited by hand.
+/// Reads and writes ~/.config/batuta/config.json, and reloads it (and apps.json) when edited by hand.
 @MainActor
 final class ConfigStore: ObservableObject {
     static let shared = ConfigStore()
@@ -67,7 +67,10 @@ final class ConfigStore: ObservableObject {
 
         let watcher = DispatchSource.makeFileSystemObjectSource(fileDescriptor: descriptor, eventMask: .write, queue: .main)
         watcher.setEventHandler { [weak self] in
-            MainActor.assumeIsolated { self?.reloadIfChangedOnDisk() }
+            MainActor.assumeIsolated {
+                self?.reloadIfChangedOnDisk()
+                AppSizeStore.shared.reloadIfChangedOnDisk()
+            }
         }
         watcher.setCancelHandler { close(descriptor) }
         watcher.resume()

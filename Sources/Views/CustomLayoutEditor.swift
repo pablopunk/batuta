@@ -1,9 +1,10 @@
 import SwiftUI
 
-/// Edits `customLayouts` in the config for one window count: tiles dragged on a screen-shaped canvas.
+/// Edits the custom layout for one window count: tiles dragged on a screen-shaped canvas.
 struct CustomLayoutEditor: View {
-    @ObservedObject private var configStore = ConfigStore.shared
     let windowCount: Int
+    let layouts: [String: [UnitRect]]
+    let saveLayout: (_ key: String, _ rects: [UnitRect]) -> Void
     @State private var draftRects: [UnitRect]?
     @State private var dragStartRects: [UnitRect]?
     @State private var activeIndex: Int?
@@ -32,7 +33,7 @@ struct CustomLayoutEditor: View {
     }
 
     private var savedRects: [UnitRect] {
-        let saved = configStore.config.customLayouts[TilingLayouts.customLayoutKey(windowCount)] ?? []
+        let saved = layouts[TilingLayouts.customLayoutKey(windowCount)] ?? []
         return saved.count == windowCount ? saved : TilingLayouts.evenGrid(windowCount)
     }
 
@@ -85,8 +86,7 @@ struct CustomLayoutEditor: View {
     }
 
     private func save(_ rects: [UnitRect]) {
-        let key = TilingLayouts.customLayoutKey(windowCount)
-        configStore.update { $0.customLayouts[key] = rects }
+        saveLayout(TilingLayouts.customLayoutKey(windowCount), rects)
     }
 
     private static let modesToCopyFrom = TilingMode.allCases.filter { $0 != .custom && $0 != .off }

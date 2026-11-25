@@ -31,8 +31,8 @@ Pick the default mode for every stage in the Tiling tab (saved as `tiling.mode` 
 - **Off**: windows stay where they are; a mode shortcut can still tile one stage.
 - **Even** (default): every window gets the same space: one row up to 3 windows, then rows of up to 3 (5 is 2 over 3).
 - **BSP**: each new window splits the last one in half, side by side then top and bottom.
-- **Messy**: loose hand-drawn layouts for 1 to 6 windows that can overlap; more windows use Even. When an app's window is alone in a Messy or Custom stage and you move or resize it (mouse drag or Navigate + +/-), Batuta saves that place for the app in `appSizes` (inside `tiling`, or `externalTiling` when external screens have their own settings), keyed by bundle ID, and uses it next time. The Tiling tab lists them so you can forget one.
-- **Custom**: draw tiles for 1 to 6 windows; saved as `customLayouts`, keyed by window count, as 0–1 rects (`x`, `y`, `width`, `height`, top-left origin). Tile 1 is the leftmost window.
+- **Messy**: loose hand-drawn layouts for 1 to 5 windows that can overlap; more windows use Even. With "Learn app size" on (`rememberAppSizes` in `tiling` / `externalTiling`, off by default), when an app's window is alone in a Messy or Custom stage and you move or resize it (mouse drag or Navigate + +/-), Batuta saves that place for the app in `~/.config/batuta/apps.json` (`laptop` and `external` lists, keyed by bundle ID; External uses `laptop` unless it has its own settings), and uses it next time. With it off nothing is learned or applied, but saved sizes stay in apps.json. The Tiling tab lists them (only while on) so you can forget one.
+- **Custom**: draw tiles for 1 to 6 windows; saved as `customLayouts` inside `tiling` / `externalTiling` (only the counts you changed), keyed by window count, as 0–1 rects (`x`, `y`, `width`, `height`, top-left origin). Tile 1 is the leftmost window.
 
 **Don't cover Stage Manager** (`tiling.leaveRoomForStageManager`, on by default) keeps windows clear of Stage Manager. Turn it off to tile over the whole screen.
 
@@ -42,3 +42,18 @@ The Laptop settings (`tiling`) apply to every screen. Turn on **Own settings** i
 
 Batuta tiles when a stage window is pulled in, when a window leaves the stage, and when you switch to another stage by keyboard or mouse (**Tile on stage switch**, `tileWhenSwitchingStages`, on by default). A stage that comes back with the same windows is left as it is, so sizes you changed by hand stay; when windows joined or left, the others keep their order.
 
+
+## Release
+
+Release from a clean `main` with `make release VERSION=x.y.z`. It bumps `VERSION`, builds a Developer ID signed, hardened-runtime `Batuta.app`, notarizes and staples it, zips it to `dist/Batuta.zip` with a `.sha256`, adds the version to `appcast.xml`, tags `vx.y.z`, publishes the GitHub release and then pushes `main` (so the appcast only points at assets that exist). The `Release` GitHub Action then updates the `batuta` cask in `pablopunk/homebrew-brew` (needs the `GH_PAT` repository secret).
+
+One-time setup:
+
+- Fill the TODOs in `scripts/release-settings.sh`: `BATUTA_GITHUB_REPOSITORY` and `SPARKLE_PUBLIC_ED_KEY` (`SPARKLE_APPCAST_URL` follows from the repository). Release scripts refuse to run while a TODO is left.
+- A `Developer ID Application` certificate in the login keychain. With more than one, set `CODESIGN_IDENTITY`.
+- Notarization credentials stored as the `Batuta` keychain profile (or set `NOTARY_KEYCHAIN_PROFILE`): `xcrun notarytool store-credentials "Batuta" --apple-id YOUR_APPLE_ID --team-id YOUR_TEAM_ID`.
+- Sparkle EdDSA keys: `make generate-keys` stores the private key in the login keychain and prints the public key. The same keychain key that Swift Shift uses works too. To sign from a file instead, set `SPARKLE_PRIVATE_KEY_FILE`.
+
+Sparkle is only active in release builds: `build-app.sh` writes `SUFeedURL`/`SUPublicEDKey` into `Info.plist` when `CONFIGURATION=release` (override with `ENABLE_SPARKLE_UPDATES`), and `AppUpdater` does nothing without them, so `make run` ("Batuta Dev.app") never updates itself. `scripts/embed-sparkle.sh` copies `Sparkle.framework` into `Contents/Frameworks` and signs its parts inside out; keep signing the app without `--deep`.
+
+`make build-release` alone signs ad-hoc and skips notarization; `SKIP_NOTARIZE=1` skips it with a real identity.

@@ -62,6 +62,10 @@ struct InfoView: View {
 
             Divider().opacity(0.5)
 
+            if AppUpdater.shared.updater != nil {
+                CheckForUpdatesButton()
+            }
+
             HStack(spacing: 8) {
                 Link(destination: URL(string: "https://github.com/pablopunk/batuta")!) {
                     HStack(spacing: 5) {

@@ -8,9 +8,10 @@ private let timingLog = Logger(subsystem: "com.pablopunk.batuta", category: "tim
 enum StageLayout {
     private static let gap: CGFloat = 12
     private static let fallbackStripWidth: CGFloat = 260
-    static var onArranged: (() -> Void)?
+    static var onArranged: (([StageWindow]) -> Void)?
 
-    static func arrange(_ windows: [StageWindow], besides strip: StageStrip?) {
+    static func arrange(_ windowsOnAnyScreen: [StageWindow], besides strip: StageStrip?) {
+        let windows = windowsOnScreenOfFocusedWindow(windowsOnAnyScreen)
         guard let screen = windows.first.flatMap({ screen(containing: $0.frame) }) else { return }
         let config = ConfigStore.shared.config
         let settings = config.tilingSettings(onBuiltInScreen: screen.isBuiltIn)
@@ -26,7 +27,7 @@ enum StageLayout {
         WindowAnimator.shared.animate(targets) {
             timingLog.notice("layout: landed after \(CACurrentMediaTime() - started, format: .fixed(precision: 3))s")
             refitWindowsThatRefusedToShrink(targets)
-            onArranged?()
+            onArranged?(windows)
         }
     }
 
@@ -47,6 +48,13 @@ enum StageLayout {
         ConfigStore.shared.config.tilingSettings(onBuiltInScreen: isOnBuiltInScreen(windows.first?.frame)).mode
     }
 
+    /// Only the stage you are in gets tiled; windows on other screens belong to their own stages.
+    static func windowsOnScreenOfFocusedWindow(_ windows: [StageWindow]) -> [StageWindow] {
+        let focusedID = StageWindows.focusedWindowID()
+        guard let anchor = windows.first(where: { $0.id == focusedID }) ?? windows.first else { return [] }
+        return windowsOnSameScreen(as: anchor, among: windows)
+    }
+
     /// Each screen has its own stage, so only windows on the same screen belong with this one.
     static func windowsOnSameScreen(as window: StageWindow, among windows: [StageWindow]) -> [StageWindow] {
         let screen = screen(containing: window.frame)
@@ -60,7 +68,8 @@ enum StageLayout {
     /// A lone window in Messy or Custom goes where you last left that app's lone window.
     static func unitRects(for windows: [StageWindow], mode: TilingMode) -> [UnitRect] {
         if AppSizes.modes.contains(mode), windows.count == 1, let saved = AppSizes.savedRect(for: windows[0]) { return [saved] }
-        return TilingLayouts.unitRects(for: windows.count, mode: mode, customLayouts: ConfigStore.shared.config.customLayouts)
+        let settings = ConfigStore.shared.config.tilingSettings(onBuiltInScreen: isOnBuiltInScreen(windows.first?.frame))
+        return TilingLayouts.unitRects(for: windows.count, mode: mode, customLayouts: settings.customLayouts)
     }
 
     /// The usable area grown by half a gap, so unit rects placed in it and shrunk by half a gap leave full gaps between tiles.
