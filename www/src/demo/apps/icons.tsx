@@ -59,6 +59,33 @@ export const APP_ICONS: Record<AppId, AppIcon> = {
     background: "linear-gradient(160deg, #4ade80, #16a34a)",
     glyph: <path d="M12 4c5 0 9 3.1 9 7s-4 7-9 7c-1 0-2-.1-2.9-.4L4.5 20l1.2-3.6C4 15 3 13.1 3 11c0-3.9 4-7 9-7z" fill="#fff" />,
   },
+  calendar: {
+    background: "linear-gradient(#ffffff, #f1f1f4)",
+    glyph: (
+      <>
+        <path d="M3 4h18v5H3z" fill="#ff453a" />
+        <path d="M8 13h2M14 13h2M8 17h2M14 17h2" {...stroke("#3a3a3c", 2.2)} />
+      </>
+    ),
+  },
+  maps: {
+    background: "linear-gradient(160deg, #a7e3a0, #5cb85c)",
+    glyph: (
+      <>
+        <path d="M3 17c5-1 7-8 18-9" {...stroke("#fff", 3)} />
+        <path d="M12 3a4 4 0 0 1 4 4c0 3-4 7-4 7s-4-4-4-7a4 4 0 0 1 4-4z" fill="#ff453a" />
+      </>
+    ),
+  },
+  weather: {
+    background: "linear-gradient(160deg, #60b8ff, #1d6fd8)",
+    glyph: (
+      <>
+        <circle cx="9" cy="9" r="4" fill="#ffd36e" />
+        <path d="M8 19h9a3.5 3.5 0 0 0 0-7 5 5 0 0 0-9.5 1.5A3 3 0 0 0 8 19z" fill="#fff" />
+      </>
+    ),
+  },
   photos: {
     background: "linear-gradient(#ffffff, #f1f1f4)",
     glyph: (

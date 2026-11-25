@@ -148,14 +148,18 @@ export const chapters: Chapter[] = [
   {
     id: "full-screen",
     title: "Full screen",
-    caption: "Turn off Don't cover Stage Manager to tile over the whole screen. The stages come back only while you pick one.",
+    caption: "Turn off Don't cover Stage Manager to tile over the whole screen; the stages come back only while you pick one. In Even, every app you open finds its place.",
     steps: [
       ...clickOn("menubar-icon", { type: "openPanel" }),
       ...clickOn("leave-room-toggle", { type: "setLeaveRoomForStageManager", on: false }),
       ...clickOn("menubar-icon", { type: "closePanel" }),
       { action: { type: "hidePointer" }, hold: 400 },
       { keys: navigate("↓"), action: { type: "pick", direction: "down" }, hold: 1000 },
-      { keys: null, action: { type: "confirmPick" }, hold: 2200 },
+      { keys: null, action: { type: "confirmPick" }, hold: 1300 },
+      { keys: toggleEven, action: { type: "toggleMode", mode: "even" }, hold: 1200 },
+      { keys: null, action: { type: "openWindow", app: "calendar" }, hold: 900 },
+      { action: { type: "openWindow", app: "maps" }, hold: 900 },
+      { action: { type: "openWindow", app: "weather" }, hold: 2200 },
     ],
   },
 ];

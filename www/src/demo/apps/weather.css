@@ -1,0 +1,10 @@
+.weather { display: flex; flex-direction: column; gap: 12px; padding: 40px 16px 16px; overflow: hidden; color: #fff; background: linear-gradient(180deg, light-dark(#4aa3f0, #1b3b66), light-dark(#8fc8f8, #2c5a8c)); }
+.weather-now { display: flex; flex-direction: column; align-items: center; font-size: 15px; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); }
+.weather-now b { font-size: 56px; font-weight: 300; line-height: 1.05; }
+.weather-card { padding: 10px 12px; border-radius: 12px; background: rgba(255, 255, 255, 0.16); font-size: 13px; }
+.weather-card.hours { display: flex; justify-content: space-between; }
+.weather-card.hours div { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.weather-card i { font-style: normal; }
+.weather-card.days div { display: grid; grid-template-columns: 52px 24px 32px 1fr 32px; align-items: center; gap: 6px; padding: 4px 0; }
+.weather-card em { font-style: normal; opacity: 0.75; text-align: right; }
+.weather-card .range { height: 4px; border-radius: 2px; background: linear-gradient(90deg, #8fd3ff, #ffd36e); }

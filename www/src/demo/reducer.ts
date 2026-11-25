@@ -19,6 +19,7 @@ export type DesktopAction =
   | { type: "openStage"; index: number }
   | { type: "cycleMode" }
   | { type: "toggleMode"; mode: TilingMode }
+  | { type: "openWindow"; app: AppId }
   | PanelAction
   | { type: "reset" }
   | { type: "load"; state: DesktopState };
@@ -48,6 +49,8 @@ export function desktopReducer(state: DesktopState, action: DesktopAction): Desk
       return withStageMode(state, { mode: nextMode(stageMode(state)) });
     case "toggleMode":
       return toggleMode(state, action.mode);
+    case "openWindow":
+      return openWindow(state, action.app);
     case "reset":
       return { ...initialState, flashCount: state.flashCount + 1 };
     case "load":
@@ -145,6 +148,15 @@ function pullIn(state: DesktopState, index: number): DesktopState {
     focused,
     zOrder: raised(state.zOrder, pulled.windows),
     picking: null,
+  });
+}
+
+function openWindow(state: DesktopState, app: AppId): DesktopState {
+  return flashed({
+    ...state,
+    current: retiled(state, [...state.current.windows, app]),
+    focused: app,
+    zOrder: raised(state.zOrder, [app]),
   });
 }
 

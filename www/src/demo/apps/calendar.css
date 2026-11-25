@@ -1,0 +1,13 @@
+.calendar { display: flex; flex-direction: column; padding-top: 40px; background: var(--window); color: var(--label); }
+.calendar-toolbar { display: flex; align-items: baseline; gap: 6px; padding: 0 16px 10px; font-size: 20px; }
+.calendar-toolbar b { font-weight: 700; }
+.segmented-mini { margin-left: auto; display: flex; padding: 2px; border-radius: 7px; background: var(--fill-strong); font-size: 11px; }
+.segmented-mini span { padding: 2px 9px; border-radius: 5px; color: var(--label-secondary); }
+.segmented-mini .on { background: var(--control); color: var(--label); }
+.calendar-grid { flex: 1; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); grid-template-rows: auto repeat(5, 1fr); border-top: 1px solid var(--separator); }
+.calendar .weekday { padding: 4px 8px; text-align: right; font-size: 11px; color: var(--label-secondary); border-bottom: 1px solid var(--separator); }
+.calendar .day { display: flex; flex-direction: column; gap: 2px; padding: 4px; overflow: hidden; border-right: 1px solid var(--separator); border-bottom: 1px solid var(--separator); }
+.calendar .day.outside { background: var(--fill); }
+.calendar .date { align-self: flex-end; min-width: 22px; padding: 1px 5px; border-radius: 999px; text-align: center; font-size: 12px; }
+.calendar .date.today { background: var(--music-accent); color: var(--on-accent); font-weight: 700; }
+.calendar .event { padding: 1px 5px; border-left: 3px solid; border-radius: 3px; background: var(--fill); font-size: 10.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

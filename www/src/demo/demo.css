@@ -99,6 +99,12 @@
 
 .window.strip-hidden { opacity: 0; }
 
+@keyframes window-open {
+  from { opacity: 0; scale: 0.92; }
+}
+
+.window { animation: window-open 0.3s ease-out; }
+
 .window.focused { box-shadow: 0 0 0 0.5px var(--window-outline), 0 24px 70px var(--window-shadow); }
 .window.in-strip { box-shadow: 0 0 0 1px var(--window-outline), 0 30px 60px var(--window-shadow); }
 

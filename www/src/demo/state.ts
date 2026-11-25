@@ -1,7 +1,9 @@
 import { placeUnitRect, tileArea, type Rect, type UnitRect } from "./geometry";
 import { unitRects, type CustomLayouts, type TilingMode } from "./layouts";
 
-export type AppId = "editor" | "terminal" | "browser" | "notes" | "music" | "mail" | "chat" | "photos";
+export type AppId =
+  | "editor" | "terminal" | "browser" | "notes" | "music" | "mail" | "chat" | "photos"
+  | "calendar" | "maps" | "weather";
 
 export type Stage = {
   id: string;
