@@ -13,6 +13,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         AppUpdater.shared.startIfBundleHasUpdateFeed()
         wireHotkeysToNavigator()
+        if !OnboardingWindow.hasFinished { OnboardingWindow.shared.show() }
         startHotkeysOnceAccessibilityIsGranted()
     }
 
@@ -77,7 +78,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return
         }
 
-        AccessibilityPermission.prompt()
+        if OnboardingWindow.hasFinished { AccessibilityPermission.prompt() }
         permissionPollTimer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated {
                 guard AXIsProcessTrusted(), let self else { return }

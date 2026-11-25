@@ -89,7 +89,7 @@ struct SettingsView: View {
     }
 }
 
-private struct ModifierPickerRow: View {
+struct ModifierPickerRow: View {
     @ObservedObject private var configStore = ConfigStore.shared
 
     var body: some View {
@@ -110,7 +110,7 @@ private struct ModifierPickerRow: View {
 
 }
 
-private struct MoveModifierPickerRow: View {
+struct MoveModifierPickerRow: View {
     @ObservedObject private var configStore = ConfigStore.shared
 
     var body: some View {

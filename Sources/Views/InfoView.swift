@@ -66,6 +66,11 @@ struct InfoView: View {
                 CheckForUpdatesButton()
             }
 
+            Button("Show setup guide") { OnboardingWindow.shared.show() }
+                .buttonStyle(.plain)
+                .font(.system(size: 11, weight: .medium))
+                .foregroundStyle(.secondary)
+
             HStack(spacing: 8) {
                 Link(destination: URL(string: "https://github.com/pablopunk/batuta")!) {
                     HStack(spacing: 5) {
