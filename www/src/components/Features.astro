@@ -1,5 +1,6 @@
 ---
 import DirectionKeys from "./DirectionKeys.astro";
+import WindowsStay from "./WindowsStay.astro";
 
 const CONFIG_PATH = "~/.config/batuta/config.json";
 
@@ -55,6 +56,17 @@ const configHtml = highlightJson(compactArrays(JSON.stringify(CONFIG, null, 2)))
     </p>
   </div>
   <DirectionKeys />
+</section>
+
+<section class="feature">
+  <div class="copy">
+    <h3>A tiling manager that takes a hint</h3>
+    <p>
+      Drag or resize a window with your mouse and it stays right there. Most tiling managers act like window bosses and
+      snap everything back into their grid. Batuta tiles when you ask, then gets out of your way.
+    </p>
+  </div>
+  <WindowsStay />
 </section>
 
 <style>

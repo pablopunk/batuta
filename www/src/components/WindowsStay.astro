@@ -1,0 +1,116 @@
+---
+const SCREENS = [
+  { name: "Other tiling managers", verdict: "Snaps back", stays: false },
+  { name: "Batuta", verdict: "Stays where you put it", stays: true },
+];
+---
+
+<figure class="windows-stay">
+  {
+    SCREENS.map(({ name, verdict, stays }) => (
+      <div class:list={["screen-card", { stays }]}>
+        <div class="screen">
+          <div class="window still" />
+          <div class="window dragged" />
+          <div class="pointer" />
+        </div>
+        <figcaption>
+          <b>{name}</b>
+          <span>{verdict}</span>
+        </figcaption>
+      </div>
+    ))
+  }
+</figure>
+
+<style>
+  .windows-stay {
+    margin: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .screen-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 14px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--card);
+  }
+  .screen {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    border-radius: 8px;
+    background: linear-gradient(135deg, light-dark(#c7d2fe, #312e81), light-dark(#fbcfe8, #831843));
+  }
+  .window {
+    position: absolute;
+    top: 6%;
+    width: 44%;
+    height: 88%;
+    border-radius: 6px;
+    background: var(--page);
+    box-shadow: 0 6px 16px -8px rgba(0, 0, 0, 0.5);
+  }
+  .window::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 12%;
+    border-bottom: 1px solid var(--line);
+    background: radial-gradient(circle at 8% 50%, #ff5f57 0 3px, transparent 3.5px), radial-gradient(circle at 15% 50%, #febc2e 0 3px, transparent 3.5px), radial-gradient(circle at 22% 50%, #28c840 0 3px, transparent 3.5px);
+  }
+  .still { left: 4%; }
+  .dragged { left: 52%; animation: snap-back 7s ease-in-out infinite; }
+  .stays .dragged { animation-name: stay; }
+  .pointer {
+    position: absolute;
+    left: 84%;
+    top: 84%;
+    width: 18px;
+    height: 18px;
+    margin: -9px 0 0 -9px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.35);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(4px);
+    animation: drag 7s ease-in-out infinite;
+  }
+  figcaption { display: flex; flex-direction: column; gap: 2px; font-size: 14px; }
+  figcaption span { color: var(--muted); font-size: 13px; }
+  .stays figcaption span { color: light-dark(#15803d, #4ade80); }
+
+  @keyframes drag {
+    0%, 12% { left: 84%; top: 84%; transform: scale(1); }
+    24% { left: 74%; top: 11%; transform: scale(1); }
+    28%, 52% { transform: scale(0.75); }
+    28% { left: 74%; top: 11%; }
+    52% { left: 58%; top: 32%; }
+    56% { transform: scale(1); }
+    68%, 100% { left: 84%; top: 84%; transform: scale(1); }
+  }
+  @keyframes snap-back {
+    0%, 28% { left: 52%; top: 6%; width: 44%; height: 88%; }
+    52%, 64% { left: 36%; top: 28%; width: 44%; height: 60%; }
+    76%, 100% { left: 52%; top: 6%; width: 44%; height: 88%; }
+  }
+  @keyframes stay {
+    0%, 28% { left: 52%; top: 6%; width: 44%; height: 88%; opacity: 1; }
+    52%, 90% { left: 36%; top: 28%; width: 44%; height: 60%; opacity: 1; }
+    94% { left: 36%; top: 28%; width: 44%; height: 60%; opacity: 0; }
+    95% { left: 52%; top: 6%; width: 44%; height: 88%; opacity: 0; }
+    100% { left: 52%; top: 6%; width: 44%; height: 88%; opacity: 1; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dragged, .pointer { animation: none; }
+    .stays .dragged { left: 36%; top: 28%; height: 60%; }
+  }
+  @media (max-width: 480px) {
+    .windows-stay { grid-template-columns: 1fr; }
+  }
+</style>
