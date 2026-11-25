@@ -75,6 +75,19 @@ struct TilingSettings: Codable, Equatable {
         rememberAppSizes = try container.decodeIfPresent(Bool.self, forKey: .rememberAppSizes) ?? false
         appSizes = try container.decodeIfPresent([String: UnitRect].self, forKey: .appSizes) ?? [:]
     }
+
+    private enum CodingKeys: String, CodingKey {
+        case mode, leaveRoomForStageManager, rememberAppSizes, appSizes
+    }
+
+    /// Leaves out `appSizes` while it is empty, so the config only shows it once something is saved.
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(mode, forKey: .mode)
+        try container.encode(leaveRoomForStageManager, forKey: .leaveRoomForStageManager)
+        try container.encode(rememberAppSizes, forKey: .rememberAppSizes)
+        if !appSizes.isEmpty { try container.encode(appSizes, forKey: .appSizes) }
+    }
 }
 
 /// Everything in ~/.config/batuta/config.json. Missing keys fall back to defaults so the file can stay partial.
