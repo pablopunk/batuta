@@ -42,16 +42,14 @@ export function Desktop({ state, keys, instant }: Props) {
           style={{ width: SCREEN.w, height: SCREEN.h, transform: `scale(${scale})` }}
         >
           <div className="wallpaper" />
-          <MenuBar appName={focusedApp} batutaMenuOpen={state.settingsOpen} />
+          <MenuBar appName={focusedApp} batutaMenuOpen={state.panel.open} />
           {ALL_APPS_IN_STABLE_DOM_ORDER.filter((id) => placements[id]).map((id) => (
             <Window key={id} id={id} placement={placements[id]} focused={id === state.focused} />
           ))}
           {frame && <HighlightFrame highlight={frame} flashCount={state.flashCount} />}
           {state.badges && <StageBadges rects={badgeRects(state)} />}
           {state.banner && <ModeBanner key={state.banner.count} from={state.banner.from} to={state.banner.to} />}
-          {state.settingsOpen && (
-            <SettingsPanel mode={state.current.mode} leaveRoomForStageManager={state.leaveRoomForStageManager} />
-          )}
+          {state.panel.open && <SettingsPanel state={state} />}
           <KeyCaps keys={keys} />
         </div>
       </div>

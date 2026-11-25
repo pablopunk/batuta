@@ -1,13 +1,13 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import { SCREEN } from "./geometry";
-import { MODE_LABELS, TILING_MODES, unitRects, type TilingMode } from "./layouts";
+import { MODE_LABELS, TILING_MODES, type TilingMode } from "./layouts";
+import { LayoutCanvas } from "./settings/LayoutCanvas";
+import { MODE_SHORTCUT_KEYS, MODE_SHORTCUT_MODIFIERS, NAVIGATE } from "./shortcuts";
+import { modeRects, type DesktopState } from "./state";
 import { Icon } from "./settings/icons";
 import { CaptionedRow, Pill, SectionHeader, Shortcut, ToggleRow } from "./settings/rows";
 import "./settings/settings.css";
 
-type Props = { mode: TilingMode; leaveRoomForStageManager: boolean };
-
-const PREVIEW_WINDOW_COUNT = 2;
 
 const MODE_CAPTIONS: Record<TilingMode, string> = {
   off: "Batuta leaves windows where they are. The shortcut can still tile one stage.",
@@ -23,19 +23,12 @@ const TABS = [
   { icon: "info", label: "About" },
 ] as const;
 
-const LayoutPreview = ({ mode }: { mode: TilingMode }) => (
-  <div className="layout-canvas">
-    {unitRects(PREVIEW_WINDOW_COUNT, mode).map((rect, index) => (
-      <div
-        key={index}
-        className="tile"
-        style={{ left: `${rect.x * 100}%`, top: `${rect.y * 100}%`, width: `${rect.w * 100}%`, height: `${rect.h * 100}%` }}
-      >
-        {index + 1}
-      </div>
-    ))}
-  </div>
-);
+const shortcutLabel = (modifiers: string[], key: string) => `${modifiers.join("")} ${key}`;
+
+const modeShortcutLabel = (mode: TilingMode) => {
+  const key = MODE_SHORTCUT_KEYS[mode];
+  return key ? shortcutLabel(MODE_SHORTCUT_MODIFIERS, key) : "None";
+};
 
 const PANEL_INSET_FROM_ICON = 16;
 const PANEL_WIDTH = 320;
@@ -52,8 +45,10 @@ function useLeftEdgeUnderMenuBarIcon() {
 }
 
 /** The Tiling tab of Batuta's menu bar panel, as in TilingView.swift. */
-export function SettingsPanel({ mode, leaveRoomForStageManager }: Props) {
+export function SettingsPanel({ state }: { state: DesktopState }) {
   const { panel, left } = useLeftEdgeUnderMenuBarIcon();
+  const mode = state.defaultMode;
+  const { windowCount, activeTile } = state.panel;
   return (
     <div ref={panel} className="settings-panel" style={{ left, width: PANEL_WIDTH }}>
       <div className="panel-tabs">
@@ -84,14 +79,14 @@ export function SettingsPanel({ mode, leaveRoomForStageManager }: Props) {
             <div className="window-stepper">
               <span>Windows</span>
               <i><Icon name="minus" size={10} /></i>
-              <b>{PREVIEW_WINDOW_COUNT}</b>
+              <b>{windowCount}</b>
               <i><Icon name="plus" size={10} /></i>
             </div>
-            <LayoutPreview mode={mode} />
+            <LayoutCanvas rects={modeRects(state, windowCount, mode)} editable={mode === "custom"} activeTile={activeTile} />
           </>
         )}
 
-        <ToggleRow title="Don't cover Stage Manager" subtitle="Tile beside the thumbnails" icon="sidebar" on={leaveRoomForStageManager} />
+        <ToggleRow title="Don't cover Stage Manager" subtitle="Tile beside the thumbnails" icon="sidebar" on={state.leaveRoomForStageManager} />
         <ToggleRow title="Learn app size" subtitle="For 1-window stages" icon="window" on={false} />
         <ToggleRow title="Tile on stage switch" subtitle="Also when you click a stage" icon="stack" on />
 
@@ -100,7 +95,7 @@ export function SettingsPanel({ mode, leaveRoomForStageManager }: Props) {
           icon="cycle"
           caption="Changes the mode of the current stage only. Other stages keep the default. Click the shortcut to change it, or press Esc to clear it."
         >
-          <Shortcut label="⌃⌘ Space" />
+          <Shortcut label={shortcutLabel(NAVIGATE, "Space")} />
         </CaptionedRow>
 
         <CaptionedRow title="Mode shortcuts" icon="keyboard" caption="Sets that mode on the current stage. Press it again to go back. Esc clears a shortcut." />
@@ -108,7 +103,7 @@ export function SettingsPanel({ mode, leaveRoomForStageManager }: Props) {
           {TILING_MODES.map((item) => (
             <div key={item}>
               <span>{MODE_LABELS[item]}</span>
-              <Shortcut label="None" />
+              <Shortcut label={modeShortcutLabel(item)} />
             </div>
           ))}
         </div>

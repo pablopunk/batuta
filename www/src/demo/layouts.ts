@@ -14,7 +14,10 @@ export const MODE_LABELS: Record<TilingMode, string> = {
 
 export const nextMode = (mode: TilingMode) => TILING_MODES[(TILING_MODES.indexOf(mode) + 1) % TILING_MODES.length];
 
-export function unitRects(count: number, mode: TilingMode): UnitRect[] {
+/** Keyed by window count; only the counts someone drew. Others fall back to Even, as in the app. */
+export type CustomLayouts = Partial<Record<number, UnitRect[]>>;
+
+export function unitRects(count: number, mode: TilingMode, customLayouts: CustomLayouts): UnitRect[] {
   switch (mode) {
     case "off":
     case "even":
@@ -24,11 +27,11 @@ export function unitRects(count: number, mode: TilingMode): UnitRect[] {
     case "messy":
       return MESSY_LAYOUTS[count] ?? evenGrid(count);
     case "custom":
-      return CUSTOM_LAYOUTS[count] ?? evenGrid(count);
+      return customLayouts[count] ?? evenGrid(count);
   }
 }
 
-function evenGrid(count: number): UnitRect[] {
+export function evenGrid(count: number): UnitRect[] {
   if (count === 0) return [];
   const rowCount = count <= 3 ? 1 : Math.ceil(count / 3);
   const rowHeight = 1 / rowCount;
@@ -85,17 +88,5 @@ const MESSY_LAYOUTS: Record<number, UnitRect[]> = {
     { x: 0, y: 0.5, w: 0.35, h: 0.5 },
     { x: 0.35, y: 0.5, w: 0.35, h: 0.5 },
     { x: 0.7, y: 0.5, w: 0.3, h: 0.5 },
-  ],
-};
-
-const CUSTOM_LAYOUTS: Record<number, UnitRect[]> = {
-  2: [
-    { x: 0, y: 0, w: 0.62, h: 1 },
-    { x: 0.62, y: 0, w: 0.38, h: 1 },
-  ],
-  3: [
-    { x: 0, y: 0, w: 0.58, h: 1 },
-    { x: 0.58, y: 0, w: 0.42, h: 0.45 },
-    { x: 0.58, y: 0.45, w: 0.42, h: 0.55 },
   ],
 };

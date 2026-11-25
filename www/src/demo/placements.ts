@@ -1,5 +1,5 @@
 import { NATURAL_WINDOW, STRIP_HIDE_DISTANCE, THUMB_SCALE, padded, thumbnailRect, thumbnailWindowOrigin, type Rect } from "./geometry";
-import { currentFrames, stripIsHidden, type AppId, type DesktopState } from "./state";
+import { stageFrames, stripIsHidden, type AppId, type DesktopState } from "./state";
 
 export type Placement = Rect & { scale: number; inStrip: boolean; hidden?: boolean; z: number };
 
@@ -9,7 +9,7 @@ const HIGHLIGHT_PADDING = 6;
 
 export function windowPlacements(state: DesktopState): Record<AppId, Placement> {
   const placements = {} as Record<AppId, Placement>;
-  const frames = currentFrames(state);
+  const frames = stageFrames(state);
   const hidden = stripIsHidden(state);
   const stripCoversWindows = !state.leaveRoomForStageManager;
   for (const id of state.current.windows) {
@@ -42,7 +42,7 @@ export function highlight(state: DesktopState): Highlight {
     return { rect: padded(thumbnailRect(state.picking.index, state.strip.length), HIGHLIGHT_PADDING), persistent: true };
   }
   if (!state.focused) return null;
-  return { rect: padded(currentFrames(state)[state.focused], HIGHLIGHT_PADDING), persistent: false };
+  return { rect: padded(stageFrames(state)[state.focused], HIGHLIGHT_PADDING), persistent: false };
 }
 
 export const badgeRects = (state: DesktopState) =>

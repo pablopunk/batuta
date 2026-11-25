@@ -58,3 +58,10 @@
 .mode-shortcuts div { display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: var(--label-secondary); }
 
 .config-path { display: flex; align-items: center; gap: 6px; padding: 0 14px 12px; font: 11px ui-monospace, Menlo, monospace; color: var(--label-secondary); }
+
+.layout-editor { display: flex; flex-direction: column; gap: 8px; }
+.layout-canvas .tile { transition: left 0.35s ease, top 0.35s ease, width 0.35s ease, height 0.35s ease; }
+.layout-canvas .tile.active { z-index: 1; }
+.layout-canvas .tile.active::before { background: color-mix(in srgb, var(--accent) 45%, transparent); }
+.resize-handle { position: absolute; right: 7px; bottom: 7px; width: 14px; height: 14px; display: grid; place-items: center; border-radius: 50%; font-size: 8px; font-style: normal; font-weight: 700; color: var(--on-accent); background: var(--accent); }
+.copy-row { display: flex; justify-content: flex-end; align-items: center; gap: 4px; font-size: 11px; color: var(--label-tertiary); }

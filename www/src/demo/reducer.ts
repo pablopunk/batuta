@@ -1,7 +1,7 @@
 import { center } from "./geometry";
 import { nextMode, type TilingMode } from "./layouts";
-import { resizedAroundCenter, resizedWithNeighbours } from "./resize";
-import { currentFrames, initialState, raised, retiled, stageArea, type AppId, type DesktopState, type Stage } from "./state";
+import { panelReducer, type PanelAction } from "./panelReducer";
+import { initialState, raised, retiled, stageFrames, stageMode, type AppId, type DesktopState, type Stage } from "./state";
 
 export type Horizontal = "left" | "right";
 export type Vertical = "up" | "down";
@@ -17,12 +17,9 @@ export type DesktopAction =
   | { type: "showBadges" }
   | { type: "hideBadges" }
   | { type: "openStage"; index: number }
-  | { type: "resize"; direction: 1 | -1 }
   | { type: "cycleMode" }
-  | { type: "setMode"; mode: TilingMode }
-  | { type: "openSettings" }
-  | { type: "closeSettings" }
-  | { type: "setLeaveRoomForStageManager"; on: boolean }
+  | { type: "toggleMode"; mode: TilingMode }
+  | PanelAction
   | { type: "reset" }
   | { type: "load"; state: DesktopState };
 
@@ -47,22 +44,16 @@ export function desktopReducer(state: DesktopState, action: DesktopAction): Desk
       return { ...state, badges: false };
     case "openStage":
       return openStage(state, action.index);
-    case "resize":
-      return resize(state, action.direction);
     case "cycleMode":
-      return setMode(state, nextMode(state.current.mode));
-    case "setMode":
-      return setMode(state, action.mode);
-    case "openSettings":
-      return { ...state, settingsOpen: true };
-    case "closeSettings":
-      return { ...state, settingsOpen: false };
-    case "setLeaveRoomForStageManager":
-      return setLeaveRoomForStageManager(state, action.on);
+      return withStageMode(state, { mode: nextMode(stageMode(state)) });
+    case "toggleMode":
+      return toggleMode(state, action.mode);
     case "reset":
       return { ...initialState, flashCount: state.flashCount + 1 };
     case "load":
       return action.state;
+    default:
+      return panelReducer(state, action);
   }
 }
 
@@ -70,7 +61,7 @@ const flashed = (state: DesktopState): DesktopState => ({ ...state, flashCount: 
 
 function neighbour(state: DesktopState, direction: Horizontal): AppId | null {
   if (!state.focused) return null;
-  const frames = currentFrames(state);
+  const frames = stageFrames(state);
   const from = center(frames[state.focused]);
   const sign = direction === "right" ? 1 : -1;
   const candidates = state.current.windows
@@ -105,11 +96,11 @@ function moveFocused(state: DesktopState, direction: Horizontal): DesktopState {
 
 function sendOut(state: DesktopState, id: AppId): DesktopState {
   const remaining = state.current.windows.filter((window) => window !== id);
-  const newStage: Stage = { id: `s${state.nextStageId}`, windows: [id], mode: state.current.mode };
+  const newStage: Stage = { id: `s${state.nextStageId}`, windows: [id] };
   const focused = remaining[0] ?? null;
   return flashed({
     ...state,
-    current: retiled(state.current, remaining, stageArea(state)),
+    current: retiled(state, remaining),
     strip: [newStage, ...state.strip],
     focused,
     zOrder: focused ? raised(state.zOrder, [focused]) : state.zOrder,
@@ -141,14 +132,15 @@ function openStage(state: DesktopState, index: number): DesktopState {
   });
 }
 
+/** Pulled windows go first, on the side next to Stage Manager, so Move + ← can send them straight back. */
 function pullIn(state: DesktopState, index: number): DesktopState {
   const pulled = state.strip[index];
   if (!pulled) return state;
-  const windows = [...state.current.windows, ...pulled.windows];
+  const windows = [...pulled.windows, ...state.current.windows];
   const focused = pulled.windows[0];
   return flashed({
     ...state,
-    current: retiled(state.current, windows, stageArea(state)),
+    current: retiled(state, windows),
     strip: state.strip.filter((_, i) => i !== index),
     focused,
     zOrder: raised(state.zOrder, pulled.windows),
@@ -156,26 +148,20 @@ function pullIn(state: DesktopState, index: number): DesktopState {
   });
 }
 
-function resize(state: DesktopState, direction: 1 | -1): DesktopState {
-  if (!state.focused) return state;
-  const frames = currentFrames(state);
-  const tilesStayApart = state.current.mode === "even" || state.current.mode === "bsp";
-  const next = tilesStayApart
-    ? resizedWithNeighbours(frames, state.focused, direction, stageArea(state))
-    : resizedAroundCenter(frames, state.focused, direction, stageArea(state));
-  return { ...state, current: { ...state.current, frames: next } };
+function toggleMode(state: DesktopState, mode: TilingMode): DesktopState {
+  const stage = state.current;
+  const isOn = stage.mode === mode;
+  return withStageMode(state, isOn ? { mode: stage.modeBeforeToggle } : { mode, modeBeforeToggle: stage.mode });
 }
 
-function setMode(state: DesktopState, mode: TilingMode): DesktopState {
-  const frames = mode === "off" ? currentFrames(state) : undefined;
+function withStageMode(state: DesktopState, change: Pick<Stage, "mode" | "modeBeforeToggle">): DesktopState {
+  const changed = { ...state, current: { ...state.current, ...change, frames: undefined } };
+  const from = stageMode(state);
+  const to = stageMode(changed);
+  const frames = to === "off" ? stageFrames(state) : undefined;
   return {
-    ...state,
-    current: { ...state.current, mode, frames },
-    banner: { from: state.current.mode, to: mode, count: (state.banner?.count ?? 0) + 1 },
+    ...changed,
+    current: { ...changed.current, frames },
+    banner: { from, to, count: (state.banner?.count ?? 0) + 1 },
   };
-}
-
-function setLeaveRoomForStageManager(state: DesktopState, on: boolean): DesktopState {
-  const resized = { ...state, leaveRoomForStageManager: on };
-  return { ...resized, current: retiled(state.current, state.current.windows, stageArea(resized)) };
 }
