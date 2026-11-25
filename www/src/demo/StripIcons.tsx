@@ -14,8 +14,8 @@ export function StripIcons({ rows }: { rows: StripIconRow[] }) {
           {row.apps.map((app) => {
             const icon = APP_ICONS[app];
             return (
-              <span key={app} className="app-icon" style={{ background: icon.background, color: icon.color }}>
-                {icon.glyph}
+              <span key={app} className="app-icon" style={{ background: icon.background }}>
+                <svg viewBox="0 0 24 24" aria-hidden>{icon.glyph}</svg>
               </span>
             );
           })}
