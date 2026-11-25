@@ -14,16 +14,16 @@ enum AppSizes {
     }
 
     static func rememberLoneWindowIfMoved() {
-        guard !WindowAnimator.shared.isAnimating else { return appSizesLog.notice("skip: animating") }
+        guard !WindowAnimator.shared.isAnimating else { return appSizesLog.debug("skip: animating") }
         let windows = StageWindows.visibleSortedLeftToRight()
         let mode = StageLayout.mode(for: windows)
-        guard windows.count == 1, let window = windows.first else { return appSizesLog.notice("skip: \(windows.count) windows") }
-        guard modes.contains(mode) else { return appSizesLog.notice("skip: mode \(mode.rawValue)") }
+        guard windows.count == 1, let window = windows.first else { return appSizesLog.debug("skip: \(windows.count) windows") }
+        guard modes.contains(mode) else { return appSizesLog.debug("skip: mode \(mode.rawValue)") }
         guard let bundleID = bundleID(of: window.pid),
               let placementArea = StageLayout.placementArea(around: window.frame, besides: StageStrip.closest(to: window.frame)),
-              let expected = StageLayout.unitRects(for: windows, mode: mode).first else { return appSizesLog.notice("skip: no app or area") }
+              let expected = StageLayout.unitRects(for: windows, mode: mode).first else { return appSizesLog.debug("skip: no app or area") }
         let expectedFrame = StageLayout.frame(of: expected, in: placementArea)
-        guard !isSameFrame(window.frame, expectedFrame) else { return appSizesLog.notice("skip: frame unchanged") }
+        guard !isSameFrame(window.frame, expectedFrame) else { return appSizesLog.debug("skip: frame unchanged") }
         let learned = StageLayout.unitRect(of: window.frame, in: placementArea).clampedToUnitSquare()
         ConfigStore.shared.update { $0.appSizes[bundleID] = learned }
         appSizesLog.notice("saved \(bundleID, privacy: .public)")
