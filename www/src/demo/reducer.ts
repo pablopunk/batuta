@@ -1,7 +1,7 @@
 import { center } from "./geometry";
 import { nextMode, type TilingMode } from "./layouts";
 import { resizedAroundCenter, resizedWithNeighbours } from "./resize";
-import { initialState, raised, retiled, stageFrames, type AppId, type DesktopState, type Stage } from "./state";
+import { currentFrames, initialState, raised, retiled, stageArea, type AppId, type DesktopState, type Stage } from "./state";
 
 export type Horizontal = "left" | "right";
 export type Vertical = "up" | "down";
@@ -20,6 +20,9 @@ export type DesktopAction =
   | { type: "resize"; direction: 1 | -1 }
   | { type: "cycleMode" }
   | { type: "setMode"; mode: TilingMode }
+  | { type: "openSettings" }
+  | { type: "closeSettings" }
+  | { type: "setLeaveRoomForStageManager"; on: boolean }
   | { type: "reset" }
   | { type: "load"; state: DesktopState };
 
@@ -50,6 +53,12 @@ export function desktopReducer(state: DesktopState, action: DesktopAction): Desk
       return setMode(state, nextMode(state.current.mode));
     case "setMode":
       return setMode(state, action.mode);
+    case "openSettings":
+      return { ...state, settingsOpen: true };
+    case "closeSettings":
+      return { ...state, settingsOpen: false };
+    case "setLeaveRoomForStageManager":
+      return setLeaveRoomForStageManager(state, action.on);
     case "reset":
       return { ...initialState, flashCount: state.flashCount + 1 };
     case "load":
@@ -61,7 +70,7 @@ const flashed = (state: DesktopState): DesktopState => ({ ...state, flashCount: 
 
 function neighbour(state: DesktopState, direction: Horizontal): AppId | null {
   if (!state.focused) return null;
-  const frames = stageFrames(state.current);
+  const frames = currentFrames(state);
   const from = center(frames[state.focused]);
   const sign = direction === "right" ? 1 : -1;
   const candidates = state.current.windows
@@ -100,7 +109,7 @@ function sendOut(state: DesktopState, id: AppId): DesktopState {
   const focused = remaining[0] ?? null;
   return flashed({
     ...state,
-    current: retiled(state.current, remaining),
+    current: retiled(state.current, remaining, stageArea(state)),
     strip: [newStage, ...state.strip],
     focused,
     zOrder: focused ? raised(state.zOrder, [focused]) : state.zOrder,
@@ -139,7 +148,7 @@ function pullIn(state: DesktopState, index: number): DesktopState {
   const focused = pulled.windows[0];
   return flashed({
     ...state,
-    current: retiled(state.current, windows),
+    current: retiled(state.current, windows, stageArea(state)),
     strip: state.strip.filter((_, i) => i !== index),
     focused,
     zOrder: raised(state.zOrder, pulled.windows),
@@ -149,19 +158,24 @@ function pullIn(state: DesktopState, index: number): DesktopState {
 
 function resize(state: DesktopState, direction: 1 | -1): DesktopState {
   if (!state.focused) return state;
-  const frames = stageFrames(state.current);
+  const frames = currentFrames(state);
   const tilesStayApart = state.current.mode === "even" || state.current.mode === "bsp";
   const next = tilesStayApart
-    ? resizedWithNeighbours(frames, state.focused, direction)
-    : resizedAroundCenter(frames, state.focused, direction);
+    ? resizedWithNeighbours(frames, state.focused, direction, stageArea(state))
+    : resizedAroundCenter(frames, state.focused, direction, stageArea(state));
   return { ...state, current: { ...state.current, frames: next } };
 }
 
 function setMode(state: DesktopState, mode: TilingMode): DesktopState {
-  const frames = mode === "off" ? stageFrames(state.current) : undefined;
+  const frames = mode === "off" ? currentFrames(state) : undefined;
   return {
     ...state,
     current: { ...state.current, mode, frames },
     banner: { from: state.current.mode, to: mode, count: (state.banner?.count ?? 0) + 1 },
   };
+}
+
+function setLeaveRoomForStageManager(state: DesktopState, on: boolean): DesktopState {
+  const resized = { ...state, leaveRoomForStageManager: on };
+  return { ...resized, current: retiled(state.current, state.current.windows, stageArea(resized)) };
 }

@@ -3,6 +3,7 @@ import { APPS } from "./apps/index";
 import { SCREEN } from "./geometry";
 import { MenuBar } from "./MenuBar";
 import { ModeBanner } from "./ModeBanner";
+import { SettingsPanel } from "./SettingsPanel";
 import { HighlightFrame, KeyCaps, StageBadges } from "./Overlays";
 import { badgeRects, highlight, windowPlacements } from "./placements";
 import type { Keys } from "./script";
@@ -41,13 +42,16 @@ export function Desktop({ state, keys, instant }: Props) {
           style={{ width: SCREEN.w, height: SCREEN.h, transform: `scale(${scale})` }}
         >
           <div className="wallpaper" />
-          <MenuBar appName={focusedApp} />
+          <MenuBar appName={focusedApp} batutaMenuOpen={state.settingsOpen} />
           {ALL_APPS_IN_STABLE_DOM_ORDER.filter((id) => placements[id]).map((id) => (
             <Window key={id} id={id} placement={placements[id]} focused={id === state.focused} />
           ))}
           {frame && <HighlightFrame highlight={frame} flashCount={state.flashCount} />}
           {state.badges && <StageBadges rects={badgeRects(state)} />}
           {state.banner && <ModeBanner key={state.banner.count} from={state.banner.from} to={state.banner.to} />}
+          {state.settingsOpen && (
+            <SettingsPanel mode={state.current.mode} leaveRoomForStageManager={state.leaveRoomForStageManager} />
+          )}
           <KeyCaps keys={keys} />
         </div>
       </div>

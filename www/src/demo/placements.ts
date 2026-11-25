@@ -1,7 +1,7 @@
-import { NATURAL_WINDOW, THUMB_SCALE, padded, thumbnailRect, thumbnailWindowOrigin, type Rect } from "./geometry";
-import { stageFrames, type AppId, type DesktopState } from "./state";
+import { NATURAL_WINDOW, STRIP_HIDE_DISTANCE, THUMB_SCALE, padded, thumbnailRect, thumbnailWindowOrigin, type Rect } from "./geometry";
+import { currentFrames, stripIsHidden, type AppId, type DesktopState } from "./state";
 
-export type Placement = Rect & { scale: number; inStrip: boolean; z: number };
+export type Placement = Rect & { scale: number; inStrip: boolean; hidden?: boolean; z: number };
 
 const PULL_DISTANCE = 120;
 const PULL_ZOOM = 1.4;
@@ -9,7 +9,9 @@ const HIGHLIGHT_PADDING = 6;
 
 export function windowPlacements(state: DesktopState): Record<AppId, Placement> {
   const placements = {} as Record<AppId, Placement>;
-  const frames = stageFrames(state.current);
+  const frames = currentFrames(state);
+  const hidden = stripIsHidden(state);
+  const stripCoversWindows = !state.leaveRoomForStageManager;
   for (const id of state.current.windows) {
     placements[id] = { ...frames[id], scale: 1, inStrip: false, z: 100 + state.zOrder.indexOf(id) };
   }
@@ -19,13 +21,14 @@ export function windowPlacements(state: DesktopState): Record<AppId, Placement> 
     stage.windows.forEach((id, windowIndex) => {
       const origin = thumbnailWindowOrigin(thumb, windowIndex, stage.windows.length);
       placements[id] = {
-        x: origin.x + (isPulled ? PULL_DISTANCE : 0),
+        x: origin.x + (isPulled ? PULL_DISTANCE : 0) - (hidden ? STRIP_HIDE_DISTANCE : 0),
         y: origin.y,
         w: NATURAL_WINDOW.w,
         h: NATURAL_WINDOW.h,
         scale: THUMB_SCALE * (isPulled ? PULL_ZOOM : 1),
         inStrip: !isPulled,
-        z: isPulled ? 500 + windowIndex : 10 + windowIndex,
+        hidden,
+        z: isPulled ? 500 + windowIndex : (stripCoversWindows ? 400 : 10) + windowIndex,
       };
     });
   });
@@ -39,7 +42,7 @@ export function highlight(state: DesktopState): Highlight {
     return { rect: padded(thumbnailRect(state.picking.index, state.strip.length), HIGHLIGHT_PADDING), persistent: true };
   }
   if (!state.focused) return null;
-  return { rect: padded(stageFrames(state.current)[state.focused], HIGHLIGHT_PADDING), persistent: false };
+  return { rect: padded(currentFrames(state)[state.focused], HIGHLIGHT_PADDING), persistent: false };
 }
 
 export const badgeRects = (state: DesktopState) =>

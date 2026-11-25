@@ -18,12 +18,17 @@ const visibleArea: Rect = {
 
 const stripWidth = THUMB.x + THUMB.w - visibleArea.x + GAP;
 
-export const tileArea: Rect = {
+const besideStageManager: Rect = {
   x: visibleArea.x + stripWidth,
   y: visibleArea.y,
   w: visibleArea.w - stripWidth,
   h: visibleArea.h,
 };
+
+export const tileArea = (leaveRoomForStageManager: boolean): Rect =>
+  leaveRoomForStageManager ? besideStageManager : visibleArea;
+
+export const STRIP_HIDE_DISTANCE = stripWidth + GAP;
 
 export function thumbnailRect(index: number, stageCount: number): Rect {
   const stackHeight = stageCount * THUMB.spacing - (THUMB.spacing - THUMB.h);
@@ -43,7 +48,7 @@ export function thumbnailWindowOrigin(thumb: Rect, windowIndex: number, windowCo
 
 export type UnitRect = { x: number; y: number; w: number; h: number };
 
-export function placeUnitRect(unit: UnitRect, area: Rect = tileArea): Rect {
+export function placeUnitRect(unit: UnitRect, area: Rect): Rect {
   const half = GAP / 2;
   const placement = { x: area.x - half, y: area.y - half, w: area.w + GAP, h: area.h + GAP };
   return {

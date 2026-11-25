@@ -1,4 +1,4 @@
-import { placeUnitRect, type Rect } from "./geometry";
+import { placeUnitRect, tileArea, type Rect } from "./geometry";
 import { unitRects, type TilingMode } from "./layouts";
 
 export type AppId = "editor" | "terminal" | "browser" | "notes" | "music" | "mail" | "chat" | "photos";
@@ -22,6 +22,9 @@ export type DesktopState = {
   badges: boolean;
   flashCount: number;
   banner: { from: TilingMode; to: TilingMode; count: number } | null;
+  /** Off tiles over the whole screen; Stage Manager then hides its strip until Batuta reveals it to pick a stage. */
+  leaveRoomForStageManager: boolean;
+  settingsOpen: boolean;
   nextStageId: number;
 };
 
@@ -39,21 +42,29 @@ export const initialState: DesktopState = {
   badges: false,
   flashCount: 0,
   banner: null,
+  leaveRoomForStageManager: true,
+  settingsOpen: false,
   nextStageId: 5,
 };
 
-export function stageFrames(stage: Stage): Record<AppId, Rect> {
-  const layout = unitRects(stage.windows.length, stage.mode).map((unit) => placeUnitRect(unit));
+export const stageArea = (state: DesktopState) => tileArea(state.leaveRoomForStageManager);
+
+export const currentFrames = (state: DesktopState) => stageFrames(state.current, stageArea(state));
+
+export function stageFrames(stage: Stage, area: Rect): Record<AppId, Rect> {
+  const layout = unitRects(stage.windows.length, stage.mode).map((unit) => placeUnitRect(unit, area));
   return Object.fromEntries(
     stage.windows.map((id, index) => [id, stage.frames?.[id] ?? layout[index]]),
   ) as Record<AppId, Rect>;
 }
 
-export function retiled(stage: Stage, windows: AppId[]): Stage {
+export function retiled(stage: Stage, windows: AppId[], area: Rect): Stage {
   if (stage.mode !== "off") return { ...stage, windows, frames: undefined };
-  const evenFrames = stageFrames({ ...stage, windows, mode: "even", frames: undefined });
+  const evenFrames = stageFrames({ ...stage, windows, mode: "even", frames: undefined }, area);
   const frames = Object.fromEntries(windows.map((id) => [id, stage.frames?.[id] ?? evenFrames[id]]));
   return { ...stage, windows, frames };
 }
+
+export const stripIsHidden = (state: DesktopState) => !state.leaveRoomForStageManager && !state.picking;
 
 export const raised = (zOrder: AppId[], ids: AppId[]) => [...zOrder.filter((id) => !ids.includes(id)), ...ids];

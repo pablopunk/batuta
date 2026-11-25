@@ -23,7 +23,7 @@ const BatteryIcon = () => (
   </svg>
 );
 
-export function MenuBar({ appName }: { appName: string }) {
+export function MenuBar({ appName, batutaMenuOpen }: { appName: string; batutaMenuOpen: boolean }) {
   return (
     <div className="menubar">
       <div className="menus">
@@ -33,7 +33,7 @@ export function MenuBar({ appName }: { appName: string }) {
         ))}
       </div>
       <div className="status">
-        <span className="batuta-icon"><BatutaIcon /></span>
+        <span className={batutaMenuOpen ? "batuta-icon open" : "batuta-icon"}><BatutaIcon /></span>
         <BatteryIcon />
         <WifiIcon />
         <span>Wed 25 Nov 9:41</span>

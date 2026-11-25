@@ -73,6 +73,9 @@
   --menubar: light-dark(rgba(255, 255, 255, 0.3), rgba(20, 16, 50, 0.3));
   --menubar-label: light-dark(#1d1d1f, #ffffff);
   --menubar-pill: light-dark(rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.18));
+  --menubar-pill-open: light-dark(rgba(0, 0, 0, 0.2), rgba(255, 255, 255, 0.32));
+  --switch-knob: #ffffff;
+  --panel: light-dark(rgba(246, 246, 248, 0.86), rgba(40, 40, 46, 0.86));
   --wallpaper:
     radial-gradient(at 18% 22%, light-dark(#a99bff, #7b61ff) 0, transparent 48%),
     radial-gradient(at 82% 18%, light-dark(#ffb199, #ff7a59) 0, transparent 42%),

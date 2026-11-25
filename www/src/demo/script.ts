@@ -104,7 +104,20 @@ export const chapters: Chapter[] = [
     steps: [
       { keys: navigate("←"), action: { type: "focus", direction: "left" }, hold: 800 },
       { keys: move("←"), action: { type: "move", direction: "left" }, hold: 1600 },
-      { keys: null, hold: 1800 },
+      { keys: null, hold: 1000 },
+    ],
+  },
+  {
+    id: "full-screen",
+    title: "Full screen",
+    caption: "Turn off Don't cover Stage Manager to tile over the whole screen. The stages come back only while you pick one.",
+    steps: [
+      { action: { type: "openSettings" }, hold: 900 },
+      { action: { type: "setLeaveRoomForStageManager", on: false }, hold: 1100 },
+      { action: { type: "closeSettings" }, hold: 900 },
+      { keys: navigate("↓"), action: { type: "pick", direction: "down" }, hold: 800 },
+      { keys: navigate("↓"), action: { type: "pick", direction: "down" }, hold: 900 },
+      { keys: null, action: { type: "confirmPick" }, hold: 2200 },
     ],
   },
 ];
