@@ -17,12 +17,13 @@ APP_NAME="Batuta"
 ZIP_PATH="$ROOT/dist/$APP_NAME.zip"
 SHA_PATH="$ZIP_PATH.sha256"
 CODESIGN_IDENTITY="${CODESIGN_IDENTITY:-}"
-NOTARY_KEYCHAIN_PROFILE="${NOTARY_KEYCHAIN_PROFILE:-${NOTARY_PROFILE:-Batuta}}"
+NOTARY_KEYCHAIN_PROFILE="${NOTARY_KEYCHAIN_PROFILE:-${NOTARY_PROFILE:-$DEFAULT_NOTARY_KEYCHAIN_PROFILE}}"
 
 find_codesign_identity() {
   security find-identity -v -p codesigning 2>/dev/null \
     | grep '"Developer ID Application:' \
-    | sed -E 's/^.*"(Developer ID Application:[^"]+)"$/\1/'
+    | sed -E 's/^.*"(Developer ID Application:[^"]+)"$/\1/' \
+    | sort -u
 }
 
 generate_release_notes_prefix() {

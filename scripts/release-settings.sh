@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
-# Sourced by the build and release scripts. Replace every TODO before the first release.
+# Sourced by the build and release scripts.
 
-BATUTA_GITHUB_REPOSITORY="${BATUTA_GITHUB_REPOSITORY:-${GITHUB_REPOSITORY:-TODO-owner/TODO-repo}}"
-SPARKLE_PUBLIC_ED_KEY="${SPARKLE_PUBLIC_ED_KEY:-TODO-paste-public-key-from-make-generate-keys}"
+BATUTA_GITHUB_REPOSITORY="${BATUTA_GITHUB_REPOSITORY:-${GITHUB_REPOSITORY:-pablopunk/batuta}}"
+SPARKLE_PUBLIC_ED_KEY="${SPARKLE_PUBLIC_ED_KEY:-36LJpGS8rTs3zPSj/ak2mIQhGEMVBSMzlXj7eJGSdSk=}"
 SPARKLE_APPCAST_URL="${SPARKLE_APPCAST_URL:-https://raw.githubusercontent.com/$BATUTA_GITHUB_REPOSITORY/main/appcast.xml}"
+# Same Apple ID and team as Mousetrap, so its notarytool keychain profile works here too.
+DEFAULT_NOTARY_KEYCHAIN_PROFILE="Mousetrap"
 HOMEBREW_TAP_REPOSITORY="${HOMEBREW_TAP_REPOSITORY:-pablopunk/homebrew-brew}"
 SPARKLE_BIN_DIR="$ROOT/.build/artifacts/sparkle/Sparkle/bin"
 
