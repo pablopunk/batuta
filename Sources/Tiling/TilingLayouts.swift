@@ -65,7 +65,7 @@ enum TilingLayouts {
     }
 
     private static let messyLayouts: [Int: [UnitRect]] = [
-        1: [UnitRect(x: 0.25, y: 0.15, width: 0.55, height: 0.7)],
+        1: [UnitRect(x: 0.15, y: 0.1, width: 0.7, height: 0.75)],
         2: [UnitRect(x: 0.05, y: 0.05, width: 0.5, height: 0.8),
             UnitRect(x: 0.45, y: 0.15, width: 0.5, height: 0.8)],
         3: [UnitRect(x: 0.05, y: 0.05, width: 0.5, height: 0.7),
