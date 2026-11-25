@@ -10,6 +10,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var permissionPollTimer: Timer?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        AppUpdater.shared.startIfBundleHasUpdateFeed()
         wireHotkeysToNavigator()
         startHotkeysOnceAccessibilityIsGranted()
     }
