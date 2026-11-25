@@ -6,7 +6,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let navigator = StageNavigator()
     private let hotkeyTap = HotkeyTap()
     private let stageSwitchWatcher = StageSwitchWatcher()
-    private let windowDragWatcher = WindowDragWatcher()
+    private let windowMoveWatcher = WindowMoveWatcher()
     private var permissionPollTimer: Timer?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -55,8 +55,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             StageLayout.arrange(StageOrders.ordered(windows), besides: StageStrip.closest(to: windows.first?.frame))
         }
         stageSwitchWatcher.start()
-        windowDragWatcher.onDragFinished = AppSizes.rememberLoneWindowIfMoved
-        windowDragWatcher.start()
+        windowMoveWatcher.onMoveFinished = AppSizes.rememberLoneWindowIfMoved
+        windowMoveWatcher.start()
         StageLayout.onArranged = { [stageSwitchWatcher] in stageSwitchWatcher.acceptCurrentStage() }
     }
 

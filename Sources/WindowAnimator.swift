@@ -25,6 +25,7 @@ final class WindowAnimator: NSObject {
     private var afterLanding: (@MainActor () -> Void)?
 
     var isAnimating: Bool { displayLink != nil }
+    private(set) var lastLandedAt: CFTimeInterval = 0
 
     /// Mid-animation a window has moved but not resized yet, so its live frame is neither old nor new.
     func frameIncludingAnimation(of window: StageWindow) -> CGRect {
@@ -81,6 +82,7 @@ final class WindowAnimator: NSObject {
         self.afterLanding = nil
         landed.notify(queue: .main) { [weak self] in
             MainActor.assumeIsolated {
+                self?.lastLandedAt = CACurrentMediaTime()
                 self?.restoreEnhancedUserInterface()
                 afterLanding?()
             }

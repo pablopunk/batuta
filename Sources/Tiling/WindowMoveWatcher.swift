@@ -1,17 +1,16 @@
 import AppKit
 import ApplicationServices
 
-/// Reports when you finish moving or resizing a window of the focused app with the mouse.
-/// Moves made while no mouse button is down come from Stage Manager or Batuta, so they are ignored.
+/// Reports when a window of the focused app stops moving or resizing, by hand or with a tool like Swift Shift.
+/// Moves that end right after a Batuta animation are Batuta's own, so they are ignored.
 @MainActor
-final class WindowDragWatcher {
-    var onDragFinished: (() -> Void)?
+final class WindowMoveWatcher {
+    var onMoveFinished: (() -> Void)?
 
-    private static let releaseCheckInterval: TimeInterval = 0.15
-    private static let leftMouseButton = 1
+    private static let quietInterval: TimeInterval = 0.5
 
     private var observer: AXObserver?
-    private var waitsForRelease = false
+    private var quietGeneration = 0
 
     func start() {
         NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.didActivateApplicationNotification, object: nil, queue: .main) { [weak self] notification in
@@ -27,7 +26,7 @@ final class WindowDragWatcher {
         var newObserver: AXObserver?
         let callback: AXObserverCallback = { _, _, _, refcon in
             guard let refcon else { return }
-            let watcher = Unmanaged<WindowDragWatcher>.fromOpaque(refcon).takeUnretainedValue()
+            let watcher = Unmanaged<WindowMoveWatcher>.fromOpaque(refcon).takeUnretainedValue()
             MainActor.assumeIsolated { watcher.windowMovedOrResized() }
         }
         guard AXObserverCreate(pid, callback, &newObserver) == .success, let newObserver else { return }
@@ -41,19 +40,16 @@ final class WindowDragWatcher {
     }
 
     private func windowMovedOrResized() {
-        guard !waitsForRelease, isLeftMouseDown else { return }
-        waitsForRelease = true
-        checkForReleaseSoon()
-    }
-
-    private func checkForReleaseSoon() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + Self.releaseCheckInterval) { [weak self] in
-            guard let self else { return }
-            guard !self.isLeftMouseDown else { return self.checkForReleaseSoon() }
-            self.waitsForRelease = false
-            self.onDragFinished?()
+        quietGeneration += 1
+        let generation = quietGeneration
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.quietInterval) { [weak self] in
+            guard let self, generation == self.quietGeneration, !Self.batutaMovedWindowsJustNow else { return }
+            self.onMoveFinished?()
         }
     }
 
-    private var isLeftMouseDown: Bool { NSEvent.pressedMouseButtons & Self.leftMouseButton != 0 }
+    private static var batutaMovedWindowsJustNow: Bool {
+        let animator = WindowAnimator.shared
+        return animator.isAnimating || CACurrentMediaTime() - animator.lastLandedAt < quietInterval + 0.2
+    }
 }
