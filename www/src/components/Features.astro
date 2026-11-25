@@ -1,0 +1,162 @@
+---
+const CONFIG_PATH = "~/.config/batuta/config.json";
+
+const CONFIG = {
+  modifiers: ["control", "command"],
+  moveModifier: "shift",
+  directionKeys: "hjkl",
+  openStageOn: "release",
+  modeShortcuts: {
+    even: { keyCode: 32, keyLabel: "U", modifiers: ["control", "option", "command"] },
+    messy: { keyCode: 34, keyLabel: "I", modifiers: ["control", "option", "command"] },
+  },
+  tiling: { mode: "messy", leaveRoomForStageManager: true },
+};
+
+const escapeHtml = (text: string) => text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+const JSON_TOKEN = /("(?:[^"\\]|\\.)*")(\s*:)?|\b(true|false|null)\b|(-?\d+(?:\.\d+)?)/g;
+
+const highlightJson = (json: string) =>
+  escapeHtml(json).replace(JSON_TOKEN, (match, string, colon, literal, number) => {
+    if (string) return colon ? `<span class="key">${string}</span>${colon}` : `<span class="string">${string}</span>`;
+    if (literal) return `<span class="literal">${literal}</span>`;
+    if (number) return `<span class="number">${number}</span>`;
+    return match;
+  });
+
+const compactArrays = (json: string) => json.replace(/\[\n\s+([^\]]*?)\n\s+\]/g, (_, body: string) => `[${body.replace(/\s*\n\s*/g, " ")}]`);
+
+const configHtml = highlightJson(compactArrays(JSON.stringify(CONFIG, null, 2)));
+
+const VIM_KEYS = [
+  { key: "H", arrow: "←", action: "focus left" },
+  { key: "J", arrow: "↓", action: "stage down" },
+  { key: "K", arrow: "↑", action: "stage up" },
+  { key: "L", arrow: "→", action: "focus right" },
+];
+---
+
+<section class="feature">
+  <div class="copy">
+    <h3>Dotfiles friendly</h3>
+    <p>
+      Every setting and every shortcut lives in one plain JSON file. Keep it in your dotfiles, leave out what you don't
+      care about, and edit it by hand: Batuta reloads it the moment you save.
+    </p>
+  </div>
+  <figure class="code-window">
+    <figcaption><i></i><i></i><i></i><span>{CONFIG_PATH}</span></figcaption>
+    <pre><code set:html={configHtml} /></pre>
+  </figure>
+</section>
+
+<section class="feature flipped">
+  <div class="copy">
+    <h3>Coming from Vim? hjkl, my friend</h3>
+    <p>
+      Arrows by default, home row if you like. Switch the direction keys to <code>hjkl</code> and pick your own modifiers, so
+      your fingers never leave the keys they already know.
+    </p>
+  </div>
+  <figure class="keys">
+    <div class="modifiers"><kbd>⌃</kbd><kbd>⌘</kbd><span>+</span></div>
+    <div class="vim-row">
+      {
+        VIM_KEYS.map(({ key, arrow, action }) => (
+          <div class="vim-key">
+            <kbd class="big">{key}</kbd>
+            <span class="arrow">{arrow}</span>
+            <span class="action">{action}</span>
+          </div>
+        ))
+      }
+    </div>
+  </figure>
+</section>
+
+<style>
+  .feature {
+    --card: light-dark(#ffffff, #15161c);
+    --line: color-mix(in srgb, var(--muted) 24%, transparent);
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    align-items: center;
+    gap: 56px;
+    padding: 72px 0;
+    border-top: 1px solid var(--line);
+  }
+  .feature.flipped .copy { order: 2; }
+  .copy h3 { margin: 0 0 12px; font-size: 28px; letter-spacing: -0.02em; text-wrap: balance; }
+  .copy p { margin: 0; font-size: 17px; line-height: 1.55; color: var(--muted); text-wrap: pretty; }
+  figure { margin: 0; }
+  .copy code { padding: 1px 5px; border-radius: 5px; background: var(--line); font: 0.9em ui-monospace, "SF Mono", Menlo, monospace; color: var(--text); }
+
+  .code-window {
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--card);
+    box-shadow: 0 18px 50px -24px rgba(0, 0, 0, 0.35);
+  }
+  .code-window figcaption {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+    font: 12px ui-monospace, "SF Mono", Menlo, monospace;
+    color: var(--muted);
+  }
+  .code-window figcaption i { width: 10px; height: 10px; border-radius: 50%; background: var(--line); }
+  .code-window figcaption span { margin-left: 8px; }
+  .code-window pre {
+    margin: 0;
+    padding: 16px 18px;
+    overflow-x: auto;
+    font: 13px/1.6 ui-monospace, "SF Mono", Menlo, monospace;
+    color: var(--text);
+  }
+  .code-window :global(.key) { color: light-dark(#0b5cad, #7cc4ff); }
+  .code-window :global(.string) { color: light-dark(#b3261e, #ff9b8a); }
+  .code-window :global(.number) { color: light-dark(#7c3aed, #c4a7ff); }
+  .code-window :global(.literal) { color: light-dark(#a15c00, #ffc66d); }
+
+  .keys {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 22px;
+    padding: 40px 24px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--card);
+  }
+  kbd {
+    display: grid;
+    place-items: center;
+    min-width: 44px;
+    height: 44px;
+    padding: 0 10px;
+    border: 1px solid var(--line);
+    border-bottom-width: 3px;
+    border-radius: 9px;
+    background: var(--page);
+    font: 600 18px -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    color: var(--text);
+  }
+  kbd.big { width: 68px; height: 68px; font-size: 26px; }
+  .modifiers { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 20px; }
+  .vim-row { display: flex; gap: 14px; }
+  .vim-key { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .arrow { font-size: 18px; color: var(--text); }
+  .action { font-size: 12px; color: var(--muted); }
+
+  @media (max-width: 760px) {
+    .feature { grid-template-columns: 1fr; gap: 28px; padding: 48px 0; }
+    .feature.flipped .copy { order: 0; }
+    .copy h3 { font-size: 24px; }
+    kbd.big { width: 56px; height: 56px; font-size: 22px; }
+    .vim-row { gap: 10px; }
+  }
+</style>
