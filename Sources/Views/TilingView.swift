@@ -137,7 +137,7 @@ private struct CycleShortcutRow: View {
             icon: "arrow.triangle.2.circlepath",
             caption: "Changes the mode of the current stage only. Other stages keep the default. Click the shortcut to change it, or press Esc to clear it."
         ) {
-            ShortcutRecorder(shortcut: configStore.binding(\.effectiveCycleTilingModeShortcut), canClear: true)
+            ShortcutRecorder(shortcut: configStore.binding(\.effectiveCycleTilingModeShortcut), owner: .cycleMode, canClear: true)
         }
     }
 }
@@ -206,7 +206,7 @@ private struct ModeShortcutRows: View {
                             .font(.system(size: 12))
                             .foregroundStyle(.secondary)
                         Spacer(minLength: 0)
-                        ShortcutRecorder(shortcut: binding(for: mode), canClear: true)
+                        ShortcutRecorder(shortcut: binding(for: mode), owner: .mode(mode), canClear: true)
                     }
                 }
             }

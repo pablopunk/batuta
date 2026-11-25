@@ -93,8 +93,8 @@ final class HotkeyTap {
             if let eventTap { CGEvent.tapEnable(tap: eventTap, enable: true) }
             return passThrough
         case .flagsChanged:
-            if !holdsRequiredModifiers(event.flags) { onModifierReleased?() }
-            let holdsNavigateKeysNow = holdsExactlyRequiredModifiers(event.flags)
+            if !Self.holdsRequiredModifiers(event.flags) { onModifierReleased?() }
+            let holdsNavigateKeysNow = Self.holdsExactlyRequiredModifiers(event.flags)
             if holdsNavigateKeysNow != holdsNavigateKeys {
                 holdsNavigateKeys = holdsNavigateKeysNow
                 onNavigateKeysHeld?(holdsNavigateKeysNow)
@@ -123,37 +123,39 @@ final class HotkeyTap {
         let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
         let picking = isPickingStage()
 
+        let isKeyRepeat = event.getIntegerValueField(.keyboardEventAutorepeat) != 0
+
         if !picking, ConfigStore.shared.config.effectiveCycleTilingModeShortcut?.matches(keyCode: keyCode, flags: event.flags) == true {
             swallowedKeyCodes.insert(keyCode)
-            onCycleTilingMode?()
+            if !isKeyRepeat { onCycleTilingMode?() }
             return true
         }
 
         if !picking, let mode = Self.modeToggled(byKeyCode: keyCode, flags: event.flags) {
             swallowedKeyCodes.insert(keyCode)
-            onToggleTilingMode?(mode)
+            if !isKeyRepeat { onToggleTilingMode?(mode) }
             return true
         }
 
-        if !picking, holdsExactlyRequiredModifiers(event.flags), let grows = Self.resizeDirection(forKeyCode: keyCode) {
+        if !picking, Self.holdsExactlyRequiredModifiers(event.flags), let grows = Self.resizeDirection(forKeyCode: keyCode) {
             swallowedKeyCodes.insert(keyCode)
             onResize?(grows)
             return true
         }
 
-        if let number = KeyCode.digits[keyCode], holdsExactlyRequiredModifiers(event.flags) || (picking && holdsNoModifiers(event.flags)) {
+        if let number = KeyCode.digits[keyCode], Self.holdsExactlyRequiredModifiers(event.flags) || (picking && Self.holdsNoModifiers(event.flags)) {
             swallowedKeyCodes.insert(keyCode)
             onStageNumber?(number)
             return true
         }
 
         if let direction = Direction(keyCode: keyCode, keys: ConfigStore.shared.config.directionKeys) {
-            if holdsExactlyRequiredModifiers(event.flags) || (picking && holdsNoModifiers(event.flags)) {
+            if Self.holdsExactlyRequiredModifiers(event.flags) || (picking && Self.holdsNoModifiers(event.flags)) {
                 swallowedKeyCodes.insert(keyCode)
                 onDirection?(direction)
                 return true
             }
-            if holdsMoveModifiers(event.flags) {
+            if Self.holdsMoveModifiers(event.flags) {
                 swallowedKeyCodes.insert(keyCode)
                 onMoveDirection?(direction)
                 return true
@@ -176,6 +178,18 @@ final class HotkeyTap {
         }
     }
 
+    /// The built-in action these keys run, so a recorded shortcut cannot hide it.
+    static func builtInAction(forKeyCode keyCode: Int64, flags: CGEventFlags) -> String? {
+        let isDirection = Direction(keyCode: keyCode, keys: ConfigStore.shared.config.directionKeys) != nil
+        if holdsExactlyRequiredModifiers(flags) {
+            if resizeDirection(forKeyCode: keyCode) != nil { return "Resize window" }
+            if KeyCode.digits[keyCode] != nil { return "Jump to stage" }
+            if isDirection { return "Focus window" }
+        }
+        if holdsMoveModifiers(flags), isDirection { return "Move window" }
+        return nil
+    }
+
     /// True grows, false shrinks. "=" counts as "+" because US keyboards type "+" with Shift on that key.
     private static func resizeDirection(forKeyCode keyCode: Int64) -> Bool? {
         if keyCode == KeyCode.keypadPlus { return true }
@@ -187,22 +201,22 @@ final class HotkeyTap {
         }
     }
 
-    private func holdsExactlyRequiredModifiers(_ flags: CGEventFlags) -> Bool {
+    private static func holdsExactlyRequiredModifiers(_ flags: CGEventFlags) -> Bool {
         let required = ConfigStore.shared.config.requiredModifierFlags
         return !required.isEmpty && flags.intersection(ModifierKey.allEventFlags) == required
     }
 
-    private func holdsMoveModifiers(_ flags: CGEventFlags) -> Bool {
+    private static func holdsMoveModifiers(_ flags: CGEventFlags) -> Bool {
         let config = ConfigStore.shared.config
         guard !config.requiredModifierFlags.isEmpty else { return false }
         return flags.intersection(ModifierKey.allEventFlags) == config.moveModifierFlags
     }
 
-    private func holdsRequiredModifiers(_ flags: CGEventFlags) -> Bool {
+    private static func holdsRequiredModifiers(_ flags: CGEventFlags) -> Bool {
         flags.contains(ConfigStore.shared.config.requiredModifierFlags)
     }
 
-    private func holdsNoModifiers(_ flags: CGEventFlags) -> Bool {
+    private static func holdsNoModifiers(_ flags: CGEventFlags) -> Bool {
         flags.intersection(ModifierKey.allEventFlags).isEmpty
     }
 }

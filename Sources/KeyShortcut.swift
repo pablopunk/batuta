@@ -12,9 +12,16 @@ struct KeyShortcut: Codable, Equatable {
         ModifierKey.allCases.filter(modifiers.contains).map(\.symbol).joined() + " " + keyLabel
     }
 
+    var eventFlags: CGEventFlags {
+        modifiers.reduce(into: CGEventFlags()) { $0.insert($1.eventFlag) }
+    }
+
     func matches(keyCode: Int64, flags: CGEventFlags) -> Bool {
-        let wanted = modifiers.reduce(into: CGEventFlags()) { $0.insert($1.eventFlag) }
-        return keyCode == self.keyCode && flags.intersection(ModifierKey.allEventFlags) == wanted
+        keyCode == self.keyCode && flags.intersection(ModifierKey.allEventFlags) == eventFlags
+    }
+
+    func isSameKeys(as other: KeyShortcut) -> Bool {
+        matches(keyCode: other.keyCode, flags: other.eventFlags)
     }
 }
 

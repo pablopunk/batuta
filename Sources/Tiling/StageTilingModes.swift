@@ -23,13 +23,13 @@ enum StageTilingModes {
         }
     }
 
-    /// Windows that join a stage take its chosen mode, and the mode to toggle back to.
+    /// Windows that join a stage take its mode and the mode to toggle back to, or drop their own when it has none.
     static func copyChoice(from stageWindowIDs: [CGWindowID], to joiningWindowIDs: [CGWindowID]) {
         let chosen = chosenMode(for: stageWindowIDs)
         let previous = stageWindowIDs.lazy.compactMap { previousModeByWindowID[$0] }.first
         for id in joiningWindowIDs {
-            if let chosen { modeByWindowID[id] = chosen }
-            if let previous { previousModeByWindowID[id] = previous }
+            modeByWindowID[id] = chosen
+            previousModeByWindowID[id] = previous
         }
     }
 }
