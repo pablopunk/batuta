@@ -1,7 +1,7 @@
 .PHONY: build run test icons build-release release appcast generate-keys
 
 build:
-	bash ./scripts/build-app.sh
+	INSTALL_APP=0 bash ./scripts/build-app.sh
 
 run:
 	bash ./scripts/run-app.sh
