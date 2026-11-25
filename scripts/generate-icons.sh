@@ -6,6 +6,7 @@ APP_ICON_NAME="AppIcon"
 ICON_SOURCE="$ROOT/assets/${APP_ICON_NAME}.icon"
 OUTPUT_ICNS="${1:-$ROOT/assets/${APP_ICON_NAME}.icns}"
 OUTPUT_PNG="$ROOT/assets/${APP_ICON_NAME}.png"
+WEBSITE_ICON_PNG="$ROOT/www/public/icon.png"
 OUTPUT_DIR="$(mktemp -d "${TMPDIR:-/tmp}/batuta-icon-assets.XXXXXX")"
 PARTIAL_PLIST="$OUTPUT_DIR/${APP_ICON_NAME}-partial-info.plist"
 
@@ -49,7 +50,9 @@ fi
 
 cp "$OUTPUT_DIR/${APP_ICON_NAME}.icns" "$OUTPUT_ICNS"
 sips -s format png "$OUTPUT_ICNS" --out "$OUTPUT_PNG" >/dev/null
+cp "$OUTPUT_PNG" "$WEBSITE_ICON_PNG"
 
 log "Done. Generated:"
 log "- $OUTPUT_ICNS"
 log "- $OUTPUT_PNG"
+log "- $WEBSITE_ICON_PNG"
