@@ -1,5 +1,8 @@
 import AppKit
 import ApplicationServices
+import os
+
+private let stageLog = Logger(subsystem: "com.pablopunk.batuta", category: "stage")
 
 /// Reports when one of the given windows closes. Closing a window often keeps the same app active,
 /// so neither app activation nor focus changes would notice it.
@@ -21,11 +24,15 @@ final class WindowCloseWatcher {
             let callback: AXObserverCallback = { _, _, _, refcon in
                 guard let refcon else { return }
                 let watcher = Unmanaged<WindowCloseWatcher>.fromOpaque(refcon).takeUnretainedValue()
-                MainActor.assumeIsolated { watcher.onWindowClosed?() }
+                MainActor.assumeIsolated {
+                    stageLog.notice("window closed")
+                    watcher.onWindowClosed?()
+                }
             }
             guard AXObserverCreate(pid, callback, &observer) == .success, let observer else { continue }
             for window in windowsOfApp {
-                AXObserverAddNotification(observer, window.element, kAXUIElementDestroyedNotification as CFString, refcon)
+                let result = AXObserverAddNotification(observer, window.element, kAXUIElementDestroyedNotification as CFString, refcon)
+                stageLog.notice("watching close of \(window.id): \(result.rawValue)")
             }
             CFRunLoopAddSource(CFRunLoopGetMain(), AXObserverGetRunLoopSource(observer), .defaultMode)
             observersByPID[pid] = observer

@@ -1,5 +1,8 @@
 import AppKit
 import ApplicationServices
+import os
+
+private let stageLog = Logger(subsystem: "com.pablopunk.batuta", category: "stage")
 
 /// macOS has no "stage changed" event, so a switch is inferred: when the app or its focused window changes,
 /// the windows shown full size are read again once Stage Manager settles. Almost no window in common means another stage.
@@ -31,8 +34,11 @@ final class StageSwitchWatcher {
     }
 
     /// Batuta tiles on its own after it adds or removes a window, so it reports the new set instead of a switch.
-    func acceptCurrentStage() {
-        rememberCurrentStage(StageWindows.visibleSortedLeftToRight())
+    /// A window still resizing is not read as shown, so the windows Batuta just tiled are added to what is read.
+    func acceptCurrentStage(including arranged: [StageWindow]) {
+        let visible = StageWindows.visibleSortedLeftToRight()
+        let visibleIDs = Set(visible.map(\.id))
+        rememberCurrentStage(visible + arranged.filter { !visibleIDs.contains($0.id) })
     }
 
     private func rememberCurrentStage(_ windows: [StageWindow]) {
@@ -48,6 +54,10 @@ final class StageSwitchWatcher {
     private func waitUntilStageSettles(generation: Int, previous: [CGWindowID]?, attemptsLeft: Int) {
         DispatchQueue.main.asyncAfter(deadline: .now() + Self.settleInterval) { [weak self] in
             guard let self, generation == self.checkGeneration else { return }
+            guard !WindowAnimator.shared.isAnimating else {
+                self.waitUntilStageSettles(generation: generation, previous: nil, attemptsLeft: attemptsLeft)
+                return
+            }
             let windows = StageWindows.visibleSortedLeftToRight()
             let ids = windows.map(\.id)
             let isSettled = !ids.isEmpty && ids == previous
@@ -61,6 +71,7 @@ final class StageSwitchWatcher {
 
     private func compareWithLastStage(_ windows: [StageWindow]) {
         let ids = Set(windows.map(\.id))
+        stageLog.notice("compare \(ids.count) windows with \(self.lastStageWindowIDs.count)")
         guard !ids.isEmpty, ids != lastStageWindowIDs else { return }
         let isAnotherStage = ids.intersection(lastStageWindowIDs).count * 2 < max(ids.count, lastStageWindowIDs.count)
         rememberCurrentStage(windows)
