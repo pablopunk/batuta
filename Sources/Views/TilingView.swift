@@ -55,7 +55,24 @@ struct TilingView: View {
                         .foregroundStyle(.tertiary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
+            }
+            .disabled(!isEditable)
+            .opacity(isEditable ? 1 : 0.45)
 
+            if settings.mode != .off { WindowCountStepper(count: $windowCount) }
+
+            if settings.mode == .custom {
+                if isEditable {
+                    CustomLayoutEditor(windowCount: windowCount, layouts: settings.customLayouts) { key, rects in updateSettings { $0.customLayouts[key] = rects } }
+                        .id("\(editsExternalSettings)-\(windowCount)")
+                } else {
+                    LayoutPreview(rects: previewRects).opacity(0.45)
+                }
+            } else if settings.mode != .off {
+                LayoutPreview(rects: previewRects).opacity(isEditable ? 1 : 0.45)
+            }
+
+            Group {
                 PreferenceToggleRow(
                     title: "Don't cover Stage Manager",
                     subtitle: "Tile beside the thumbnails",
@@ -90,19 +107,6 @@ struct TilingView: View {
                 }
                     .disabled(!isEditable)
                     .opacity(isEditable ? 1 : 0.45)
-            }
-
-            if settings.mode != .off { WindowCountStepper(count: $windowCount) }
-
-            if settings.mode == .custom {
-                if isEditable {
-                    CustomLayoutEditor(windowCount: windowCount, layouts: settings.customLayouts) { key, rects in updateSettings { $0.customLayouts[key] = rects } }
-                        .id("\(editsExternalSettings)-\(windowCount)")
-                } else {
-                    LayoutPreview(rects: previewRects).opacity(0.45)
-                }
-            } else if settings.mode != .off {
-                LayoutPreview(rects: previewRects)
             }
         }
         .padding(14)
