@@ -31,6 +31,11 @@ struct AppPanelView: View {
             .padding(.vertical, 6)
 
             tabContents
+
+            ConfigFileButton()
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 14)
+                .padding(.bottom, 12)
         }
         .frame(width: panelWidth)
     }

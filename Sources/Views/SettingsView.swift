@@ -52,7 +52,6 @@ struct SettingsView: View {
                     icon: "wind",
                     isOn: configStore.binding(\.animateWindowMoves)
                 )
-                ConfigFileButton()
 
                 if !hasAccessibilityPermission {
                     WarningButton(title: "Accessibility permissions needed", action: AccessibilityPermission.openSettings)
@@ -174,7 +173,7 @@ private struct StageConfirmModeRow: View {
     }
 }
 
-private struct ConfigFileButton: View {
+struct ConfigFileButton: View {
     var body: some View {
         Button {
             NSWorkspace.shared.activateFileViewerSelecting([ConfigStore.fileURL])
