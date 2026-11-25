@@ -3,6 +3,13 @@ import SwiftUI
 private enum ScreenKind: String, CaseIterable {
     case laptop = "Laptop"
     case external = "External"
+
+    /// The screen where you clicked the menu bar icon.
+    static var underMouse: ScreenKind {
+        let mouse = NSEvent.mouseLocation
+        let screen = NSScreen.screens.first { NSMouseInRect(mouse, $0.frame, false) } ?? NSScreen.main
+        return screen?.isBuiltIn ?? true ? .laptop : .external
+    }
 }
 
 struct TilingView: View {
@@ -80,6 +87,7 @@ struct TilingView: View {
             }
         }
         .padding(14)
+        .onAppear { screenKind = ScreenKind.underMouse }
     }
 
     private var editsExternalSettings: Bool {
