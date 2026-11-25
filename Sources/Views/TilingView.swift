@@ -121,7 +121,7 @@ private struct CycleShortcutRow: View {
         CaptionedRow(
             title: "Cycle mode",
             icon: "arrow.triangle.2.circlepath",
-            caption: "Changes the mode of the current stage only. Other stages keep the default. Click the shortcut to change it, or press Delete to clear it."
+            caption: "Changes the mode of the current stage only. Other stages keep the default. Click the shortcut to change it, or press Esc to clear it."
         ) {
             ShortcutRecorder(shortcut: configStore.binding(\.effectiveCycleTilingModeShortcut), canClear: true)
         }
@@ -138,7 +138,7 @@ private struct ModeShortcutRows: View {
                 Text("Mode shortcuts")
                     .font(.system(size: 13, weight: .medium))
             }
-            Text("Sets that mode on the current stage. Press it again to go back. Delete clears a shortcut.")
+            Text("Sets that mode on the current stage. Press it again to go back. Esc clears a shortcut.")
                 .font(.system(size: 11))
                 .foregroundStyle(.tertiary)
                 .fixedSize(horizontal: false, vertical: true)

@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Click, then press the new keys. Esc cancels, and Delete clears an optional shortcut.
+/// Click, then press the new keys. Esc or Delete clears an optional shortcut; click again to cancel.
 /// The global tap lets keys through while this records.
 struct ShortcutRecorder: View {
     @Binding var shortcut: KeyShortcut?
@@ -20,7 +20,7 @@ struct ShortcutRecorder: View {
         }
         .buttonStyle(.plain)
         .focusEffectDisabled()
-        .help(canClear ? "Click and press a new shortcut, or Delete to clear it" : "Click and press a new shortcut")
+        .help(canClear ? "Click and press a new shortcut, or Esc to clear it" : "Click and press a new shortcut")
         .onDisappear(perform: stopRecording)
     }
 
@@ -28,14 +28,17 @@ struct ShortcutRecorder: View {
         isRecording ? stopRecording() : startRecording()
     }
 
+    private static let escapeKeyCode: UInt16 = 53
+    private static let clearingKeyCodes: Set<UInt16> = [escapeKeyCode, 51, 117]
+
     private func startRecording() {
         isRecording = true
         ShortcutRecording.isActive = true
         monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
-            if event.keyCode == 53 {
-                stopRecording()
-            } else if canClear, event.keyCode == 51 || event.keyCode == 117 {
+            if canClear, Self.clearingKeyCodes.contains(event.keyCode) {
                 shortcut = nil
+                stopRecording()
+            } else if event.keyCode == Self.escapeKeyCode {
                 stopRecording()
             } else if let recorded = KeyShortcut(recording: event) {
                 shortcut = recorded
