@@ -119,7 +119,7 @@ private struct CycleShortcutRow: View {
 
     var body: some View {
         CaptionedRow(
-            title: "Switch mode",
+            title: "Cycle mode",
             icon: "arrow.triangle.2.circlepath",
             caption: "Changes the mode of the current stage only. Other stages keep the default. Click the shortcut to change it."
         ) {
