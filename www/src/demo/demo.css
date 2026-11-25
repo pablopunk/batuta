@@ -135,6 +135,28 @@
 
 .content { position: relative; flex: 1; overflow: hidden; container: window / inline-size; }
 
+/* Stage Manager app icons */
+
+.strip-icons {
+  position: absolute;
+  display: flex;
+  gap: 4px;
+  pointer-events: none;
+  transition: left var(--window-motion), top var(--window-motion), opacity var(--window-motion);
+}
+
+.strip-icons.hidden { opacity: 0; }
+
+.app-icon {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  font: 700 15px ui-monospace, Menlo, monospace;
+  box-shadow: 0 0 0 0.5px var(--window-outline), 0 4px 10px var(--window-shadow);
+}
+
 /* Batuta overlays */
 
 .highlight {

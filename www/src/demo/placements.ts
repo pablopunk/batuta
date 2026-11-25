@@ -35,6 +35,25 @@ export function windowPlacements(state: DesktopState): Record<AppId, Placement> 
   return placements;
 }
 
+export type StripIconRow = { stageId: string; apps: AppId[]; x: number; y: number; z: number; hidden: boolean };
+
+const ICON_OVERHANG = { x: -6, y: 18 };
+
+export function stripIconRows(state: DesktopState): StripIconRow[] {
+  const hidden = stripIsHidden(state);
+  return state.strip
+    .map((stage, index) => ({ stage, index, thumb: thumbnailRect(index, state.strip.length) }))
+    .filter(({ index }) => !(state.picking?.pulling && state.picking.index === index))
+    .map(({ stage, thumb }) => ({
+      stageId: stage.id,
+      apps: stage.windows,
+      x: thumb.x + ICON_OVERHANG.x - (hidden ? STRIP_HIDE_DISTANCE : 0),
+      y: thumb.y + thumb.h - ICON_OVERHANG.y,
+      z: state.leaveRoomForStageManager ? 60 : 460,
+      hidden,
+    }));
+}
+
 export type Highlight = { rect: Rect; persistent: boolean } | null;
 
 export function highlight(state: DesktopState): Highlight {

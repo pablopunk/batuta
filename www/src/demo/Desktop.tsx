@@ -6,7 +6,8 @@ import { ModeBanner } from "./ModeBanner";
 import { Pointer } from "./Pointer";
 import { SettingsPanel } from "./SettingsPanel";
 import { HighlightFrame, KeyCaps, StageBadges } from "./Overlays";
-import { badgeRects, highlight, windowPlacements } from "./placements";
+import { badgeRects, highlight, stripIconRows, windowPlacements } from "./placements";
+import { StripIcons } from "./StripIcons";
 import type { Keys } from "./script";
 import type { AppId, DesktopState } from "./state";
 import { Window } from "./Window";
@@ -47,6 +48,7 @@ export function Desktop({ state, keys, instant }: Props) {
           {ALL_APPS_IN_STABLE_DOM_ORDER.filter((id) => placements[id]).map((id) => (
             <Window key={id} id={id} placement={placements[id]} focused={id === state.focused} />
           ))}
+          <StripIcons rows={stripIconRows(state)} />
           {frame && <HighlightFrame highlight={frame} flashCount={state.flashCount} />}
           {state.badges && <StageBadges rects={badgeRects(state)} />}
           {state.banner && <ModeBanner key={state.banner.count} from={state.banner.from} to={state.banner.to} />}
