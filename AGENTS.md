@@ -28,17 +28,17 @@ Navigate defaults to ⌃⌘, Move adds ⇧, and the keys to the arrows (hjkl is 
 
 Pick the default mode for every stage in the Tiling tab (saved as `tiling.mode` in the config):
 
-- **Off**: windows stay where they are; the switch-mode shortcut can still tile one stage.
+- **Off**: windows stay where they are; a mode shortcut can still tile one stage.
 - **Even** (default): every window gets the same space: one row up to 3 windows, then rows of up to 3 (5 is 2 over 3).
 - **BSP**: each new window splits the last one in half, side by side then top and bottom.
-- **Messy**: loose hand-drawn layouts for 1 to 6 windows that can overlap; more windows use Even.
+- **Messy**: loose hand-drawn layouts for 1 to 6 windows that can overlap; more windows use Even. When an app's window is alone in a Messy stage and you move or resize it (mouse drag or Navigate + +/-), Batuta saves that place for the app in `appSizes`, keyed by bundle ID, and uses it next time. The Tiling tab lists them so you can forget one.
 - **Custom**: draw tiles for 1 to 6 windows; saved as `customLayouts`, keyed by window count, as 0–1 rects (`x`, `y`, `width`, `height`, top-left origin). Tile 1 is the leftmost window.
 
 **Leave room** (`tiling.leaveRoomForStageManager`, on by default) keeps windows clear of Stage Manager. Turn it off to tile over the whole screen.
 
 The Laptop settings (`tiling`) apply to every screen. Turn on **Own settings** in the External tab (`externalScreensHaveOwnTiling`) to give external screens their own `externalTiling`.
 
-**Navigate + Space** (change it in the Tiling tab, saved as `cycleTilingModeShortcut`) switches the current stage to the next mode and tiles it now. Only that stage changes; it keeps the mode until Batuta quits, and other stages keep the default.
+**Navigate + Space** (change it in the Tiling tab, saved as `cycleTilingModeShortcut`) cycles the current stage to the next mode and tiles it now. Only that stage changes; it keeps the mode until Batuta quits, and other stages keep the default. Each mode can also have its own shortcut (`modeShortcuts`, none by default) that toggles that mode on the current stage: press it again to go back to the mode before. In a recorder, Esc or Delete clears the shortcut.
 
 Batuta tiles when a stage window is pulled in, when a window leaves the stage, and when you switch to another stage by keyboard or mouse (**Tile on stage switch**, `tileWhenSwitchingStages`, on by default). A stage that comes back with the same windows is left as it is, so sizes you changed by hand stay; when windows joined or left, the others keep their order.
 
