@@ -10,7 +10,8 @@ enum StageLayout {
     private static let fallbackStripWidth: CGFloat = 260
     static var onArranged: (() -> Void)?
 
-    static func arrange(_ windows: [StageWindow], besides strip: StageStrip?) {
+    static func arrange(_ windowsOnAnyScreen: [StageWindow], besides strip: StageStrip?) {
+        let windows = windowsOnScreenOfFocusedWindow(windowsOnAnyScreen)
         guard let screen = windows.first.flatMap({ screen(containing: $0.frame) }) else { return }
         let config = ConfigStore.shared.config
         let settings = config.tilingSettings(onBuiltInScreen: screen.isBuiltIn)
@@ -45,6 +46,13 @@ enum StageLayout {
     /// The mode set in Settings for the screen these windows are on.
     static func defaultMode(for windows: [StageWindow]) -> TilingMode {
         ConfigStore.shared.config.tilingSettings(onBuiltInScreen: isOnBuiltInScreen(windows.first?.frame)).mode
+    }
+
+    /// Only the stage you are in gets tiled; windows on other screens belong to their own stages.
+    private static func windowsOnScreenOfFocusedWindow(_ windows: [StageWindow]) -> [StageWindow] {
+        let focusedID = StageWindows.focusedWindowID()
+        guard let anchor = windows.first(where: { $0.id == focusedID }) ?? windows.first else { return [] }
+        return windowsOnSameScreen(as: anchor, among: windows)
     }
 
     /// Each screen has its own stage, so only windows on the same screen belong with this one.

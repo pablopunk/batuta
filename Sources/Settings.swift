@@ -143,9 +143,11 @@ struct BatutaConfig: Codable, Equatable {
         externalScreensHaveOwnTiling = try container.decodeIfPresent(Bool.self, forKey: .externalScreensHaveOwnTiling) ?? false
         externalTiling = try container.decodeIfPresent(TilingSettings.self, forKey: .externalTiling) ?? tiling
         if let topLevelCustomLayouts = try legacy.decodeIfPresent([String: [UnitRect]].self, forKey: .customLayouts) {
+            let laptopKeysInFile = try container.decodeIfPresent(CustomLayoutKeysInFile.self, forKey: .tiling)?.keys ?? []
+            let externalKeysInFile = try container.decodeIfPresent(CustomLayoutKeysInFile.self, forKey: .externalTiling)?.keys ?? laptopKeysInFile
             for (key, rects) in topLevelCustomLayouts {
-                if tiling.customLayouts[key] == TilingLayouts.defaultCustomLayouts[key] { tiling.customLayouts[key] = rects }
-                if externalTiling.customLayouts[key] == TilingLayouts.defaultCustomLayouts[key] { externalTiling.customLayouts[key] = rects }
+                if !laptopKeysInFile.contains(key) { tiling.customLayouts[key] = rects }
+                if !externalKeysInFile.contains(key) { externalTiling.customLayouts[key] = rects }
             }
         }
         tileWhenSwitchingStages = try container.decodeIfPresent(Bool.self, forKey: .tileWhenSwitchingStages) ?? defaults.tileWhenSwitchingStages
@@ -155,6 +157,18 @@ struct BatutaConfig: Codable, Equatable {
         cycleTilingModeShortcut = try container.decodeIfPresent(KeyShortcut.self, forKey: .cycleTilingModeShortcut)
         cycleTilingModeShortcutIsCleared = try container.decodeIfPresent(Bool.self, forKey: .cycleTilingModeShortcutIsCleared) ?? false
         modeShortcuts = try container.decodeIfPresent([String: KeyShortcut].self, forKey: .modeShortcuts) ?? [:]
+    }
+
+    /// The window counts a tiling section of the file sets itself, which a legacy top-level layout must not replace.
+    private struct CustomLayoutKeysInFile: Decodable {
+        let keys: Set<String>
+
+        private enum CodingKeys: String, CodingKey { case customLayouts }
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            keys = Set((try container.decodeIfPresent([String: [UnitRect]].self, forKey: .customLayouts) ?? [:]).keys)
+        }
     }
 
     /// Keys from before tiling settings were grouped per screen.

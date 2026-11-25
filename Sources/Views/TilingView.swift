@@ -95,7 +95,12 @@ struct TilingView: View {
             if settings.mode != .off { WindowCountStepper(count: $windowCount) }
 
             if settings.mode == .custom {
-                CustomLayoutEditor(windowCount: windowCount, layouts: settings.customLayouts) { key, rects in updateSettings { $0.customLayouts[key] = rects } }
+                if isEditable {
+                    CustomLayoutEditor(windowCount: windowCount, layouts: settings.customLayouts) { key, rects in updateSettings { $0.customLayouts[key] = rects } }
+                        .id("\(editsExternalSettings)-\(windowCount)")
+                } else {
+                    LayoutPreview(rects: previewRects).opacity(0.45)
+                }
             } else if settings.mode != .off {
                 LayoutPreview(rects: previewRects)
             }

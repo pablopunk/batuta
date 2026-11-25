@@ -124,4 +124,29 @@ import Testing
         #expect(config.choosingMoveModifier(.control) == config)
         #expect(config.choosingMoveModifier(.option).moveModifier == .option)
     }
+
+    @Test func theFileLeavesOutDefaultLayoutsAndKeepsOnlyDrawnOnes() throws {
+        var config = BatutaConfig()
+        let drawn = [UnitRect(x: 0.1, y: 0.1, width: 0.8, height: 0.8)]
+        config.externalTiling.customLayouts["1"] = drawn
+        let json = try JSONSerialization.jsonObject(with: JSONEncoder().encode(config)) as! [String: Any]
+        #expect((json["tiling"] as! [String: Any])["customLayouts"] == nil)
+        #expect(((json["externalTiling"] as! [String: Any])["customLayouts"] as! [String: Any]).keys.sorted() == ["1"])
+    }
+
+    @Test func laptopAndExternalKeepDifferentCustomLayouts() throws {
+        var config = BatutaConfig()
+        config.tiling.customLayouts["1"] = [UnitRect(x: 0, y: 0, width: 0.5, height: 1)]
+        config.externalTiling.customLayouts["1"] = [UnitRect(x: 0.5, y: 0, width: 0.5, height: 1)]
+        let decoded = try JSONDecoder().decode(BatutaConfig.self, from: JSONEncoder().encode(config))
+        #expect(decoded.tiling.customLayouts["1"] == config.tiling.customLayouts["1"])
+        #expect(decoded.externalTiling.customLayouts["1"] == config.externalTiling.customLayouts["1"])
+    }
+
+    @Test func aLayoutSetInTilingWinsOverALegacyTopLevelOneEvenWhenItIsTheDefault() throws {
+        let evenTwo = TilingLayouts.evenGrid(2)
+        let evenTwoJSON = String(data: try JSONEncoder().encode(evenTwo), encoding: .utf8)!
+        let config = try decode(#"{"customLayouts": {"2": [{"x": 0, "y": 0, "width": 0.3, "height": 1}, {"x": 0.3, "y": 0, "width": 0.7, "height": 1}]}, "tiling": {"customLayouts": {"2": \#(evenTwoJSON)}}}"#)
+        #expect(config.tiling.customLayouts["2"] == evenTwo)
+    }
 }
