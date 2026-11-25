@@ -1,4 +1,6 @@
 ---
+import DirectionKeys from "./DirectionKeys.astro";
+
 const CONFIG_PATH = "~/.config/batuta/config.json";
 
 const CONFIG = {
@@ -28,13 +30,6 @@ const highlightJson = (json: string) =>
 const compactArrays = (json: string) => json.replace(/\[\n\s+([^\]]*?)\n\s+\]/g, (_, body: string) => `[${body.replace(/\s*\n\s*/g, " ")}]`);
 
 const configHtml = highlightJson(compactArrays(JSON.stringify(CONFIG, null, 2)));
-
-const VIM_KEYS = [
-  { key: "H", arrow: "←", action: "focus left" },
-  { key: "J", arrow: "↓", action: "stage down" },
-  { key: "K", arrow: "↑", action: "stage up" },
-  { key: "L", arrow: "→", action: "focus right" },
-];
 ---
 
 <section class="feature">
@@ -59,20 +54,7 @@ const VIM_KEYS = [
       your fingers never leave the keys they already know.
     </p>
   </div>
-  <figure class="keys">
-    <div class="modifiers"><kbd>⌃</kbd><kbd>⌘</kbd><span>+</span></div>
-    <div class="vim-row">
-      {
-        VIM_KEYS.map(({ key, arrow, action }) => (
-          <div class="vim-key">
-            <kbd class="big">{key}</kbd>
-            <span class="arrow">{arrow}</span>
-            <span class="action">{action}</span>
-          </div>
-        ))
-      }
-    </div>
-  </figure>
+  <DirectionKeys />
 </section>
 
 <style>
@@ -122,41 +104,9 @@ const VIM_KEYS = [
   .code-window :global(.number) { color: light-dark(#7c3aed, #c4a7ff); }
   .code-window :global(.literal) { color: light-dark(#a15c00, #ffc66d); }
 
-  .keys {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 22px;
-    padding: 40px 24px;
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    background: var(--card);
-  }
-  kbd {
-    display: grid;
-    place-items: center;
-    min-width: 44px;
-    height: 44px;
-    padding: 0 10px;
-    border: 1px solid var(--line);
-    border-bottom-width: 3px;
-    border-radius: 9px;
-    background: var(--page);
-    font: 600 18px -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-    color: var(--text);
-  }
-  kbd.big { width: 68px; height: 68px; font-size: 26px; }
-  .modifiers { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 20px; }
-  .vim-row { display: flex; gap: 14px; }
-  .vim-key { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-  .arrow { font-size: 18px; color: var(--text); }
-  .action { font-size: 12px; color: var(--muted); }
-
   @media (max-width: 760px) {
     .feature { grid-template-columns: 1fr; gap: 28px; padding: 48px 0; }
     .feature.flipped .copy { order: 0; }
     .copy h3 { font-size: 24px; }
-    kbd.big { width: 56px; height: 56px; font-size: 22px; }
-    .vim-row { gap: 10px; }
   }
 </style>
