@@ -6,6 +6,8 @@ import ApplicationServices
 @MainActor
 final class StageSwitchWatcher {
     var onStageSwitched: (([StageWindow]) -> Void)?
+    /// Windows joined or left the stage you are in, for example when an app quits.
+    var onStageWindowsChanged: (([StageWindow]) -> Void)?
 
     private static let settleInterval: TimeInterval = 0.1
     private static let settleAttempts = 15
@@ -55,7 +57,7 @@ final class StageSwitchWatcher {
         guard !ids.isEmpty, ids != lastStageWindowIDs else { return }
         let isAnotherStage = ids.intersection(lastStageWindowIDs).count * 2 < max(ids.count, lastStageWindowIDs.count)
         lastStageWindowIDs = ids
-        if isAnotherStage { onStageSwitched?(windows) }
+        if isAnotherStage { onStageSwitched?(windows) } else { onStageWindowsChanged?(windows) }
     }
 
     /// Two stages can share an app, so a switch may not activate a new app; the focused window still changes.

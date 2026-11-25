@@ -49,7 +49,7 @@ enum StageLayout {
     }
 
     /// Only the stage you are in gets tiled; windows on other screens belong to their own stages.
-    private static func windowsOnScreenOfFocusedWindow(_ windows: [StageWindow]) -> [StageWindow] {
+    static func windowsOnScreenOfFocusedWindow(_ windows: [StageWindow]) -> [StageWindow] {
         let focusedID = StageWindows.focusedWindowID()
         guard let anchor = windows.first(where: { $0.id == focusedID }) ?? windows.first else { return [] }
         return windowsOnSameScreen(as: anchor, among: windows)

@@ -49,12 +49,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    private static func tileUnlessAlreadyTiled(_ windowsOnAnyScreen: [StageWindow]) {
+        let windows = StageLayout.windowsOnScreenOfFocusedWindow(windowsOnAnyScreen)
+        guard !windows.isEmpty, !StageOrders.isTiledAlready(windows) else { return }
+        StageLayout.arrange(StageOrders.ordered(windows), besides: StageStrip.closest(to: windows.first?.frame))
+    }
+
     private func startWatching() {
         hotkeyTap.start()
         stageSwitchWatcher.onStageSwitched = { windows in
-            guard ConfigStore.shared.config.tileWhenSwitchingStages, !StageOrders.isTiledAlready(windows) else { return }
-            StageLayout.arrange(StageOrders.ordered(windows), besides: StageStrip.closest(to: windows.first?.frame))
+            guard ConfigStore.shared.config.tileWhenSwitchingStages else { return }
+            Self.tileUnlessAlreadyTiled(windows)
         }
+        stageSwitchWatcher.onStageWindowsChanged = Self.tileUnlessAlreadyTiled
         stageSwitchWatcher.start()
         windowMoveWatcher.onMoveFinished = AppSizes.rememberIfAlone
         windowMoveWatcher.start()
