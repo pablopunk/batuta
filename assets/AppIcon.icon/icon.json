@@ -1,21 +1,32 @@
 {
   "fill" : {
-    "automatic-gradient" : "srgb:0.66588,0.62296,0.00060,1.00000"
+    "linear-gradient" : [
+      "srgb:0.16863,0.18431,0.41961,1.00000",
+      "srgb:0.07843,0.08627,0.22745,1.00000"
+    ]
   },
   "groups" : [
     {
-      "blur-material" : null,
       "layers" : [
         {
-          "image-name" : "icon.png",
-          "name" : "icon",
-          "position" : {
-            "scale" : 1,
-            "translation-in-points" : [
-              5.8671875,
-              39.34375
-            ]
-          }
+          "image-name" : "baton.png",
+          "name" : "baton"
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : false,
+        "value" : 0.5
+      }
+    },
+    {
+      "layers" : [
+        {
+          "image-name" : "tiles.png",
+          "name" : "tiles"
         }
       ],
       "shadow" : {
@@ -24,14 +35,13 @@
       },
       "translucency" : {
         "enabled" : true,
-        "value" : 0.5
+        "value" : 0.3
       }
     }
   ],
   "supported-platforms" : {
-    "circles" : [
-      "watchOS"
-    ],
-    "squares" : "shared"
+    "squares" : [
+      "macOS"
+    ]
   }
 }
