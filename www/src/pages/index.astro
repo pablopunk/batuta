@@ -1,0 +1,45 @@
+---
+import Demo from "../demo/Demo";
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/icon.png" />
+    <title>Batuta</title>
+    <meta name="description" content="Keyboard control for macOS Stage Manager." />
+  </head>
+  <body>
+    <header class="hero">
+      <img src="/icon.png" alt="" width="72" height="72" />
+      <h1>Batuta</h1>
+      <p>macOS Stage Manager is great, it was just missing Batuta.</p>
+    </header>
+    <main>
+      <Demo client:load />
+    </main>
+  </body>
+</html>
+
+<style is:global>
+  :root {
+    color-scheme: dark;
+    --page: #0b0c10;
+    --text: #f2f3f7;
+    --muted: #9a9cab;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .hero { text-align: center; padding: 64px 16px 32px; }
+  .hero img { border-radius: 16px; }
+  .hero h1 { font-size: clamp(40px, 7vw, 64px); margin: 12px 0 8px; letter-spacing: -0.03em; }
+  .hero p { color: var(--muted); font-size: 18px; margin: 0; }
+  main { max-width: 1180px; margin: 0 auto; padding: 0 16px 96px; }
+</style>
