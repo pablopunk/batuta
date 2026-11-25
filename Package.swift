@@ -13,6 +13,11 @@ let package = Package(
         .executableTarget(
             name: "Batuta",
             path: "Sources"
+        ),
+        .testTarget(
+            name: "BatutaTests",
+            dependencies: ["Batuta"],
+            path: "Tests/BatutaTests"
         )
     ]
 )
