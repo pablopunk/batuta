@@ -140,10 +140,9 @@ export const chapters: Chapter[] = [
       ...drag("tile-handle-0", [{ type: "dragCustomTile", index: 0, rect: { x: 0, y: 0, w: 0.6, h: 1 } }]),
       ...clickOn("menubar-icon", { type: "closePanel" }),
       { action: { type: "hidePointer" }, hold: 300 },
-      { keys: navigate("↓"), action: { type: "pick", direction: "down" }, hold: 500 },
-      { keys: navigate("↓"), action: { type: "pick", direction: "down" }, hold: 500 },
-      { keys: navigate("↓"), action: { type: "pick", direction: "down" }, hold: 800 },
-      { keys: null, action: { type: "confirmPick" }, hold: 2000 },
+      { keys: navigate(), action: { type: "showBadges" }, hold: 700 },
+      { keys: navigate("3"), action: { type: "openStage", index: 2 }, hold: 1800 },
+      { keys: null, hold: 300 },
     ],
   },
   {
