@@ -6,10 +6,3 @@
 
 > [!IMPORTANT]
 > This app is in Alpha. Expect bugs.
-
-## Develop
-
-```sh
-make run
-make test   # runs the unit tests with swift test
-```
