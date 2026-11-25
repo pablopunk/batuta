@@ -7,7 +7,7 @@
       "blur-material" : null,
       "layers" : [
         {
-          "glass" : true,
+          "glass" : false,
           "hidden" : false,
           "image-name" : "icon.png",
           "name" : "icon",
