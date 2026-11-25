@@ -1,0 +1,15 @@
+<?xml version="1.0" standalone="yes"?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+    <channel>
+        <title>Batuta</title>
+        <item>
+            <title>0.1.0</title>
+            <pubDate>Wed, 25 Nov 2026 12:06:24 +0100</pubDate>
+            <sparkle:version>0.1.0</sparkle:version>
+            <sparkle:shortVersionString>0.1.0</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <enclosure url="https://github.com/pablopunk/batuta/releases/download/v0.1.0/Batuta.zip" length="1677387" type="application/octet-stream" sparkle:edSignature="MarGPJlXaFJPrDEyIX3knAbrq8IzhJg7bqzv1jyh9ZogOIuWnzjOOa52ADbNWmUu3IYjqmkYQy6RWy1PL+0CCA=="/>
+        </item>
+    </channel>
+</rss>
