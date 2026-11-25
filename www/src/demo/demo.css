@@ -270,7 +270,7 @@
   pointer-events: none;
   translate: 720px 560px;
   opacity: 0;
-  transition: translate 0.4s cubic-bezier(0.3, 0.8, 0.3, 1), opacity 0.2s, scale 0.12s;
+  transition: translate 0.25s cubic-bezier(0.3, 0.8, 0.3, 1), opacity 0.2s, scale 0.1s;
 }
 
 .pointer.visible { opacity: 1; }

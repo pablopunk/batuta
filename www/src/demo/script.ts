@@ -15,8 +15,9 @@ export type Chapter = { id: string; title: string; caption: string; steps: Step[
 
 const navigate = (key?: string): Keys => ({ modifiers: NAVIGATE, key });
 const move = (key?: string): Keys => ({ modifiers: MOVE, key });
-const POINTER_TRAVEL = 600;
-const PRESS = 140;
+const POINTER_TRAVEL = 450;
+const DRAG_TRAVEL = 300;
+const PRESS = 100;
 
 /** Moves the pointer onto a `data-pointer` element and clicks it; the click does `action`. */
 const clickOn = (target: string, action: DesktopAction): Step[] => [
@@ -27,10 +28,10 @@ const clickOn = (target: string, action: DesktopAction): Step[] => [
 
 /** Presses on a `data-pointer` element and drags; each of `moves` is one stretch of the drag. */
 const drag = (target: string, moves: DesktopAction[]): Step[] => [
-  { action: { type: "pointAt", target }, hold: POINTER_TRAVEL },
+  { action: { type: "pointAt", target }, hold: DRAG_TRAVEL },
   { action: { type: "pressPointer" }, hold: PRESS },
-  ...moves.map((move): Step => ({ action: move, hold: 700 })),
-  { action: [{ type: "releaseCustomTile" }, { type: "releasePointer" }], hold: 300 },
+  ...moves.map((move): Step => ({ action: move, hold: 300 })),
+  { action: [{ type: "releaseCustomTile" }, { type: "releasePointer" }], hold: 150 },
 ];
 
 const toggleEven: Keys = { modifiers: MODE_SHORTCUT_MODIFIERS, key: MODE_SHORTCUT_KEYS.even };
