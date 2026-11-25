@@ -1,4 +1,6 @@
 ---
+import BrewCommand from "./BrewCommand.astro";
+
 const DOWNLOAD_URL = "https://github.com/pablopunk/batuta/releases/latest/download/Batuta.zip";
 ---
 
@@ -7,6 +9,8 @@ const DOWNLOAD_URL = "https://github.com/pablopunk/batuta/releases/latest/downlo
     <img src="/icon.png" alt="" width="44" height="44" />
     <span>Download for macOS</span>
   </a>
+  <span class="or">or install with Homebrew</span>
+  <BrewCommand />
 </section>
 
 <style>
@@ -35,6 +39,7 @@ const DOWNLOAD_URL = "https://github.com/pablopunk/batuta/releases/latest/downlo
   .download-button:hover { transform: translateY(-2px); box-shadow: 0 22px 46px -18px color-mix(in srgb, var(--text) 60%, transparent); }
   .download-button:active { transform: translateY(0); }
   .download-button img { border-radius: 10px; }
+  .or { color: var(--muted); font-size: 13px; }
 
   @media (max-width: 640px) {
     .download-button { font-size: 18px; padding: 12px 24px 12px 12px; }

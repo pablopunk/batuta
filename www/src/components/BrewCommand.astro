@@ -1,0 +1,66 @@
+---
+const BREW_COMMAND = "brew install pablopunk/brew/batuta";
+---
+
+<button class="brew-command" type="button" data-copy={BREW_COMMAND} aria-label="Copy Homebrew install command">
+  <span class="prompt" aria-hidden="true">$</span>
+  <code>{BREW_COMMAND}</code>
+  <span class="status" aria-live="polite">Copy</span>
+</button>
+
+<script>
+  const COPIED_FEEDBACK_MS = 1600;
+  document.querySelectorAll<HTMLButtonElement>(".brew-command").forEach((button) => {
+    const status = button.querySelector(".status")!;
+    button.addEventListener("click", async () => {
+      await navigator.clipboard.writeText(button.dataset.copy ?? "");
+      status.textContent = "Copied";
+      button.classList.add("copied");
+      setTimeout(() => {
+        status.textContent = "Copy";
+        button.classList.remove("copied");
+      }, COPIED_FEEDBACK_MS);
+    });
+  });
+</script>
+
+<style>
+  .brew-command {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 100%;
+    padding: 10px 12px 10px 16px;
+    border: 1px solid color-mix(in srgb, var(--muted) 35%, transparent);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--text) 4%, transparent);
+    color: var(--text);
+    font: inherit;
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+  }
+  .brew-command:hover { border-color: color-mix(in srgb, var(--muted) 70%, transparent); }
+  .prompt { color: var(--muted); font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 14px; }
+  code {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 14px;
+  }
+  .status {
+    flex-shrink: 0;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--text) 8%, transparent);
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .copied .status { color: var(--text); }
+
+  @media (max-width: 640px) {
+    .prompt, code { font-size: 12.5px; }
+  }
+</style>

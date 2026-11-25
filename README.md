@@ -12,3 +12,11 @@
 
 > [!IMPORTANT]
 > This app is in Alpha. Expect bugs.
+
+## Install
+
+```sh
+brew install pablopunk/brew/batuta
+```
+
+Or download the [latest release](https://github.com/pablopunk/batuta/releases/latest/download/Batuta.zip).
