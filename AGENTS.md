@@ -34,7 +34,7 @@ Pick the default mode for every stage in the Tiling tab (saved as `tiling.mode` 
 - **Messy**: loose hand-drawn layouts for 1 to 6 windows that can overlap; more windows use Even. When an app's window is alone in a Messy stage and you move or resize it (mouse drag or Navigate + +/-), Batuta saves that place for the app in `appSizes`, keyed by bundle ID, and uses it next time. The Tiling tab lists them so you can forget one.
 - **Custom**: draw tiles for 1 to 6 windows; saved as `customLayouts`, keyed by window count, as 0–1 rects (`x`, `y`, `width`, `height`, top-left origin). Tile 1 is the leftmost window.
 
-**Leave room** (`tiling.leaveRoomForStageManager`, on by default) keeps windows clear of Stage Manager. Turn it off to tile over the whole screen.
+**Avoid Stage Manager** (`tiling.leaveRoomForStageManager`, on by default) keeps windows clear of Stage Manager. Turn it off to tile over the whole screen.
 
 The Laptop settings (`tiling`) apply to every screen. Turn on **Own settings** in the External tab (`externalScreensHaveOwnTiling`) to give external screens their own `externalTiling`.
 

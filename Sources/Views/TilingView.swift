@@ -56,8 +56,8 @@ struct TilingView: View {
                 }
 
                 PreferenceToggleRow(
-                    title: "Leave room",
-                    subtitle: "Keep clear of Stage Manager",
+                    title: "Avoid Stage Manager",
+                    subtitle: "Windows never cover the stage thumbnails",
                     icon: "sidebar.left",
                     isOn: Binding(get: { settings.leaveRoomForStageManager }, set: { isOn in updateSettings { $0.leaveRoomForStageManager = isOn } })
                 )
