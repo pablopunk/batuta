@@ -59,6 +59,7 @@ enum StageConfirmMode: String, CaseIterable, Codable {
 struct TilingSettings: Codable, Equatable {
     var mode: TilingMode = .even
     var leaveRoomForStageManager = true
+    var rememberAppSizes = false
     /// Keyed by bundle ID: where a lone window of that app goes in a Messy or Custom stage, learned from your last move or resize.
     var appSizes: [String: UnitRect] = [:]
 
@@ -71,6 +72,7 @@ struct TilingSettings: Codable, Equatable {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         mode = try container.decodeIfPresent(TilingMode.self, forKey: .mode) ?? .even
         leaveRoomForStageManager = try container.decodeIfPresent(Bool.self, forKey: .leaveRoomForStageManager) ?? true
+        rememberAppSizes = try container.decodeIfPresent(Bool.self, forKey: .rememberAppSizes) ?? false
         appSizes = try container.decodeIfPresent([String: UnitRect].self, forKey: .appSizes) ?? [:]
     }
 }

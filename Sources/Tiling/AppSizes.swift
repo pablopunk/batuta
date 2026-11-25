@@ -13,6 +13,7 @@ enum AppSizes {
 
     static func savedRect(for window: StageWindow) -> UnitRect? {
         let settings = ConfigStore.shared.config.tilingSettings(onBuiltInScreen: StageLayout.isOnBuiltInScreen(window.frame))
+        guard settings.rememberAppSizes else { return nil }
         return bundleID(of: window.pid).flatMap { settings.appSizes[$0] }
     }
 
@@ -22,6 +23,7 @@ enum AppSizes {
         guard !WindowAnimator.shared.isAnimating else { return appSizesLog.debug("skip: animating") }
         let visible = StageWindows.visibleSortedLeftToRight()
         guard let moved = visible.first(where: { $0.id == windowID }) else { return appSizesLog.debug("skip: window gone") }
+        guard isRememberingAppSizes(onScreenOf: moved) else { return appSizesLog.debug("skip: setting off") }
         let windows = StageLayout.windowsOnSameScreen(as: moved, among: visible)
         let mode = StageLayout.mode(for: windows)
         guard windows.count == 1, let window = windows.first else { return appSizesLog.debug("skip: \(windows.count) windows") }
@@ -42,6 +44,10 @@ enum AppSizes {
     static func appName(for bundleID: String) -> String {
         guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) else { return bundleID }
         return FileManager.default.displayName(atPath: url.path).replacingOccurrences(of: ".app", with: "")
+    }
+
+    private static func isRememberingAppSizes(onScreenOf window: StageWindow) -> Bool {
+        ConfigStore.shared.config.tilingSettings(onBuiltInScreen: StageLayout.isOnBuiltInScreen(window.frame)).rememberAppSizes
     }
 
     private static func bundleID(of pid: pid_t) -> String? {

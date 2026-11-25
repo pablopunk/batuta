@@ -61,6 +61,13 @@ struct TilingView: View {
                     icon: "sidebar.left",
                     isOn: Binding(get: { settings.leaveRoomForStageManager }, set: { isOn in updateSettings { $0.leaveRoomForStageManager = isOn } })
                 )
+
+                PreferenceToggleRow(
+                    title: "Remember app sizes",
+                    subtitle: "Lone windows in Messy and Custom",
+                    icon: "macwindow",
+                    isOn: Binding(get: { settings.rememberAppSizes }, set: { isOn in updateSettings { $0.rememberAppSizes = isOn } })
+                )
             }
             .disabled(!isEditable)
             .opacity(isEditable ? 1 : 0.45)
@@ -76,7 +83,7 @@ struct TilingView: View {
 
             ModeShortcutRows()
 
-            if !settings.appSizes.isEmpty {
+            if settings.rememberAppSizes && !settings.appSizes.isEmpty {
                 AppSizeRows(appSizes: settings.appSizes) { bundleID in updateSettings { $0.appSizes[bundleID] = nil } }
                     .disabled(!isEditable)
                     .opacity(isEditable ? 1 : 0.45)
