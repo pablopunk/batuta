@@ -79,6 +79,13 @@ const MESSY_LAYOUTS: Record<number, UnitRect[]> = {
     { x: 0.1, y: 0.4, w: 0.45, h: 0.5 },
     { x: 0.5, y: 0.45, w: 0.45, h: 0.5 },
   ],
+  5: [
+    { x: 0, y: 0, w: 0.5, h: 0.5 },
+    { x: 0.5, y: 0, w: 0.5, h: 0.5 },
+    { x: 0, y: 0.5, w: 0.35, h: 0.5 },
+    { x: 0.35, y: 0.5, w: 0.35, h: 0.5 },
+    { x: 0.7, y: 0.5, w: 0.3, h: 0.5 },
+  ],
 };
 
 const CUSTOM_LAYOUTS: Record<number, UnitRect[]> = {

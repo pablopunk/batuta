@@ -21,7 +21,7 @@ export type DesktopState = {
   picking: Picking | null;
   badges: boolean;
   flashCount: number;
-  banner: { text: string; count: number } | null;
+  banner: { from: TilingMode; to: TilingMode; count: number } | null;
   nextStageId: number;
 };
 

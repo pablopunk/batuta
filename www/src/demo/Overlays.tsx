@@ -25,14 +25,6 @@ export function StageBadges({ rects }: { rects: Rect[] }) {
   );
 }
 
-export function ModeBanner({ text, count }: { text: string; count: number }) {
-  return (
-    <div key={count} className="mode-banner">
-      {text}
-    </div>
-  );
-}
-
 export function KeyCaps({ keys }: { keys: (Keys & { count: number }) | null }) {
   if (!keys) return <div className="keycaps" />;
   return (

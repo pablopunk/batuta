@@ -176,25 +176,51 @@
 }
 
 .mode-banner {
+  --mode-width: 86px;
+  --mode-gap: 4px;
   position: absolute;
   z-index: 1200;
   left: 50%;
   top: 50%;
-  padding: 10px 20px;
-  border-radius: 12px;
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--hud-label);
+  display: flex;
+  gap: var(--mode-gap);
+  padding: 8px;
+  border-radius: 14px;
   background: var(--hud);
   backdrop-filter: blur(30px) saturate(1.5);
   box-shadow: 0 10px 30px var(--window-shadow);
   transform: translate(-50%, -50%);
-  animation: banner 0.85s linear forwards;
+  animation: banner 1.05s linear forwards;
+}
+
+.mode-banner .mode {
+  position: relative;
+  width: var(--mode-width);
+  padding: 8px 0;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--label-secondary);
+  transition: color 0.25s;
+}
+
+.mode-banner .mode.active { color: var(--on-accent); font-weight: 600; }
+
+.mode-banner .mode-pill {
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: 8px;
+  width: var(--mode-width);
+  border-radius: 999px;
+  background: var(--accent);
+  transform: translateX(calc(var(--active-index) * (var(--mode-width) + var(--mode-gap))));
+  transition: transform 0.25s cubic-bezier(0.3, 1.25, 0.5, 1);
 }
 
 @keyframes banner {
   0% { opacity: 0; }
-  6%, 82% { opacity: 1; }
+  4%, 86% { opacity: 1; }
   100% { opacity: 0; }
 }
 

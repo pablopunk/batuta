@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { APPS } from "./apps/index";
 import { SCREEN } from "./geometry";
 import { MenuBar } from "./MenuBar";
-import { HighlightFrame, KeyCaps, ModeBanner, StageBadges } from "./Overlays";
+import { ModeBanner } from "./ModeBanner";
+import { HighlightFrame, KeyCaps, StageBadges } from "./Overlays";
 import { badgeRects, highlight, windowPlacements } from "./placements";
 import type { Keys } from "./script";
 import type { AppId, DesktopState } from "./state";
@@ -46,7 +47,7 @@ export function Desktop({ state, keys, instant }: Props) {
           ))}
           {frame && <HighlightFrame highlight={frame} flashCount={state.flashCount} />}
           {state.badges && <StageBadges rects={badgeRects(state)} />}
-          {state.banner && <ModeBanner text={state.banner.text} count={state.banner.count} />}
+          {state.banner && <ModeBanner key={state.banner.count} from={state.banner.from} to={state.banner.to} />}
           <KeyCaps keys={keys} />
         </div>
       </div>

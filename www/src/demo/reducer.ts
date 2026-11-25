@@ -1,5 +1,5 @@
 import { center } from "./geometry";
-import { MODE_LABELS, nextMode, type TilingMode } from "./layouts";
+import { nextMode, type TilingMode } from "./layouts";
 import { resizedAroundCenter, resizedWithNeighbours } from "./resize";
 import { initialState, raised, retiled, stageFrames, type AppId, type DesktopState, type Stage } from "./state";
 
@@ -162,6 +162,6 @@ function setMode(state: DesktopState, mode: TilingMode): DesktopState {
   return {
     ...state,
     current: { ...state.current, mode, frames },
-    banner: { text: MODE_LABELS[mode], count: (state.banner?.count ?? 0) + 1 },
+    banner: { from: state.current.mode, to: mode, count: (state.banner?.count ?? 0) + 1 },
   };
 }
