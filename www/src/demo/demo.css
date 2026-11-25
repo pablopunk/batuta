@@ -129,13 +129,14 @@
 }
 
 .lights { display: flex; gap: 8px; }
+.lights.floating { position: absolute; top: 15px; left: 16px; z-index: 2; }
 .lights i { width: 12px; height: 12px; border-radius: 50%; background: #d3d3d8; }
 .dark .lights i { background: #4a4b52; }
 .focused .lights i:nth-child(1) { background: #ff5f57; }
 .focused .lights i:nth-child(2) { background: #febc2e; }
 .focused .lights i:nth-child(3) { background: #28c840; }
 
-.content { position: relative; flex: 1; overflow: hidden; }
+.content { position: relative; flex: 1; overflow: hidden; container: window / inline-size; }
 
 /* Batuta overlays */
 

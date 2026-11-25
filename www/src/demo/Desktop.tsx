@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { APPS } from "./apps";
+import { APPS } from "./apps/index";
 import { SCREEN } from "./geometry";
 import { MenuBar } from "./MenuBar";
 import { HighlightFrame, KeyCaps, ModeBanner, StageBadges } from "./Overlays";

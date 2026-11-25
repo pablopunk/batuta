@@ -1,0 +1,40 @@
+.editor { display: flex; background: #1f2127; color: #abb2bf; font-size: 12.5px; }
+
+.editor .explorer { width: 210px; flex-shrink: 0; background: #1a1c21; border-right: 1px solid #111215; padding-top: 6px; white-space: nowrap; overflow: hidden; }
+.editor .explorer-title { padding: 6px 14px 8px; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: #7d828c; }
+.editor .explorer-project { padding: 3px 8px; font-size: 11px; font-weight: 700; color: #c5c9d1; }
+.editor .tree-item { display: flex; align-items: center; gap: 6px; height: 22px; color: #a3a8b2; }
+.editor .tree-item.active { background: #2c313a; color: #fff; }
+
+.editor .file-icon { width: 14px; text-align: center; font-size: 10px; font-weight: 800; }
+.editor .file-icon.swift { color: #f0743a; }
+.editor .file-icon.markdown { color: #519aba; }
+.editor .file-icon.folder { color: #7d828c; }
+
+.editor .editor-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.editor .tabs { display: flex; height: 35px; flex-shrink: 0; background: #1a1c21; }
+.editor .tab { display: flex; align-items: center; gap: 6px; padding: 0 14px; color: #7d828c; border-right: 1px solid #111215; white-space: nowrap; }
+.editor .tab.active { background: #1f2127; color: #e6e6e6; box-shadow: inset 0 1px 0 #528bff; }
+.editor .breadcrumbs { padding: 4px 16px; color: #7d828c; font-size: 12px; white-space: nowrap; overflow: hidden; }
+
+.editor .code { flex: 1; overflow: hidden; font: 12.5px/19px "SF Mono", ui-monospace, Menlo, monospace; white-space: pre; }
+.editor .code-line { display: flex; }
+.editor .code-line.current { background: #2a2e36; }
+.editor .gutter { width: 44px; flex-shrink: 0; padding-right: 16px; text-align: right; color: #4b5263; }
+.editor .current .gutter { color: #c5c9d1; }
+
+.editor .keyword { color: #c678dd; }
+.editor .type { color: #e5c07b; }
+.editor .string { color: #98c379; }
+.editor .number { color: #d19a66; }
+.editor .comment { color: #7f848e; font-style: italic; }
+.editor .attribute { color: #e06c75; }
+.editor .member { color: #56b6c2; }
+.editor .call { color: #61afef; }
+
+.editor .statusbar { display: flex; gap: 14px; height: 22px; flex-shrink: 0; align-items: center; padding: 0 10px; background: #21252b; border-top: 1px solid #111215; color: #9da5b4; font-size: 11.5px; white-space: nowrap; overflow: hidden; }
+.editor .statusbar .spacer { flex: 1; }
+
+@container window (max-width: 560px) {
+  .editor .explorer { display: none; }
+}

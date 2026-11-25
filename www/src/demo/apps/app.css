@@ -1,0 +1,6 @@
+.app {
+  position: absolute;
+  inset: 0;
+  font-size: 13px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
+}

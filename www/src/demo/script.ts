@@ -75,7 +75,7 @@ export const chapters: Chapter[] = [
   {
     id: "resize",
     title: "Resize",
-    caption: "Navigate + + and − grow and shrink the focused window. Its neighbours make room, so tiles never overlap.",
+    caption: "Navigate with + or − grows and shrinks the focused window. Its neighbours make room, so tiles never overlap.",
     steps: [
       { keys: navigate("←"), action: { type: "focus", direction: "left" }, hold: 700 },
       { keys: navigate("+"), action: { type: "resize", direction: 1 }, hold: 600 },

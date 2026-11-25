@@ -1,0 +1,8 @@
+.app.terminal { padding: 12px 14px; background: #0e1014; color: #d7dae0; font: 13px/1.75 "SF Mono", ui-monospace, Menlo, monospace; white-space: nowrap; }
+.terminal b { color: #61afef; font-weight: 600; }
+.terminal i { color: #c678dd; font-style: normal; }
+.terminal .dim { color: #6b7280; }
+.terminal .ok { color: #98c379; }
+.terminal .sha { color: #e5c07b; }
+.terminal .cursor { display: inline-block; width: 8px; height: 15px; vertical-align: middle; background: #d7dae0; animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
