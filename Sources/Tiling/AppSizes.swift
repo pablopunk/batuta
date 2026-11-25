@@ -7,8 +7,8 @@ private let appSizesLog = Logger(subsystem: "com.pablopunk.batuta", category: "a
 @MainActor
 enum AppSizes {
     private static let changeTolerance: CGFloat = 3
-    /// Edges within 3% of the mode's own layout count as the layout, so near misses do not become a saved size.
-    private static let layoutTolerance = 0.03
+    /// Edges within 4% of the mode's own layout count as the layout, so near misses do not become a saved size. One Navigate +/- press moves each edge 1/24 (about 4.2%), so it still counts.
+    private static let layoutTolerance = 0.04
     static let modes: Set<TilingMode> = [.messy, .custom]
 
     static func savedRect(for window: StageWindow) -> UnitRect? {
