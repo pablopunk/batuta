@@ -12,8 +12,8 @@ const DIRECTIONS = [
 <figure class="keys" data-direction-keys>
   <div class="modifiers">
     {MODIFIERS.map((symbol) => <kbd data-modifier={symbol} class:list={{ off: symbol === "⌥" }}>{symbol}</kbd>)}
-    <span>+</span>
   </div>
+  <span class="plus">+</span>
   <div class="direction-row">
     {
       DIRECTIONS.map(({ letter, arrow, action }) => (
@@ -113,6 +113,7 @@ const DIRECTIONS = [
   kbd.big.off { min-width: 0; width: 0; margin: 0; }
   .direction-keys { display: flex; }
   .modifiers { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 20px; }
+  .plus { margin: -8px 0; font-size: 22px; color: var(--muted); }
   .direction-row { display: flex; gap: 14px; }
   .direction { display: flex; flex-direction: column; align-items: center; gap: 8px; }
   .action { font-size: 12px; color: var(--muted); }
