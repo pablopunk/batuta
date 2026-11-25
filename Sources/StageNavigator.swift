@@ -64,9 +64,10 @@ final class StageNavigator {
 
     private func changeTilingModeOfCurrentStage(to pickMode: ([StageWindow]) -> TilingMode) {
         guard !isPickingStage else { return }
-        let windows = StageOrders.ordered(StageWindows.visibleSortedLeftToRight())
-        guard let first = windows.first else { return }
-        let focusedFrame = windows.first { $0.id == StageWindows.focusedWindowID() }?.frame ?? first.frame
+        let allWindows = StageWindows.visibleSortedLeftToRight()
+        guard let focused = allWindows.first(where: { $0.id == StageWindows.focusedWindowID() }) ?? allWindows.first else { return }
+        let windows = StageOrders.ordered(StageLayout.windowsOnSameScreen(as: focused, among: allWindows))
+        let focusedFrame = focused.frame
         let newMode = pickMode(windows)
         StageTilingModes.choose(newMode, for: windows.map(\.id), replacing: StageLayout.mode(for: windows))
         StageLayout.arrange(windows, besides: StageStrip.closest(to: focusedFrame))

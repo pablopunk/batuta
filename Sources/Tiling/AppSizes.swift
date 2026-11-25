@@ -16,9 +16,13 @@ enum AppSizes {
         return bundleID(of: window.pid).flatMap { settings.appSizes[$0] }
     }
 
-    static func rememberLoneWindowIfMoved() {
+    /// Saves only when the window that moved is still the only one in its stage, so a quick stage switch cannot
+    /// give its place to another app.
+    static func rememberIfAlone(_ windowID: CGWindowID) {
         guard !WindowAnimator.shared.isAnimating else { return appSizesLog.debug("skip: animating") }
-        let windows = StageWindows.visibleSortedLeftToRight()
+        let visible = StageWindows.visibleSortedLeftToRight()
+        guard let moved = visible.first(where: { $0.id == windowID }) else { return appSizesLog.debug("skip: window gone") }
+        let windows = StageLayout.windowsOnSameScreen(as: moved, among: visible)
         let mode = StageLayout.mode(for: windows)
         guard windows.count == 1, let window = windows.first else { return appSizesLog.debug("skip: \(windows.count) windows") }
         guard modes.contains(mode) else { return appSizesLog.debug("skip: mode \(mode.rawValue)") }

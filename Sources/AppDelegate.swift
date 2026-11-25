@@ -55,7 +55,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             StageLayout.arrange(StageOrders.ordered(windows), besides: StageStrip.closest(to: windows.first?.frame))
         }
         stageSwitchWatcher.start()
-        windowMoveWatcher.onMoveFinished = AppSizes.rememberLoneWindowIfMoved
+        windowMoveWatcher.onMoveFinished = AppSizes.rememberIfAlone
         windowMoveWatcher.start()
         StageLayout.onArranged = { [stageSwitchWatcher] in stageSwitchWatcher.acceptCurrentStage() }
     }

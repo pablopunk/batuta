@@ -47,6 +47,12 @@ enum StageLayout {
         ConfigStore.shared.config.tilingSettings(onBuiltInScreen: isOnBuiltInScreen(windows.first?.frame)).mode
     }
 
+    /// Each screen has its own stage, so only windows on the same screen belong with this one.
+    static func windowsOnSameScreen(as window: StageWindow, among windows: [StageWindow]) -> [StageWindow] {
+        let screen = screen(containing: window.frame)
+        return windows.filter { self.screen(containing: $0.frame) == screen }
+    }
+
     static func isOnBuiltInScreen(_ frame: CGRect?) -> Bool {
         frame.flatMap { screen(containing: $0) }?.isBuiltIn ?? true
     }

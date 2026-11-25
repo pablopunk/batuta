@@ -5,7 +5,7 @@ import ApplicationServices
 /// Moves that end right after a Batuta animation are Batuta's own, so they are ignored.
 @MainActor
 final class WindowMoveWatcher {
-    var onMoveFinished: (() -> Void)?
+    var onMoveFinished: ((CGWindowID) -> Void)?
 
     private static let quietInterval: TimeInterval = 0.5
 
@@ -24,10 +24,10 @@ final class WindowMoveWatcher {
         if let observer { CFRunLoopRemoveSource(CFRunLoopGetMain(), AXObserverGetRunLoopSource(observer), .defaultMode) }
         observer = nil
         var newObserver: AXObserver?
-        let callback: AXObserverCallback = { _, _, _, refcon in
-            guard let refcon else { return }
+        let callback: AXObserverCallback = { _, element, _, refcon in
+            guard let refcon, let windowID = element.windowID else { return }
             let watcher = Unmanaged<WindowMoveWatcher>.fromOpaque(refcon).takeUnretainedValue()
-            MainActor.assumeIsolated { watcher.windowMovedOrResized() }
+            MainActor.assumeIsolated { watcher.windowMovedOrResized(windowID) }
         }
         guard AXObserverCreate(pid, callback, &newObserver) == .success, let newObserver else { return }
         let app = AXUIElementCreateApplication(pid)
@@ -39,12 +39,12 @@ final class WindowMoveWatcher {
         observer = newObserver
     }
 
-    private func windowMovedOrResized() {
+    private func windowMovedOrResized(_ windowID: CGWindowID) {
         quietGeneration += 1
         let generation = quietGeneration
         DispatchQueue.main.asyncAfter(deadline: .now() + Self.quietInterval) { [weak self] in
             guard let self, generation == self.quietGeneration, !Self.batutaMovedWindowsJustNow else { return }
-            self.onMoveFinished?()
+            self.onMoveFinished?(windowID)
         }
     }
 
