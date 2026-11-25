@@ -6,6 +6,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let navigator = StageNavigator()
     private let hotkeyTap = HotkeyTap()
     private let stageSwitchWatcher = StageSwitchWatcher()
+    private let windowDragWatcher = WindowDragWatcher()
     private var permissionPollTimer: Timer?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -40,9 +41,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         hotkeyTap.onNavigateKeysHeld = { [navigator] held in held ? navigator.showStageNumbersSoon() : navigator.hideStageNumbers() }
         hotkeyTap.onConfirm = { [navigator] in navigator.confirmStage() }
         hotkeyTap.onCancel = { [navigator] in navigator.stopPickingStage() }
-        hotkeyTap.onLeftMouseDragEnded = {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { AppSizes.rememberLoneWindowIfMoved() }
-        }
         hotkeyTap.onPointerTookOver = { [navigator] in navigator.stopPickingStage(cursor: .leaveWherePersonMovedIt) }
         hotkeyTap.onModifierReleased = { [navigator] in
             guard ConfigStore.shared.config.openStageOn == .releaseModifier else { return }
@@ -57,6 +55,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             StageLayout.arrange(StageOrders.ordered(windows), besides: StageStrip.closest(to: windows.first?.frame))
         }
         stageSwitchWatcher.start()
+        windowDragWatcher.onDragFinished = AppSizes.rememberLoneWindowIfMoved
+        windowDragWatcher.start()
         StageLayout.onArranged = { [stageSwitchWatcher] in stageSwitchWatcher.acceptCurrentStage() }
     }
 

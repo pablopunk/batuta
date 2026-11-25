@@ -1,4 +1,7 @@
 import AppKit
+import os
+
+private let appSizesLog = Logger(subsystem: "com.pablopunk.batuta", category: "appSizes")
 
 /// Remembers where you put an app's window when it is alone in a Messy or Custom stage, and puts it there next time.
 @MainActor
@@ -11,17 +14,19 @@ enum AppSizes {
     }
 
     static func rememberLoneWindowIfMoved() {
-        guard !WindowAnimator.shared.isAnimating else { return }
+        guard !WindowAnimator.shared.isAnimating else { return appSizesLog.notice("skip: animating") }
         let windows = StageWindows.visibleSortedLeftToRight()
         let mode = StageLayout.mode(for: windows)
-        guard windows.count == 1, let window = windows.first, modes.contains(mode),
-              let bundleID = bundleID(of: window.pid),
+        guard windows.count == 1, let window = windows.first else { return appSizesLog.notice("skip: \(windows.count) windows") }
+        guard modes.contains(mode) else { return appSizesLog.notice("skip: mode \(mode.rawValue)") }
+        guard let bundleID = bundleID(of: window.pid),
               let placementArea = StageLayout.placementArea(around: window.frame, besides: StageStrip.closest(to: window.frame)),
-              let expected = StageLayout.unitRects(for: windows, mode: mode).first else { return }
+              let expected = StageLayout.unitRects(for: windows, mode: mode).first else { return appSizesLog.notice("skip: no app or area") }
         let expectedFrame = StageLayout.frame(of: expected, in: placementArea)
-        guard !isSameFrame(window.frame, expectedFrame) else { return }
+        guard !isSameFrame(window.frame, expectedFrame) else { return appSizesLog.notice("skip: frame unchanged") }
         let learned = StageLayout.unitRect(of: window.frame, in: placementArea).clampedToUnitSquare()
         ConfigStore.shared.update { $0.appSizes[bundleID] = learned }
+        appSizesLog.notice("saved \(bundleID, privacy: .public)")
     }
 
     static func forget(_ bundleID: String) {

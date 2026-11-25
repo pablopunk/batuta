@@ -37,9 +37,6 @@ final class HotkeyTap {
     var onConfirm: (() -> Void)?
     var onCancel: (() -> Void)?
     var onPointerTookOver: (() -> Void)?
-    var onLeftMouseDragEnded: (() -> Void)?
-    private var leftMouseDownLocation: CGPoint?
-    private static let dragThreshold: CGFloat = 3
     var onModifierReleased: (() -> Void)?
     var isPickingStage: () -> Bool = { false }
 
@@ -53,7 +50,7 @@ final class HotkeyTap {
     func start() {
         guard eventTap == nil else { return }
 
-        let eventTypes: [CGEventType] = [.keyDown, .keyUp, .flagsChanged, .leftMouseDown, .leftMouseUp, .rightMouseDown, .tapDisabledByTimeout, .tapDisabledByUserInput]
+        let eventTypes: [CGEventType] = [.keyDown, .keyUp, .flagsChanged, .leftMouseDown, .rightMouseDown, .tapDisabledByTimeout, .tapDisabledByUserInput]
         let mask = eventTypes.reduce(CGEventMask(0)) { $0 | (1 << $1.rawValue) }
 
         let callback: CGEventTapCallBack = { _, type, event, userInfo in
@@ -104,14 +101,7 @@ final class HotkeyTap {
             }
             return passThrough
         case .leftMouseDown, .rightMouseDown:
-            if type == .leftMouseDown { leftMouseDownLocation = event.location }
             if isPickingStage() { onPointerTookOver?() }
-            return passThrough
-        case .leftMouseUp:
-            if let start = leftMouseDownLocation, hypot(event.location.x - start.x, event.location.y - start.y) > Self.dragThreshold {
-                onLeftMouseDragEnded?()
-            }
-            leftMouseDownLocation = nil
             return passThrough
         case .keyDown:
             return handleKeyDown(event) ? nil : passThrough
