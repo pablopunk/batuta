@@ -21,6 +21,13 @@ APP_ICON_NAME="AppIcon"
 APP_ICON_FILE="$ROOT/assets/${APP_ICON_NAME}.icns"
 PREFER_STABLE_DEV_SIGNING="${PREFER_STABLE_DEV_SIGNING:-0}"
 CODESIGN_IDENTITY="${CODESIGN_IDENTITY:-}"
+SPARKLE_FRAMEWORK="$BUILD_DIR/Sparkle.framework"
+source "$ROOT/scripts/release-settings.sh"
+
+release_builds_check_for_updates() {
+  [[ "$CONFIGURATION" == "release" ]] && echo 1 || echo 0
+}
+ENABLE_SPARKLE_UPDATES="${ENABLE_SPARKLE_UPDATES:-$(release_builds_check_for_updates)}"
 
 find_apple_development_identity() {
   security find-identity -v -p codesigning 2>/dev/null \
@@ -50,7 +57,7 @@ if [[ -z "$CODESIGN_IDENTITY" ]]; then
   fi
 fi
 
-CODESIGN_OPTIONS=(--force --deep --sign "$CODESIGN_IDENTITY")
+CODESIGN_OPTIONS=(--force --sign "$CODESIGN_IDENTITY")
 
 if [[ "$CODESIGN_IDENTITY" != "-" ]]; then
   CODESIGN_OPTIONS+=(--options runtime --timestamp)
@@ -88,6 +95,24 @@ for bundle in "$BUILD_DIR"/*.bundle; do
   fi
 done
 
+sparkle_info_plist_entries() {
+  if [[ "$ENABLE_SPARKLE_UPDATES" != "1" ]]; then
+    return 0
+  fi
+  if release_setting_is_todo "$SPARKLE_PUBLIC_ED_KEY" || release_setting_is_todo "$SPARKLE_APPCAST_URL"; then
+    echo "Warning: Sparkle settings still have TODOs; building without automatic updates." >&2
+    return 0
+  fi
+  cat <<SPARKLE
+  <key>SUFeedURL</key>
+  <string>$SPARKLE_APPCAST_URL</string>
+  <key>SUPublicEDKey</key>
+  <string>$SPARKLE_PUBLIC_ED_KEY</string>
+  <key>SUEnableAutomaticChecks</key>
+  <true/>
+SPARKLE
+}
+
 cat > "$STAGING_APP_DIR/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -117,10 +142,12 @@ cat > "$STAGING_APP_DIR/Contents/Info.plist" <<PLIST
   <string>14.0</string>
   <key>LSUIElement</key>
   <true/>
+$(sparkle_info_plist_entries)
 </dict>
 </plist>
 PLIST
 
+"$ROOT/scripts/embed-sparkle.sh" "$STAGING_APP_DIR" "$SPARKLE_FRAMEWORK" "$CODESIGN_IDENTITY"
 codesign "${CODESIGN_OPTIONS[@]}" "$STAGING_APP_DIR"
 
 echo "Built $STAGING_APP_DIR"
