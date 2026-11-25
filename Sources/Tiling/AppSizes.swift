@@ -14,7 +14,8 @@ enum AppSizes {
     static func savedRect(for window: StageWindow) -> UnitRect? {
         let settings = ConfigStore.shared.config.tilingSettings(onBuiltInScreen: StageLayout.isOnBuiltInScreen(window.frame))
         guard settings.rememberAppSizes else { return nil }
-        return bundleID(of: window.pid).flatMap { settings.appSizes[$0] }
+        let onBuiltInScreen = StageLayout.isOnBuiltInScreen(window.frame)
+        return bundleID(of: window.pid).flatMap { AppSizeStore.shared.sizes(onBuiltInScreen: onBuiltInScreen)[$0] }
     }
 
     /// Saves only when the window that moved is still the only one in its stage, so a quick stage switch cannot
@@ -37,7 +38,7 @@ enum AppSizes {
         let onBuiltInScreen = StageLayout.isOnBuiltInScreen(window.frame)
         let layoutRect = TilingLayouts.unitRects(for: 1, mode: mode, customLayouts: ConfigStore.shared.config.tilingSettings(onBuiltInScreen: onBuiltInScreen).customLayouts).first
         let savedSize = isNearlySame(learned, layoutRect) ? nil : learned
-        ConfigStore.shared.update { $0.updateTilingSettings(onBuiltInScreen: onBuiltInScreen) { $0.appSizes[bundleID] = savedSize } }
+        AppSizeStore.shared.set(savedSize, for: bundleID, onBuiltInScreen: onBuiltInScreen)
         appSizesLog.notice("\(savedSize == nil ? "forgot" : "saved", privacy: .public) \(bundleID, privacy: .public)")
     }
 

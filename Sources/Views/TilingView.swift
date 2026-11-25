@@ -14,6 +14,7 @@ private enum ScreenKind: String, CaseIterable {
 
 struct TilingView: View {
     @ObservedObject private var configStore = ConfigStore.shared
+    @ObservedObject private var appSizeStore = AppSizeStore.shared
     @State private var windowCount = 2
     @State private var screenKind: ScreenKind = .laptop
 
@@ -83,8 +84,10 @@ struct TilingView: View {
 
             ModeShortcutRows()
 
-            if settings.rememberAppSizes && !settings.appSizes.isEmpty {
-                AppSizeRows(appSizes: settings.appSizes) { bundleID in updateSettings { $0.appSizes[bundleID] = nil } }
+            if settings.rememberAppSizes && !appSizesForThisTab.isEmpty {
+                AppSizeRows(appSizes: appSizesForThisTab) { bundleID in
+                    appSizeStore.set(nil, for: bundleID, onBuiltInScreen: !editsExternalSettings)
+                }
                     .disabled(!isEditable)
                     .opacity(isEditable ? 1 : 0.45)
             }
@@ -99,6 +102,10 @@ struct TilingView: View {
         }
         .padding(14)
         .onAppear { screenKind = ScreenKind.underMouse }
+    }
+
+    private var appSizesForThisTab: [String: UnitRect] {
+        appSizeStore.sizes(onBuiltInScreen: !editsExternalSettings)
     }
 
     private var editsExternalSettings: Bool {

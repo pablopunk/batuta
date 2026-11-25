@@ -60,8 +60,6 @@ struct TilingSettings: Codable, Equatable {
     var mode: TilingMode = .even
     var leaveRoomForStageManager = true
     var rememberAppSizes = false
-    /// Keyed by bundle ID: where a lone window of that app goes in a Messy or Custom stage, learned from your last move or resize.
-    var appSizes: [String: UnitRect] = [:]
     /// Keyed by window count ("1" to "6"); each value has one unit rect per window, left to right.
     var customLayouts: [String: [UnitRect]] = TilingLayouts.defaultCustomLayouts
 
@@ -75,14 +73,13 @@ struct TilingSettings: Codable, Equatable {
         mode = try container.decodeIfPresent(TilingMode.self, forKey: .mode) ?? .even
         leaveRoomForStageManager = try container.decodeIfPresent(Bool.self, forKey: .leaveRoomForStageManager) ?? true
         rememberAppSizes = try container.decodeIfPresent(Bool.self, forKey: .rememberAppSizes) ?? false
-        appSizes = try container.decodeIfPresent([String: UnitRect].self, forKey: .appSizes) ?? [:]
         customLayouts = TilingLayouts.defaultCustomLayouts.merging(
             try container.decodeIfPresent([String: [UnitRect]].self, forKey: .customLayouts) ?? [:]
         ) { _, fromFile in fromFile }
     }
 
     private enum CodingKeys: String, CodingKey {
-        case mode, leaveRoomForStageManager, rememberAppSizes, appSizes, customLayouts
+        case mode, leaveRoomForStageManager, rememberAppSizes, customLayouts
     }
 
     /// Only layouts you drew go in the file; the rest are the defaults.
@@ -90,13 +87,12 @@ struct TilingSettings: Codable, Equatable {
         customLayouts.filter { TilingLayouts.defaultCustomLayouts[$0.key] != $0.value }
     }
 
-    /// Leaves out empty `appSizes` and default layouts, so the config only shows what you changed.
+    /// Leaves out default layouts, so the config only shows the ones you drew.
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(mode, forKey: .mode)
         try container.encode(leaveRoomForStageManager, forKey: .leaveRoomForStageManager)
         try container.encode(rememberAppSizes, forKey: .rememberAppSizes)
-        if !appSizes.isEmpty { try container.encode(appSizes, forKey: .appSizes) }
         if !customLayoutsDrawnByYou.isEmpty { try container.encode(customLayoutsDrawnByYou, forKey: .customLayouts) }
     }
 }
@@ -152,10 +148,6 @@ struct BatutaConfig: Codable, Equatable {
                 if externalTiling.customLayouts[key] == TilingLayouts.defaultCustomLayouts[key] { externalTiling.customLayouts[key] = rects }
             }
         }
-        if let topLevelAppSizes = try legacy.decodeIfPresent([String: UnitRect].self, forKey: .appSizes) {
-            if tiling.appSizes.isEmpty { tiling.appSizes = topLevelAppSizes }
-            if externalTiling.appSizes.isEmpty { externalTiling.appSizes = topLevelAppSizes }
-        }
         tileWhenSwitchingStages = try container.decodeIfPresent(Bool.self, forKey: .tileWhenSwitchingStages) ?? defaults.tileWhenSwitchingStages
         highlightFocusedWindow = try container.decodeIfPresent(Bool.self, forKey: .highlightFocusedWindow) ?? defaults.highlightFocusedWindow
         animateWindowMoves = try container.decodeIfPresent(Bool.self, forKey: .animateWindowMoves) ?? defaults.animateWindowMoves
@@ -167,7 +159,7 @@ struct BatutaConfig: Codable, Equatable {
 
     /// Keys from before tiling settings were grouped per screen.
     private enum LegacyCodingKeys: String, CodingKey {
-        case tilingMode, leaveRoomForStrip, leaveRoomForStageManagerOnBuiltInScreen, appSizes, customLayouts
+        case tilingMode, leaveRoomForStrip, leaveRoomForStageManagerOnBuiltInScreen, customLayouts
     }
 
     var effectiveCycleTilingModeShortcut: KeyShortcut? {
@@ -197,7 +189,7 @@ struct BatutaConfig: Codable, Equatable {
         if usesLaptopTiling(onBuiltInScreen: onBuiltInScreen) { change(&tiling) } else { change(&externalTiling) }
     }
 
-    private func usesLaptopTiling(onBuiltInScreen: Bool) -> Bool {
+    func usesLaptopTiling(onBuiltInScreen: Bool) -> Bool {
         onBuiltInScreen || !externalScreensHaveOwnTiling
     }
 

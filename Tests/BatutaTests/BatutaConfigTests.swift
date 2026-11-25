@@ -38,19 +38,6 @@ import Testing
         #expect(config.tiling.leaveRoomForStageManager)
     }
 
-    @Test func topLevelAppSizesMoveIntoBothTilingSettings() throws {
-        let config = try decode(#"{"appSizes": \#(appSizesJSON), "externalTiling": {"mode": "off"}}"#)
-        #expect(config.tiling.appSizes == ["com.apple.Safari": safariRect])
-        #expect(config.externalTiling.appSizes == ["com.apple.Safari": safariRect])
-        #expect(config.externalTiling.mode == .off)
-    }
-
-    @Test func topLevelAppSizesDoNotReplaceSizesAlreadyInTiling() throws {
-        let own = #"{"com.apple.Notes": {"x": 0, "y": 0, "width": 1, "height": 1}}"#
-        let config = try decode(#"{"appSizes": \#(appSizesJSON), "tiling": {"appSizes": \#(own)}}"#)
-        #expect(Array(config.tiling.appSizes.keys) == ["com.apple.Notes"])
-    }
-
     @Test func aMoveModifierThatIsANavigateModifierBecomesTheFirstFreeOne() throws {
         let config = try decode(#"{"modifiers": ["control", "shift"], "moveModifier": "shift"}"#)
         #expect(config.modifiers == [.control, .shift])
@@ -107,7 +94,6 @@ import Testing
         config.directionKeys = .hjkl
         config.openStageOn = .pressReturn
         config.tiling = TilingSettings(mode: .custom, leaveRoomForStageManager: false)
-        config.tiling.appSizes = ["com.apple.Safari": safariRect]
         config.externalScreensHaveOwnTiling = true
         config.externalTiling = TilingSettings(mode: .bsp)
         config.tileWhenSwitchingStages = false
