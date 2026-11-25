@@ -121,9 +121,9 @@ private struct CycleShortcutRow: View {
         CaptionedRow(
             title: "Cycle mode",
             icon: "arrow.triangle.2.circlepath",
-            caption: "Changes the mode of the current stage only. Other stages keep the default. Click the shortcut to change it."
+            caption: "Changes the mode of the current stage only. Other stages keep the default. Click the shortcut to change it, or press Delete to clear it."
         ) {
-            ShortcutRecorder(requiredShortcut: Binding(get: { configStore.config.effectiveCycleTilingModeShortcut }, set: { shortcut in configStore.update { $0.cycleTilingModeShortcut = shortcut } }))
+            ShortcutRecorder(shortcut: configStore.binding(\.effectiveCycleTilingModeShortcut), canClear: true)
         }
     }
 }

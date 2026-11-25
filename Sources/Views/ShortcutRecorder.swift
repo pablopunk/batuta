@@ -53,12 +53,6 @@ struct ShortcutRecorder: View {
     }
 }
 
-extension ShortcutRecorder {
-    init(requiredShortcut: Binding<KeyShortcut>) {
-        _shortcut = Binding(get: { requiredShortcut.wrappedValue }, set: { if let new = $0 { requiredShortcut.wrappedValue = new } })
-    }
-}
-
 @MainActor
 enum ShortcutRecording {
     static var isActive = false

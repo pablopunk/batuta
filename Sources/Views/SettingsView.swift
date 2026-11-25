@@ -198,7 +198,7 @@ private struct ShortcutList: View {
             row("Pick a stage", navigate, keys.upDownLabel)
             row("Jump to stage", navigate, "1–9")
             row("Resize window", navigate, "+ −")
-            row("Cycle tiling mode", symbols(cycleShortcut.modifiers), cycleShortcut.keyLabel)
+            if let cycleShortcut { row("Cycle tiling mode", symbols(cycleShortcut.modifiers), cycleShortcut.keyLabel) }
             ForEach(TilingMode.allCases.filter { config.shortcut(toggling: $0) != nil }, id: \.self) { mode in
                 let shortcut = config.shortcut(toggling: mode)!
                 row("Toggle \(mode.label)", symbols(shortcut.modifiers), shortcut.keyLabel)
@@ -209,7 +209,7 @@ private struct ShortcutList: View {
 
     private var config: BatutaConfig { configStore.config }
     private var keys: DirectionKeys { config.directionKeys }
-    private var cycleShortcut: KeyShortcut { config.effectiveCycleTilingModeShortcut }
+    private var cycleShortcut: KeyShortcut? { config.effectiveCycleTilingModeShortcut }
     private var navigate: String { symbols(config.modifiers) }
     private var move: String { symbols(config.modifiers + [config.moveModifier]) }
 

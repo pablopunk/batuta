@@ -123,7 +123,7 @@ final class HotkeyTap {
         let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
         let picking = isPickingStage()
 
-        if !picking, ConfigStore.shared.config.effectiveCycleTilingModeShortcut.matches(keyCode: keyCode, flags: event.flags) {
+        if !picking, ConfigStore.shared.config.effectiveCycleTilingModeShortcut?.matches(keyCode: keyCode, flags: event.flags) == true {
             swallowedKeyCodes.insert(keyCode)
             onCycleTilingMode?()
             return true
