@@ -290,23 +290,24 @@
   margin: 0;
   padding: 0;
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
+  justify-content: safe center;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
 }
 
 .chapters button {
-  padding: 8px 14px;
+  padding: 6px 12px;
   border-radius: 999px;
+  white-space: nowrap;
   border: 1px solid var(--chip-border);
   background: var(--chip);
   color: var(--label-secondary);
   font: inherit;
-  font-size: 14px;
+  font-size: 13px;
   cursor: pointer;
   transition: background 0.2s, color 0.2s, border-color 0.2s;
 }
 
 .chapters button:hover { color: var(--label); border-color: var(--chip-border-hover); }
 .chapters button.active { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
-.chapters .index { margin-right: 8px; opacity: 0.6; font-variant-numeric: tabular-nums; }

@@ -26,7 +26,7 @@ export const chapters: Chapter[] = [
   },
   {
     id: "mode-shortcut",
-    title: "Mode shortcuts",
+    title: "Shortcuts",
     caption: "Give a mode its own shortcut to switch the stage to it. Press it again to go back.",
     steps: [
       { keys: toggleEven, action: { type: "toggleMode", mode: "even" }, hold: 1500 },
@@ -57,7 +57,7 @@ export const chapters: Chapter[] = [
   },
   {
     id: "pull",
-    title: "Pull a stage in",
+    title: "Pull in",
     caption: "Pick a stage with Navigate + ↓, then Move + → pulls it in. Let go and its windows join yours.",
     steps: [
       { keys: navigate("↓"), action: { type: "pick", direction: "down" }, hold: 700 },
@@ -68,7 +68,7 @@ export const chapters: Chapter[] = [
   },
   {
     id: "send-back",
-    title: "Send it back",
+    title: "Send back",
     caption: "At the edge next to Stage Manager, Move + ← sends the window back to a stage of its own.",
     steps: [
       { keys: move("←"), action: { type: "move", direction: "left" }, hold: 1400 },
@@ -77,7 +77,7 @@ export const chapters: Chapter[] = [
   },
   {
     id: "pick",
-    title: "Pick a stage",
+    title: "Pick",
     caption: "Go up or down to walk through your stages. Let go to open one, or press Esc to stay.",
     steps: [
       { keys: navigate("↓"), action: { type: "pick", direction: "down" }, hold: 750 },
@@ -87,7 +87,7 @@ export const chapters: Chapter[] = [
   },
   {
     id: "numbers",
-    title: "Jump by number",
+    title: "Numbers",
     caption: "Hold Navigate and every stage gets a number. Press one to go straight there.",
     steps: [
       { keys: navigate(), hold: 400 },
@@ -98,7 +98,7 @@ export const chapters: Chapter[] = [
   },
   {
     id: "modes",
-    title: "Tiling modes",
+    title: "Modes",
     caption: "Navigate + Space cycles the stage through every mode: Custom, Off, Even, BSP and Messy.",
     steps: [
       { keys: navigate("Space"), action: { type: "cycleMode" }, hold: 1300 },
@@ -111,7 +111,7 @@ export const chapters: Chapter[] = [
   },
   {
     id: "custom",
-    title: "Draw a layout",
+    title: "Layouts",
     caption: "Draw your own layout from the menu bar. Every stage with that many windows uses it.",
     steps: [
       { action: { type: "openPanel" }, hold: 900 },

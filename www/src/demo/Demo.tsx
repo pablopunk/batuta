@@ -15,7 +15,6 @@ export default function Demo() {
         {chapters.map((item, index) => (
           <li key={item.id}>
             <button className={index === chapterIndex ? "active" : undefined} onClick={() => jump(index)}>
-              <span className="index">{index + 1}</span>
               {item.title}
             </button>
           </li>
