@@ -200,6 +200,10 @@ private struct ShortcutList: View {
             row("Jump to stage", navigate, "1–9")
             row("Resize window", navigate, "+ −")
             row("Switch tiling mode", symbols(cycleShortcut.modifiers), cycleShortcut.keyLabel)
+            ForEach(TilingMode.allCases.filter { config.shortcut(toggling: $0) != nil }, id: \.self) { mode in
+                let shortcut = config.shortcut(toggling: mode)!
+                row("Toggle \(mode.label)", symbols(shortcut.modifiers), shortcut.keyLabel)
+            }
         }
         .padding(.leading, 28)
     }

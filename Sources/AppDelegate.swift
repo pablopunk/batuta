@@ -31,6 +31,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         hotkeyTap.onDirection = { [navigator] in navigator.move($0) }
         hotkeyTap.onMoveDirection = { [navigator] in navigator.moveItem($0) }
         hotkeyTap.onCycleTilingMode = { [navigator] in navigator.cycleTilingModeOfCurrentStage() }
+        hotkeyTap.onToggleTilingMode = { [navigator] in navigator.toggleTilingModeOfCurrentStage($0) }
         hotkeyTap.onStageNumber = { [navigator] in navigator.openStage(number: $0) }
         hotkeyTap.onResize = { [navigator] grows in
             navigator.hideStageNumbers()

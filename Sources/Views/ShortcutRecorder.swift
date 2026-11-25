@@ -1,14 +1,17 @@
 import SwiftUI
 
-/// Click, then press the new keys. Esc cancels. The global tap lets keys through while this records.
+/// Click, then press the new keys. Esc cancels, and Delete clears an optional shortcut.
+/// The global tap lets keys through while this records.
 struct ShortcutRecorder: View {
-    @Binding var shortcut: KeyShortcut
+    @Binding var shortcut: KeyShortcut?
+    var canClear = false
     @State private var isRecording = false
     @State private var monitor: Any?
 
     var body: some View {
         Button(action: toggleRecording) {
-            Text(isRecording ? "Press keys…" : shortcut.label)
+            Text(isRecording ? "Press keys…" : shortcut?.label ?? "None")
+                .foregroundStyle(shortcut == nil && !isRecording ? .secondary : .primary)
                 .font(.system(size: 11, weight: .semibold, design: .rounded))
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
@@ -17,7 +20,7 @@ struct ShortcutRecorder: View {
         }
         .buttonStyle(.plain)
         .focusEffectDisabled()
-        .help("Click and press a new shortcut")
+        .help(canClear ? "Click and press a new shortcut, or Delete to clear it" : "Click and press a new shortcut")
         .onDisappear(perform: stopRecording)
     }
 
@@ -30,6 +33,9 @@ struct ShortcutRecorder: View {
         ShortcutRecording.isActive = true
         monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
             if event.keyCode == 53 {
+                stopRecording()
+            } else if canClear, event.keyCode == 51 || event.keyCode == 117 {
+                shortcut = nil
                 stopRecording()
             } else if let recorded = KeyShortcut(recording: event) {
                 shortcut = recorded
@@ -44,6 +50,12 @@ struct ShortcutRecorder: View {
         monitor = nil
         isRecording = false
         ShortcutRecording.isActive = false
+    }
+}
+
+extension ShortcutRecorder {
+    init(requiredShortcut: Binding<KeyShortcut>) {
+        _shortcut = Binding(get: { requiredShortcut.wrappedValue }, set: { if let new = $0 { requiredShortcut.wrappedValue = new } })
     }
 }
 

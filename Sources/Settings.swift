@@ -91,6 +91,8 @@ struct BatutaConfig: Codable, Equatable {
     var showMenuBarIcon = true
     /// Nil follows the navigate modifiers with Space.
     var cycleTilingModeShortcut: KeyShortcut?
+    /// Keyed by mode name. Each shortcut toggles that mode on the current stage. None by default.
+    var modeShortcuts: [String: KeyShortcut] = [:]
 
     init() {}
 
@@ -123,7 +125,8 @@ struct BatutaConfig: Codable, Equatable {
         highlightFocusedWindow = try container.decodeIfPresent(Bool.self, forKey: .highlightFocusedWindow) ?? defaults.highlightFocusedWindow
         animateWindowMoves = try container.decodeIfPresent(Bool.self, forKey: .animateWindowMoves) ?? defaults.animateWindowMoves
         showMenuBarIcon = try container.decodeIfPresent(Bool.self, forKey: .showMenuBarIcon) ?? defaults.showMenuBarIcon
-        cycleTilingModeShortcut = try container.decodeIfPresent(KeyShortcut.self, forKey: .cycleTilingModeShortcut) 
+        cycleTilingModeShortcut = try container.decodeIfPresent(KeyShortcut.self, forKey: .cycleTilingModeShortcut)
+        modeShortcuts = try container.decodeIfPresent([String: KeyShortcut].self, forKey: .modeShortcuts) ?? [:]
     }
 
     /// Keys from before tiling settings were grouped per screen.
@@ -133,6 +136,10 @@ struct BatutaConfig: Codable, Equatable {
 
     var effectiveCycleTilingModeShortcut: KeyShortcut {
         cycleTilingModeShortcut ?? KeyShortcut(keyCode: KeyShortcut.space, keyLabel: "Space", modifiers: modifiers)
+    }
+
+    func shortcut(toggling mode: TilingMode) -> KeyShortcut? {
+        modeShortcuts[mode.rawValue]
     }
 
     func tilingSettings(onBuiltInScreen: Bool) -> TilingSettings {

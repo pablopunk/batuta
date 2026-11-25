@@ -50,14 +50,27 @@ final class StageNavigator {
 
     /// Switches only the current stage to the next tiling mode and tiles it right away.
     func cycleTilingModeOfCurrentStage() {
+        changeTilingModeOfCurrentStage { windows in StageLayout.mode(for: windows).next }
+    }
+
+    /// Sets this mode on the current stage only. Pressed again, it goes back to the mode the stage had before.
+    func toggleTilingModeOfCurrentStage(_ mode: TilingMode) {
+        changeTilingModeOfCurrentStage { windows in
+            let currentMode = StageLayout.mode(for: windows)
+            guard currentMode == mode else { return mode }
+            return StageTilingModes.modeBefore(mode, for: windows.map(\.id)) ?? StageLayout.defaultMode(for: windows)
+        }
+    }
+
+    private func changeTilingModeOfCurrentStage(to pickMode: ([StageWindow]) -> TilingMode) {
         guard !isPickingStage else { return }
         let windows = StageOrders.ordered(StageWindows.visibleSortedLeftToRight())
         guard let first = windows.first else { return }
         let focusedFrame = windows.first { $0.id == StageWindows.focusedWindowID() }?.frame ?? first.frame
-        let nextMode = StageLayout.mode(for: windows).next
-        StageTilingModes.choose(nextMode, for: windows.map(\.id))
+        let newMode = pickMode(windows)
+        StageTilingModes.choose(newMode, for: windows.map(\.id), replacing: StageLayout.mode(for: windows))
         StageLayout.arrange(windows, besides: StageStrip.closest(to: focusedFrame))
-        modeBanner.show(nextMode.label, near: focusedFrame)
+        modeBanner.show(newMode.label, near: focusedFrame)
     }
 
     /// Waits a moment so other shortcuts that use the same keys do not flash the numbers.
@@ -170,7 +183,7 @@ final class StageNavigator {
                 return
             }
             let existing = StageOrders.ordered(windows.filter { previousWindowIDs.contains($0.id) })
-            if let chosen = StageTilingModes.chosenMode(for: existing.map(\.id)) { StageTilingModes.choose(chosen, for: added.map(\.id)) }
+            StageTilingModes.copyChoice(from: existing.map(\.id), to: added.map(\.id))
             timingLog.notice("add: new window seen after \(CACurrentMediaTime() - started, format: .fixed(precision: 3))s")
             StageLayout.arrange(existing + added, besides: strip)
         }

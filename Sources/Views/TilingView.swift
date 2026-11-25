@@ -67,6 +67,8 @@ struct TilingView: View {
 
             CycleShortcutRow()
 
+            ModeShortcutRows()
+
             if settings.mode != .off { WindowCountStepper(count: $windowCount) }
 
             if settings.mode == .custom {
@@ -121,8 +123,47 @@ private struct CycleShortcutRow: View {
             icon: "arrow.triangle.2.circlepath",
             caption: "Changes the mode of the current stage only. Other stages keep the default. Click the shortcut to change it."
         ) {
-            ShortcutRecorder(shortcut: Binding(get: { configStore.config.effectiveCycleTilingModeShortcut }, set: { shortcut in configStore.update { $0.cycleTilingModeShortcut = shortcut } }))
+            ShortcutRecorder(requiredShortcut: Binding(get: { configStore.config.effectiveCycleTilingModeShortcut }, set: { shortcut in configStore.update { $0.cycleTilingModeShortcut = shortcut } }))
         }
+    }
+}
+
+private struct ModeShortcutRows: View {
+    @ObservedObject private var configStore = ConfigStore.shared
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 10) {
+                RowIcon(systemName: "keyboard")
+                Text("Mode shortcuts")
+                    .font(.system(size: 13, weight: .medium))
+            }
+            Text("Sets that mode on the current stage. Press it again to go back. Delete clears a shortcut.")
+                .font(.system(size: 11))
+                .foregroundStyle(.tertiary)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.leading, 28)
+            VStack(spacing: 4) {
+                ForEach(TilingMode.allCases, id: \.self) { mode in
+                    HStack {
+                        Text(mode.label)
+                            .font(.system(size: 12))
+                            .foregroundStyle(.secondary)
+                        Spacer(minLength: 0)
+                        ShortcutRecorder(shortcut: binding(for: mode), canClear: true)
+                    }
+                }
+            }
+            .padding(.leading, 28)
+            .padding(.top, 2)
+        }
+    }
+
+    private func binding(for mode: TilingMode) -> Binding<KeyShortcut?> {
+        Binding(
+            get: { configStore.config.shortcut(toggling: mode) },
+            set: { shortcut in configStore.update { $0.modeShortcuts[mode.rawValue] = shortcut } }
+        )
     }
 }
 

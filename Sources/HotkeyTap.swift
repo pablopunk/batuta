@@ -30,6 +30,7 @@ final class HotkeyTap {
     var onDirection: ((Direction) -> Void)?
     var onMoveDirection: ((Direction) -> Void)?
     var onCycleTilingMode: (() -> Void)?
+    var onToggleTilingMode: ((TilingMode) -> Void)?
     var onStageNumber: ((Int) -> Void)?
     var onResize: ((_ grows: Bool) -> Void)?
     var onNavigateKeysHeld: ((Bool) -> Void)?
@@ -112,6 +113,11 @@ final class HotkeyTap {
         }
     }
 
+    private static func modeToggled(byKeyCode keyCode: Int64, flags: CGEventFlags) -> TilingMode? {
+        let config = ConfigStore.shared.config
+        return TilingMode.allCases.first { config.shortcut(toggling: $0)?.matches(keyCode: keyCode, flags: flags) == true }
+    }
+
     private func handleKeyDown(_ event: CGEvent) -> Bool {
         guard !ShortcutRecording.isActive else { return false }
         let keyCode = event.getIntegerValueField(.keyboardEventKeycode)
@@ -120,6 +126,12 @@ final class HotkeyTap {
         if !picking, ConfigStore.shared.config.effectiveCycleTilingModeShortcut.matches(keyCode: keyCode, flags: event.flags) {
             swallowedKeyCodes.insert(keyCode)
             onCycleTilingMode?()
+            return true
+        }
+
+        if !picking, let mode = Self.modeToggled(byKeyCode: keyCode, flags: event.flags) {
+            swallowedKeyCodes.insert(keyCode)
+            onToggleTilingMode?(mode)
             return true
         }
 

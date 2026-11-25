@@ -40,7 +40,11 @@ enum StageLayout {
 
     /// The mode the stage switched to with the shortcut, or else the one set for its screen.
     static func mode(for windows: [StageWindow]) -> TilingMode {
-        if let chosen = StageTilingModes.chosenMode(for: windows.map(\.id)) { return chosen }
+        StageTilingModes.chosenMode(for: windows.map(\.id)) ?? defaultMode(for: windows)
+    }
+
+    /// The mode set in Settings for the screen these windows are on.
+    static func defaultMode(for windows: [StageWindow]) -> TilingMode {
         let isBuiltIn = windows.first.flatMap { screen(containing: $0.frame) }?.isBuiltIn ?? true
         return ConfigStore.shared.config.tilingSettings(onBuiltInScreen: isBuiltIn).mode
     }
