@@ -42,3 +42,18 @@ The Laptop settings (`tiling`) apply to every screen. Turn on **Own settings** i
 
 Batuta tiles when a stage window is pulled in, when a window leaves the stage, and when you switch to another stage by keyboard or mouse (**Tile on stage switch**, `tileWhenSwitchingStages`, on by default). A stage that comes back with the same windows is left as it is, so sizes you changed by hand stay; when windows joined or left, the others keep their order.
 
+
+## Release
+
+Release from a clean `main` with `make release VERSION=x.y.z`. It bumps `VERSION`, builds a Developer ID signed, hardened-runtime `Batuta.app`, notarizes and staples it, zips it to `dist/Batuta.zip` with a `.sha256`, adds the version to `appcast.xml`, tags `vx.y.z`, publishes the GitHub release and then pushes `main` (so the appcast only points at assets that exist). The `Release` GitHub Action then updates the `batuta` cask in `pablopunk/homebrew-brew` (needs the `GH_PAT` repository secret).
+
+One-time setup:
+
+- Fill the TODOs in `scripts/release-settings.sh`: `BATUTA_GITHUB_REPOSITORY` and `SPARKLE_PUBLIC_ED_KEY` (`SPARKLE_APPCAST_URL` follows from the repository). Release scripts refuse to run while a TODO is left.
+- A `Developer ID Application` certificate in the login keychain. With more than one, set `CODESIGN_IDENTITY`.
+- Notarization credentials stored as the `Batuta` keychain profile (or set `NOTARY_KEYCHAIN_PROFILE`): `xcrun notarytool store-credentials "Batuta" --apple-id YOUR_APPLE_ID --team-id YOUR_TEAM_ID`.
+- Sparkle EdDSA keys: `make generate-keys` stores the private key in the login keychain and prints the public key. The same keychain key that Swift Shift uses works too. To sign from a file instead, set `SPARKLE_PRIVATE_KEY_FILE`.
+
+Sparkle is only active in release builds: `build-app.sh` writes `SUFeedURL`/`SUPublicEDKey` into `Info.plist` when `CONFIGURATION=release` (override with `ENABLE_SPARKLE_UPDATES`), and `AppUpdater` does nothing without them, so `make run` ("Batuta Dev.app") never updates itself. `scripts/embed-sparkle.sh` copies `Sparkle.framework` into `Contents/Frameworks` and signs its parts inside out; keep signing the app without `--deep`.
+
+`make build-release` alone signs ad-hoc and skips notarization; `SKIP_NOTARIZE=1` skips it with a real identity.
