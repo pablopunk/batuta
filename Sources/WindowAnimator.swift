@@ -24,6 +24,8 @@ final class WindowAnimator: NSObject {
     private var pidsWithEnhancedUserInterface: Set<pid_t> = []
     private var afterLanding: (@MainActor () -> Void)?
 
+    var isAnimating: Bool { displayLink != nil }
+
     /// Mid-animation a window has moved but not resized yet, so its live frame is neither old nor new.
     func frameIncludingAnimation(of window: StageWindow) -> CGRect {
         moves.first { $0.windowID == window.id }?.target ?? window.frame

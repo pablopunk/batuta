@@ -94,6 +94,8 @@ struct BatutaConfig: Codable, Equatable {
     var cycleTilingModeShortcutIsCleared = false
     /// Keyed by mode name. Each shortcut toggles that mode on the current stage. None by default.
     var modeShortcuts: [String: KeyShortcut] = [:]
+    /// Keyed by bundle ID: where a lone window of that app goes in a Messy stage, learned from your last move or resize.
+    var appSizes: [String: UnitRect] = [:]
 
     init() {}
 
@@ -128,6 +130,7 @@ struct BatutaConfig: Codable, Equatable {
         showMenuBarIcon = try container.decodeIfPresent(Bool.self, forKey: .showMenuBarIcon) ?? defaults.showMenuBarIcon
         cycleTilingModeShortcut = try container.decodeIfPresent(KeyShortcut.self, forKey: .cycleTilingModeShortcut)
         cycleTilingModeShortcutIsCleared = try container.decodeIfPresent(Bool.self, forKey: .cycleTilingModeShortcutIsCleared) ?? false
+        appSizes = try container.decodeIfPresent([String: UnitRect].self, forKey: .appSizes) ?? [:]
         modeShortcuts = try container.decodeIfPresent([String: KeyShortcut].self, forKey: .modeShortcuts) ?? [:]
     }
 

@@ -69,6 +69,8 @@ struct TilingView: View {
 
             ModeShortcutRows()
 
+            if !configStore.config.appSizes.isEmpty { AppSizeRows() }
+
             if settings.mode != .off { WindowCountStepper(count: $windowCount) }
 
             if settings.mode == .custom {
@@ -125,6 +127,47 @@ private struct CycleShortcutRow: View {
         ) {
             ShortcutRecorder(shortcut: configStore.binding(\.effectiveCycleTilingModeShortcut), canClear: true)
         }
+    }
+}
+
+private struct AppSizeRows: View {
+    @ObservedObject private var configStore = ConfigStore.shared
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 10) {
+                RowIcon(systemName: "macwindow")
+                Text("App sizes")
+                    .font(.system(size: 13, weight: .medium))
+            }
+            Text("Where a lone window goes in Messy, learned when you move or resize it.")
+                .font(.system(size: 11))
+                .foregroundStyle(.tertiary)
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.leading, 28)
+            VStack(spacing: 4) {
+                ForEach(sortedBundleIDs, id: \.self) { bundleID in
+                    HStack {
+                        Text(AppSizes.appName(for: bundleID))
+                            .font(.system(size: 12))
+                            .foregroundStyle(.secondary)
+                        Spacer(minLength: 0)
+                        Button { AppSizes.forget(bundleID) } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundStyle(.tertiary)
+                        }
+                        .buttonStyle(.plain)
+                        .help("Forget this size")
+                    }
+                }
+            }
+            .padding(.leading, 28)
+            .padding(.top, 2)
+        }
+    }
+
+    private var sortedBundleIDs: [String] {
+        configStore.config.appSizes.keys.sorted { AppSizes.appName(for: $0) < AppSizes.appName(for: $1) }
     }
 }
 

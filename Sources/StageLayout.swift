@@ -18,10 +18,9 @@ enum StageLayout {
         StageOrders.remember(windows)
         let mode = mode(for: windows)
         guard mode != .off else { return }
-        let rects = TilingLayouts.unitRects(for: windows.count, mode: mode, customLayouts: config.customLayouts)
-        let areaIncludingHalfGaps = area.insetBy(dx: -gap / 2, dy: -gap / 2)
-        let targets = zip(windows, rects).map { window, rect in
-            (window: window, frame: rect.placed(in: areaIncludingHalfGaps).insetBy(dx: gap / 2, dy: gap / 2))
+        let placementArea = area.insetBy(dx: -gap / 2, dy: -gap / 2)
+        let targets = zip(windows, unitRects(for: windows, mode: mode)).map { window, rect in
+            (window: window, frame: frame(of: rect, in: placementArea))
         }
         let started = CACurrentMediaTime()
         WindowAnimator.shared.animate(targets) {
@@ -47,6 +46,31 @@ enum StageLayout {
     static func defaultMode(for windows: [StageWindow]) -> TilingMode {
         let isBuiltIn = windows.first.flatMap { screen(containing: $0.frame) }?.isBuiltIn ?? true
         return ConfigStore.shared.config.tilingSettings(onBuiltInScreen: isBuiltIn).mode
+    }
+
+    /// A lone window in Messy goes where you last left that app's lone window.
+    static func unitRects(for windows: [StageWindow], mode: TilingMode) -> [UnitRect] {
+        if mode == .messy, windows.count == 1, let saved = AppSizes.savedRect(for: windows[0]) { return [saved] }
+        return TilingLayouts.unitRects(for: windows.count, mode: mode, customLayouts: ConfigStore.shared.config.customLayouts)
+    }
+
+    /// The usable area grown by half a gap, so unit rects placed in it and shrunk by half a gap leave full gaps between tiles.
+    static func placementArea(around frame: CGRect, besides strip: StageStrip?) -> CGRect? {
+        usableArea(around: frame, besides: strip)?.insetBy(dx: -gap / 2, dy: -gap / 2)
+    }
+
+    static func frame(of rect: UnitRect, in placementArea: CGRect) -> CGRect {
+        rect.placed(in: placementArea).insetBy(dx: gap / 2, dy: gap / 2)
+    }
+
+    static func unitRect(of frame: CGRect, in placementArea: CGRect) -> UnitRect {
+        let outer = frame.insetBy(dx: -gap / 2, dy: -gap / 2)
+        return UnitRect(
+            x: (outer.minX - placementArea.minX) / placementArea.width,
+            y: (outer.minY - placementArea.minY) / placementArea.height,
+            width: outer.width / placementArea.width,
+            height: outer.height / placementArea.height
+        )
     }
 
     /// The area tiles may use around this window: its screen, minus the room for Stage Manager when that is on.

@@ -40,6 +40,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         hotkeyTap.onNavigateKeysHeld = { [navigator] held in held ? navigator.showStageNumbersSoon() : navigator.hideStageNumbers() }
         hotkeyTap.onConfirm = { [navigator] in navigator.confirmStage() }
         hotkeyTap.onCancel = { [navigator] in navigator.stopPickingStage() }
+        hotkeyTap.onLeftMouseDragEnded = {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { AppSizes.rememberLoneMessyWindowIfMoved() }
+        }
         hotkeyTap.onPointerTookOver = { [navigator] in navigator.stopPickingStage(cursor: .leaveWherePersonMovedIt) }
         hotkeyTap.onModifierReleased = { [navigator] in
             guard ConfigStore.shared.config.openStageOn == .releaseModifier else { return }

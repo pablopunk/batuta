@@ -76,7 +76,7 @@ enum WindowResizeSteps {
         resized.origin.x = min(max(resized.minX, area.minX), area.maxX - width)
         resized.origin.y = min(max(resized.minY, area.minY), area.maxY - height)
         guard resized.integral != frame else { return }
-        WindowAnimator.shared.animate([(window, resized.integral)])
+        WindowAnimator.shared.animate([(window, resized.integral)], afterLanding: AppSizes.rememberLoneMessyWindowIfMoved)
     }
 }
 
