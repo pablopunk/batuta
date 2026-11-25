@@ -35,7 +35,7 @@ enum AppSizes {
         guard !isSameFrame(window.frame, expectedFrame) else { return appSizesLog.debug("skip: frame unchanged") }
         let learned = StageLayout.unitRect(of: window.frame, in: placementArea).clampedToUnitSquare()
         let onBuiltInScreen = StageLayout.isOnBuiltInScreen(window.frame)
-        let layoutRect = TilingLayouts.unitRects(for: 1, mode: mode, customLayouts: ConfigStore.shared.config.customLayouts).first
+        let layoutRect = TilingLayouts.unitRects(for: 1, mode: mode, customLayouts: ConfigStore.shared.config.tilingSettings(onBuiltInScreen: onBuiltInScreen).customLayouts).first
         let savedSize = isNearlySame(learned, layoutRect) ? nil : learned
         ConfigStore.shared.update { $0.updateTilingSettings(onBuiltInScreen: onBuiltInScreen) { $0.appSizes[bundleID] = savedSize } }
         appSizesLog.notice("\(savedSize == nil ? "forgot" : "saved", privacy: .public) \(bundleID, privacy: .public)")

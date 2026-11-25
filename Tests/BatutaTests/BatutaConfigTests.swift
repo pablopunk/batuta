@@ -17,7 +17,7 @@ import Testing
         #expect(config.moveModifier == .shift)
         #expect(config.tiling == TilingSettings())
         #expect(config.tiling.mode == .even)
-        #expect(config.customLayouts == TilingLayouts.defaultCustomLayouts)
+        #expect(config.tiling.customLayouts == TilingLayouts.defaultCustomLayouts)
     }
 
     @Test func legacyTilingModeAndStripRoomMoveIntoTiling() throws {
@@ -65,8 +65,9 @@ import Testing
 
     @Test func customLayoutsFromTheFileMergeWithTheDefaults() throws {
         let config = try decode(#"{"customLayouts": {"1": [{"x": 0.2, "y": 0, "width": 0.6, "height": 1}]}}"#)
-        #expect(config.customLayouts["1"] == [UnitRect(x: 0.2, y: 0, width: 0.6, height: 1)])
-        #expect(config.customLayouts["3"] == TilingLayouts.evenGrid(3))
+        #expect(config.tiling.customLayouts["1"] == [UnitRect(x: 0.2, y: 0, width: 0.6, height: 1)])
+        #expect(config.externalTiling.customLayouts["1"] == [UnitRect(x: 0.2, y: 0, width: 0.6, height: 1)])
+        #expect(config.tiling.customLayouts["3"] == TilingLayouts.evenGrid(3))
     }
 
     @Test func theCycleShortcutDefaultsToSpaceWithTheNavigateModifiers() throws {
@@ -110,7 +111,7 @@ import Testing
         config.externalScreensHaveOwnTiling = true
         config.externalTiling = TilingSettings(mode: .bsp)
         config.tileWhenSwitchingStages = false
-        config.customLayouts["2"] = [UnitRect(x: 0, y: 0, width: 0.3, height: 1), UnitRect(x: 0.3, y: 0, width: 0.7, height: 1)]
+        config.tiling.customLayouts["2"] = [UnitRect(x: 0, y: 0, width: 0.3, height: 1), UnitRect(x: 0.3, y: 0, width: 0.7, height: 1)]
         config.highlightFocusedWindow = false
         config.animateWindowMoves = false
         config.showMenuBarIcon = false

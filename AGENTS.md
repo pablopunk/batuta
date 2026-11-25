@@ -32,7 +32,7 @@ Pick the default mode for every stage in the Tiling tab (saved as `tiling.mode` 
 - **Even** (default): every window gets the same space: one row up to 3 windows, then rows of up to 3 (5 is 2 over 3).
 - **BSP**: each new window splits the last one in half, side by side then top and bottom.
 - **Messy**: loose hand-drawn layouts for 1 to 5 windows that can overlap; more windows use Even. With "Learn app size" on (`rememberAppSizes` in `tiling` / `externalTiling`, off by default), when an app's window is alone in a Messy or Custom stage and you move or resize it (mouse drag or Navigate + +/-), Batuta saves that place for the app in `appSizes` (inside `tiling`, or `externalTiling` when external screens have their own settings), keyed by bundle ID, and uses it next time. With it off nothing is learned or applied, but saved sizes stay in the config. The Tiling tab lists them (only while on) so you can forget one.
-- **Custom**: draw tiles for 1 to 6 windows; saved as `customLayouts`, keyed by window count, as 0–1 rects (`x`, `y`, `width`, `height`, top-left origin). Tile 1 is the leftmost window.
+- **Custom**: draw tiles for 1 to 6 windows; saved as `customLayouts` inside `tiling` / `externalTiling` (only the counts you changed), keyed by window count, as 0–1 rects (`x`, `y`, `width`, `height`, top-left origin). Tile 1 is the leftmost window.
 
 **Don't cover Stage Manager** (`tiling.leaveRoomForStageManager`, on by default) keeps windows clear of Stage Manager. Turn it off to tile over the whole screen.
 

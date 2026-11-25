@@ -60,7 +60,8 @@ enum StageLayout {
     /// A lone window in Messy or Custom goes where you last left that app's lone window.
     static func unitRects(for windows: [StageWindow], mode: TilingMode) -> [UnitRect] {
         if AppSizes.modes.contains(mode), windows.count == 1, let saved = AppSizes.savedRect(for: windows[0]) { return [saved] }
-        return TilingLayouts.unitRects(for: windows.count, mode: mode, customLayouts: ConfigStore.shared.config.customLayouts)
+        let settings = ConfigStore.shared.config.tilingSettings(onBuiltInScreen: isOnBuiltInScreen(windows.first?.frame))
+        return TilingLayouts.unitRects(for: windows.count, mode: mode, customLayouts: settings.customLayouts)
     }
 
     /// The usable area grown by half a gap, so unit rects placed in it and shrunk by half a gap leave full gaps between tiles.

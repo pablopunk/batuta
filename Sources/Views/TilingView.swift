@@ -92,7 +92,7 @@ struct TilingView: View {
             if settings.mode != .off { WindowCountStepper(count: $windowCount) }
 
             if settings.mode == .custom {
-                CustomLayoutEditor(windowCount: windowCount)
+                CustomLayoutEditor(windowCount: windowCount, layouts: settings.customLayouts) { key, rects in updateSettings { $0.customLayouts[key] = rects } }
             } else if settings.mode != .off {
                 LayoutPreview(rects: previewRects)
             }
@@ -121,7 +121,7 @@ struct TilingView: View {
     }
 
     private var previewRects: [UnitRect] {
-        TilingLayouts.unitRects(for: windowCount, mode: settings.mode, customLayouts: configStore.config.customLayouts)
+        TilingLayouts.unitRects(for: windowCount, mode: settings.mode, customLayouts: settings.customLayouts)
     }
 
     private var modeCaption: String {
