@@ -35,16 +35,13 @@ const configHtml = highlightJson(compactArrays(JSON.stringify(CONFIG, null, 2)))
 
 <section class="feature">
   <div class="copy">
-    <h3>Dotfiles friendly</h3>
+    <h3>A tiling manager that takes a hint</h3>
     <p>
-      Every setting and every shortcut lives in one plain JSON file. Keep it in your dotfiles, leave out what you don't
-      care about, and edit it by hand: Batuta reloads it the moment you save.
+      Drag or resize a window with your mouse and it stays right there. Most tiling managers act like window bosses and
+      snap everything back into their grid. Batuta tiles when you ask, then gets out of your way.
     </p>
   </div>
-  <figure class="code-window">
-    <figcaption><i></i><i></i><i></i><span>{CONFIG_PATH}</span></figcaption>
-    <pre><code set:html={configHtml} /></pre>
-  </figure>
+  <WindowsStay />
 </section>
 
 <section class="feature flipped">
@@ -60,13 +57,16 @@ const configHtml = highlightJson(compactArrays(JSON.stringify(CONFIG, null, 2)))
 
 <section class="feature">
   <div class="copy">
-    <h3>A tiling manager that takes a hint</h3>
+    <h3>Dotfiles friendly</h3>
     <p>
-      Drag or resize a window with your mouse and it stays right there. Most tiling managers act like window bosses and
-      snap everything back into their grid. Batuta tiles when you ask, then gets out of your way.
+      Every setting and every shortcut lives in one plain JSON file. Keep it in your dotfiles, leave out what you don't
+      care about, and edit it by hand: Batuta reloads it the moment you save.
     </p>
   </div>
-  <WindowsStay />
+  <figure class="code-window">
+    <figcaption><i></i><i></i><i></i><span>{CONFIG_PATH}</span></figcaption>
+    <pre><code set:html={configHtml} /></pre>
+  </figure>
 </section>
 
 <style>
