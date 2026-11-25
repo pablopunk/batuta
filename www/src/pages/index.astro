@@ -11,13 +11,13 @@ import Demo from "../demo/Demo";
     <meta name="description" content="Keyboard control for macOS Stage Manager." />
   </head>
   <body>
-    <header class="hero">
-      <img src="/icon.png" alt="" width="72" height="72" />
-      <h1>Batuta</h1>
-      <p>macOS Stage Manager is great, it was just missing Batuta.</p>
-    </header>
     <main>
       <Demo client:load />
+      <header class="hero">
+        <img src="/icon.png" alt="" width="72" height="72" />
+        <h1>Batuta</h1>
+        <p>macOS Stage Manager is great, it was just missing Batuta.</p>
+      </header>
     </main>
   </body>
 </html>
@@ -37,9 +37,9 @@ import Demo from "../demo/Demo";
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
-  .hero { text-align: center; padding: 64px 16px 32px; }
+  .hero { text-align: center; padding: 72px 0 0; }
   .hero img { border-radius: 16px; }
   .hero h1 { font-size: clamp(40px, 7vw, 64px); margin: 12px 0 8px; letter-spacing: -0.03em; }
   .hero p { color: var(--muted); font-size: 18px; margin: 0; }
-  main { max-width: 1180px; margin: 0 auto; padding: 0 16px 96px; }
+  main { max-width: 1180px; margin: 0 auto; padding: 40px 16px 96px; }
 </style>
