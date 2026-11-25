@@ -33,6 +33,8 @@ export type DesktopState = {
   /** Off tiles over the whole screen; Stage Manager then hides its strip until Batuta reveals it to pick a stage. */
   leaveRoomForStageManager: boolean;
   panel: Panel;
+  /** The demo's mouse: a dot over the element named by `data-pointer`, for clicks and drags. Null hides it. */
+  pointer: { target: string; pressed: boolean } | null;
   nextStageId: number;
 };
 
@@ -54,6 +56,7 @@ export const initialState: DesktopState = {
   customLayouts: {},
   leaveRoomForStageManager: true,
   panel: { open: false, windowCount: 2, activeTile: null },
+  pointer: null,
   nextStageId: 5,
 };
 

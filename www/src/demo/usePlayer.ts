@@ -1,17 +1,19 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
-import { desktopReducer } from "./reducer";
-import type { Chapter, Keys } from "./script";
+import { desktopReducer, type DesktopAction } from "./reducer";
+import type { Chapter, Keys, Step } from "./script";
 import { initialState, type DesktopState } from "./state";
 
 const PAUSE_BEFORE_LOOP = 1200;
 
 class Cancelled extends Error {}
 
+const actionsOf = (step: Step): DesktopAction[] => (step.action ? [step.action].flat() : []);
+
 const stateAtChapter = (chapters: Chapter[], index: number): DesktopState =>
   chapters
     .slice(0, index)
-    .flatMap((chapter) => chapter.steps)
-    .reduce((state, step) => (step.action ? desktopReducer(state, step.action) : state), initialState);
+    .flatMap((chapter) => chapter.steps.flatMap(actionsOf))
+    .reduce(desktopReducer, initialState);
 
 /** Plays the chapters in a loop. `jump` restarts from any chapter, with the desktop already in that chapter's state. */
 export function usePlayer(chapters: Chapter[]) {
@@ -40,7 +42,7 @@ export function usePlayer(chapters: Chapter[]) {
           setChapterIndex(index);
           for (const step of chapters[index].steps) {
             if (step.keys !== undefined) setKeys(step.keys && { ...step.keys, count: ++keyPresses.current });
-            if (step.action) dispatch(step.action);
+            actionsOf(step).forEach(dispatch);
             await sleep(step.hold);
           }
         }

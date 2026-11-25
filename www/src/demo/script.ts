@@ -6,7 +6,7 @@ export type Keys = { modifiers: string[]; key?: string };
 export type Step = {
   /** What the keyboard shows; null lets go of every key. Left out, the keys stay as they were. */
   keys?: Keys | null;
-  action?: DesktopAction;
+  action?: DesktopAction | DesktopAction[];
   /** How long to stay on this step before the next one, in ms. */
   hold: number;
 };
@@ -15,6 +15,24 @@ export type Chapter = { id: string; title: string; caption: string; steps: Step[
 
 const navigate = (key?: string): Keys => ({ modifiers: NAVIGATE, key });
 const move = (key?: string): Keys => ({ modifiers: MOVE, key });
+const POINTER_TRAVEL = 600;
+const PRESS = 140;
+
+/** Moves the pointer onto a `data-pointer` element and clicks it; the click does `action`. */
+const clickOn = (target: string, action: DesktopAction): Step[] => [
+  { action: { type: "pointAt", target }, hold: POINTER_TRAVEL },
+  { action: { type: "pressPointer" }, hold: PRESS },
+  { action: [action, { type: "releasePointer" }], hold: 800 },
+];
+
+/** Presses on a `data-pointer` element and drags; each of `moves` is one stretch of the drag. */
+const drag = (target: string, moves: DesktopAction[]): Step[] => [
+  { action: { type: "pointAt", target }, hold: POINTER_TRAVEL },
+  { action: { type: "pressPointer" }, hold: PRESS },
+  ...moves.map((move): Step => ({ action: move, hold: 700 })),
+  { action: [{ type: "releaseCustomTile" }, { type: "releasePointer" }], hold: 300 },
+];
+
 const toggleEven: Keys = { modifiers: MODE_SHORTCUT_MODIFIERS, key: MODE_SHORTCUT_KEYS.even };
 
 export const chapters: Chapter[] = [
@@ -114,13 +132,13 @@ export const chapters: Chapter[] = [
     title: "Layouts",
     caption: "Draw your own layout from the menu bar. Every stage with that many windows uses it.",
     steps: [
-      { action: { type: "openPanel" }, hold: 900 },
-      { action: { type: "setDefaultMode", mode: "custom" }, hold: 1000 },
-      { action: { type: "dragCustomTile", index: 1, rect: { x: 0.5, y: 0, w: 0.4, h: 0.7 } }, hold: 700 },
-      { action: { type: "dragCustomTile", index: 1, rect: { x: 0.6, y: 0.15, w: 0.4, h: 0.7 } }, hold: 700 },
-      { action: { type: "dragCustomTile", index: 0, rect: { x: 0, y: 0, w: 0.6, h: 1 } }, hold: 700 },
-      { action: { type: "releaseCustomTile" }, hold: 700 },
-      { action: { type: "closePanel" }, hold: 600 },
+      ...clickOn("menubar-icon", { type: "openPanel" }),
+      ...clickOn("mode-custom", { type: "setDefaultMode", mode: "custom" }),
+      ...drag("tile-handle-1", [{ type: "dragCustomTile", index: 1, rect: { x: 0.5, y: 0, w: 0.4, h: 0.7 } }]),
+      ...drag("tile-1", [{ type: "dragCustomTile", index: 1, rect: { x: 0.6, y: 0.15, w: 0.4, h: 0.7 } }]),
+      ...drag("tile-handle-0", [{ type: "dragCustomTile", index: 0, rect: { x: 0, y: 0, w: 0.6, h: 1 } }]),
+      ...clickOn("menubar-icon", { type: "closePanel" }),
+      { action: { type: "hidePointer" }, hold: 300 },
       { keys: navigate("↓"), action: { type: "pick", direction: "down" }, hold: 500 },
       { keys: navigate("↓"), action: { type: "pick", direction: "down" }, hold: 500 },
       { keys: navigate("↓"), action: { type: "pick", direction: "down" }, hold: 800 },
@@ -132,9 +150,10 @@ export const chapters: Chapter[] = [
     title: "Full screen",
     caption: "Turn off Don't cover Stage Manager to tile over the whole screen. The stages come back only while you pick one.",
     steps: [
-      { action: { type: "openPanel" }, hold: 900 },
-      { action: { type: "setLeaveRoomForStageManager", on: false }, hold: 1100 },
-      { action: { type: "closePanel" }, hold: 900 },
+      ...clickOn("menubar-icon", { type: "openPanel" }),
+      ...clickOn("leave-room-toggle", { type: "setLeaveRoomForStageManager", on: false }),
+      ...clickOn("menubar-icon", { type: "closePanel" }),
+      { action: { type: "hidePointer" }, hold: 400 },
       { keys: navigate("↓"), action: { type: "pick", direction: "down" }, hold: 1000 },
       { keys: null, action: { type: "confirmPick" }, hold: 2200 },
     ],

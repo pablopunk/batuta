@@ -33,7 +33,7 @@ export function MenuBar({ appName, batutaMenuOpen }: { appName: string; batutaMe
         ))}
       </div>
       <div className="status">
-        <span className={batutaMenuOpen ? "batuta-icon open" : "batuta-icon"}><BatutaIcon /></span>
+        <span data-pointer="menubar-icon" className={batutaMenuOpen ? "batuta-icon open" : "batuta-icon"}><BatutaIcon /></span>
         <BatteryIcon />
         <WifiIcon />
         <span>Wed 25 Nov 9:41</span>

@@ -69,7 +69,7 @@ export function SettingsPanel({ state }: { state: DesktopState }) {
 
         <div className="mode-pills">
           {TILING_MODES.map((item) => (
-            <Pill key={item} label={MODE_LABELS[item]} on={item === mode} />
+            <Pill key={item} label={MODE_LABELS[item]} on={item === mode} pointer={`mode-${item}`} />
           ))}
         </div>
         <p className="mode-caption">Default for every stage. {MODE_CAPTIONS[mode]}</p>
@@ -86,7 +86,7 @@ export function SettingsPanel({ state }: { state: DesktopState }) {
           </>
         )}
 
-        <ToggleRow title="Don't cover Stage Manager" subtitle="Tile beside the thumbnails" icon="sidebar" on={state.leaveRoomForStageManager} />
+        <ToggleRow title="Don't cover Stage Manager" subtitle="Tile beside the thumbnails" icon="sidebar" on={state.leaveRoomForStageManager} pointer="leave-room-toggle" />
         <ToggleRow title="Learn app size" subtitle="For 1-window stages" icon="window" on={false} />
         <ToggleRow title="Tile on stage switch" subtitle="Also when you click a stage" icon="stack" on />
 

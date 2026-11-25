@@ -3,6 +3,7 @@ import { APPS } from "./apps/index";
 import { SCREEN } from "./geometry";
 import { MenuBar } from "./MenuBar";
 import { ModeBanner } from "./ModeBanner";
+import { Pointer } from "./Pointer";
 import { SettingsPanel } from "./SettingsPanel";
 import { HighlightFrame, KeyCaps, StageBadges } from "./Overlays";
 import { badgeRects, highlight, windowPlacements } from "./placements";
@@ -50,6 +51,7 @@ export function Desktop({ state, keys, instant }: Props) {
           {state.badges && <StageBadges rects={badgeRects(state)} />}
           {state.banner && <ModeBanner key={state.banner.count} from={state.banner.from} to={state.banner.to} />}
           {state.panel.open && <SettingsPanel state={state} />}
+          <Pointer pointer={state.pointer} />
           <KeyCaps keys={keys} />
         </div>
       </div>

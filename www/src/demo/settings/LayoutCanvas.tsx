@@ -18,9 +18,9 @@ export function LayoutCanvas({ rects, editable, activeTile }: Props) {
     <div className="layout-editor">
       <div className="layout-canvas">
         {rects.map((rect, index) => (
-          <div key={index} className={activeTile === index ? "tile active" : "tile"} style={tileStyle(rect)}>
+          <div key={index} data-pointer={`tile-${index}`} className={activeTile === index ? "tile active" : "tile"} style={tileStyle(rect)}>
             {index + 1}
-            {editable && <i className="resize-handle">↘</i>}
+            {editable && <i data-pointer={`tile-handle-${index}`} className="resize-handle">↘</i>}
           </div>
         ))}
       </div>
