@@ -20,6 +20,14 @@ import Testing
         #expect(config.tiling.customLayouts == TilingLayouts.defaultCustomLayouts)
     }
 
+    @Test func floatingAndTiledAppsDefaultAndDecode() throws {
+        #expect(try decode("{}").floatingApps.isEmpty)
+        #expect(try decode("{}").tiledApps == FloatingRules.defaultTiledApps)
+        let config = try decode(#"{"floatingApps": ["com.apple.Calculator"], "tiledApps": []}"#)
+        #expect(config.floatingApps == ["com.apple.Calculator"])
+        #expect(config.tiledApps.isEmpty)
+    }
+
     @Test func legacyTilingModeAndStripRoomMoveIntoTiling() throws {
         let config = try decode(#"{"tilingMode": "bsp", "leaveRoomForStrip": false}"#)
         #expect(config.tiling.mode == .bsp)

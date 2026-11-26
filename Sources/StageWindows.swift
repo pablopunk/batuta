@@ -16,9 +16,23 @@ enum StageWindows {
         let boundsByID = Dictionary(onScreen.map { ($0.id, $0.bounds) }, uniquingKeysWith: { first, _ in first })
         let pids = Set(onScreen.map(\.pid))
 
-        return pids
+        let shown = pids
             .flatMap { pid in standardWindows(of: pid).filter { isShownFullSize($0, bounds: boundsByID[$0.id]) } }
             .sorted { ($0.frame.midX, $0.frame.minY) < ($1.frame.midX, $1.frame.minY) }
+        WindowTraitsCache.forgetWindows(otherThan: Set(shown.map(\.id)))
+        return shown.map(withTilingDecision)
+    }
+
+    private static func withTilingDecision(_ window: StageWindow) -> StageWindow {
+        let config = ConfigStore.shared.config
+        var decided = window
+        decided.isTileable = !FloatingRules.refusesTiling(
+            WindowTraitsCache.traits(of: window),
+            bundleID: NSRunningApplication(processIdentifier: window.pid)?.bundleIdentifier,
+            floatingApps: Set(config.floatingApps),
+            tiledApps: Set(config.tiledApps)
+        )
+        return decided
     }
 
     static func windowShownAsThumbnail(inside stripItemFrame: CGRect) -> StageWindow? {
@@ -82,7 +96,7 @@ enum StageWindows {
                   let frame = element.frame else {
                 return nil
             }
-            return StageWindow(element: element, pid: pid, id: id, frame: frame, isTileable: !element.refusesTiling)
+            return StageWindow(element: element, pid: pid, id: id, frame: frame)
         }
     }
 

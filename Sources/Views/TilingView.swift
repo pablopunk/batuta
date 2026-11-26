@@ -101,6 +101,8 @@ struct TilingView: View {
 
             ModeShortcutRows()
 
+            FloatingAppsRows()
+
             if settings.rememberAppSizes && !appSizesForThisTab.isEmpty {
                 AppSizeRows(appSizes: appSizesForThisTab) { bundleID in
                     appSizeStore.set(nil, for: bundleID, onBuiltInScreen: !editsExternalSettings)
