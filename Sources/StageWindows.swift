@@ -25,10 +25,7 @@ enum StageWindows {
 
     private static func withTilingDecision(_ window: StageWindow) -> StageWindow {
         var decided = window
-        decided.isTileable = !FloatingRules.refusesTiling(
-            WindowTraitsCache.traits(of: window),
-            bundleID: NSRunningApplication(processIdentifier: window.pid)?.bundleIdentifier
-        )
+        decided.isTileable = !FloatingRules.refusesTiling(WindowTraitsCache.traits(of: window))
         return decided
     }
 
