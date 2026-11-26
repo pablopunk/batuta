@@ -6,6 +6,7 @@ struct StageWindow {
     let pid: pid_t
     let id: CGWindowID
     let frame: CGRect
+    var isTileable = true
 }
 
 @MainActor
@@ -81,7 +82,7 @@ enum StageWindows {
                   let frame = element.frame else {
                 return nil
             }
-            return StageWindow(element: element, pid: pid, id: id, frame: frame)
+            return StageWindow(element: element, pid: pid, id: id, frame: frame, isTileable: !element.refusesTiling)
         }
     }
 

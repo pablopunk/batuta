@@ -35,6 +35,8 @@ Pick the default mode for every stage in the Tiling tab (saved as `tiling.mode` 
 - **Messy**: loose hand-drawn layouts for 1 to 5 windows that can overlap; more windows use Even. With "Learn app size" on (`rememberAppSizes` in `tiling` / `externalTiling`, off by default), when an app's window is alone in a Messy or Custom stage and you move or resize it (mouse drag or Navigate + +/-), Batuta saves that place for the app in `~/.config/batuta/apps.json` (`laptop` and `external` lists, keyed by bundle ID; External uses `laptop` unless it has its own settings), and uses it next time. With it off nothing is learned or applied, but saved sizes stay in apps.json. The Tiling tab lists them (only while on) so you can forget one.
 - **Custom**: draw tiles for 1 to 6 windows; saved as `customLayouts` inside `tiling` / `externalTiling` (only the counts you changed), keyed by window count, as 0–1 rects (`x`, `y`, `width`, `height`, top-left origin). Tile 1 is the leftmost window.
 
+**Floating windows**: a window that cannot be resized, or has a title bar whose green zoom button is missing or disabled (dialogs, About boxes, settings panes), is never tiled, swapped, resized by steps or learned in apps.json. It stays where it is and does not count toward the stage's window count; you can still focus it.
+
 **Don't cover Stage Manager** (`tiling.leaveRoomForStageManager`, on by default) keeps windows clear of Stage Manager. Turn it off to tile over the whole screen.
 
 The Laptop settings (`tiling`) apply to every screen. Turn on **Own settings** in the External tab (`externalScreensHaveOwnTiling`) to give external screens their own `externalTiling`.

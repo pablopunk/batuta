@@ -11,7 +11,7 @@ enum StageLayout {
     static var onArranged: (([StageWindow]) -> Void)?
 
     static func arrange(_ windowsOnAnyScreen: [StageWindow], besides strip: StageStrip?) {
-        let windows = windowsOnScreenOfFocusedWindow(windowsOnAnyScreen)
+        let windows = windowsOnScreenOfFocusedWindow(windowsOnAnyScreen).tileable
         guard let screen = windows.first.flatMap({ screen(containing: $0.frame) }) else { return }
         let config = ConfigStore.shared.config
         let settings = config.tilingSettings(onBuiltInScreen: screen.isBuiltIn)

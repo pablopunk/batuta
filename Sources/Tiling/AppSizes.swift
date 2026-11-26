@@ -25,7 +25,8 @@ enum AppSizes {
         let visible = StageWindows.visibleSortedLeftToRight()
         guard let moved = visible.first(where: { $0.id == windowID }) else { return appSizesLog.debug("skip: window gone") }
         guard isRememberingAppSizes(onScreenOf: moved) else { return appSizesLog.debug("skip: setting off") }
-        let windows = StageLayout.windowsOnSameScreen(as: moved, among: visible)
+        guard moved.isTileable else { return appSizesLog.debug("skip: floating window") }
+        let windows = StageLayout.windowsOnSameScreen(as: moved, among: visible.tileable)
         let mode = StageLayout.mode(for: windows)
         guard windows.count == 1, let window = windows.first else { return appSizesLog.debug("skip: \(windows.count) windows") }
         guard modes.contains(mode) else { return appSizesLog.debug("skip: mode \(mode.rawValue)") }

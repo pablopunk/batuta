@@ -156,7 +156,7 @@ final class StageNavigator {
 
     /// Swaps the focused window with its neighbour; past the edge next to Stage Manager, it leaves the stage.
     private func moveFocusedWindow(_ direction: Direction) {
-        let windows = StageWindows.visibleSortedLeftToRight()
+        let windows = StageWindows.visibleSortedLeftToRight().tileable
         guard let focusedID = StageWindows.focusedWindowID(),
               let focusedIndex = windows.firstIndex(where: { $0.id == focusedID }) else { return }
         let focused = windows[focusedIndex]
