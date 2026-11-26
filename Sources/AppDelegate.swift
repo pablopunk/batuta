@@ -52,7 +52,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private static func tileUnlessAlreadyTiled(_ windowsOnAnyScreen: [StageWindow]) {
-        let windows = StageLayout.windowsOnScreenOfFocusedWindow(windowsOnAnyScreen)
+        let windows = StageLayout.windowsOnScreenOfFocusedWindow(windowsOnAnyScreen).tileable
         guard !windows.isEmpty, !StageOrders.isTiledAlready(windows) else {
             return Logger(subsystem: "com.pablopunk.batuta", category: "stage").debug("skip tiling: \(windows.count) windows already tiled")
         }

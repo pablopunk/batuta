@@ -13,7 +13,7 @@ enum WindowResizeSteps {
 
     private static func resize(grows: Bool) {
         let windows = StageWindows.visibleSortedLeftToRight().map { window in
-            StageWindow(element: window.element, pid: window.pid, id: window.id, frame: WindowAnimator.shared.frameIncludingAnimation(of: window))
+            StageWindow(element: window.element, pid: window.pid, id: window.id, frame: WindowAnimator.shared.frameIncludingAnimation(of: window), isTileable: window.isTileable)
         }
         guard let focusedID = StageWindows.focusedWindowID(),
               let focused = windows.first(where: { $0.id == focusedID }),
@@ -21,13 +21,14 @@ enum WindowResizeSteps {
         let step = CGSize(width: area.width / stepsAcrossArea, height: area.height / stepsAcrossArea)
         let sign: CGFloat = grows ? 1 : -1
 
-        let mode = StageLayout.mode(for: windows)
-        if mode == .even || mode == .bsp {
-            var frames = Dictionary(uniqueKeysWithValues: windows.map { ($0.id, $0.frame) })
+        let tiles = windows.tileable
+        let mode = StageLayout.mode(for: tiles)
+        if focused.isTileable, mode == .even || mode == .bsp {
+            var frames = Dictionary(uniqueKeysWithValues: tiles.map { ($0.id, $0.frame) })
             let sideways = SharedLineResize.moveSharedLine(of: focused.id, axis: .horizontal, by: sign * step.width, in: &frames, area: area)
             let upDown = SharedLineResize.moveSharedLine(of: focused.id, axis: .vertical, by: sign * step.height, in: &frames, area: area)
             if sideways != .noNeighbour || upDown != .noNeighbour {
-                let targets = windows.compactMap { window in frames[window.id].flatMap { $0 == window.frame ? nil : (window: window, frame: $0) } }
+                let targets = tiles.compactMap { window in frames[window.id].flatMap { $0 == window.frame ? nil : (window: window, frame: $0) } }
                 if !targets.isEmpty { WindowAnimator.shared.animate(targets) }
                 return
             }

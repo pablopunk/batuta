@@ -6,6 +6,7 @@ struct StageWindow {
     let pid: pid_t
     let id: CGWindowID
     let frame: CGRect
+    var isTileable = true
 }
 
 @MainActor
@@ -15,9 +16,17 @@ enum StageWindows {
         let boundsByID = Dictionary(onScreen.map { ($0.id, $0.bounds) }, uniquingKeysWith: { first, _ in first })
         let pids = Set(onScreen.map(\.pid))
 
-        return pids
+        let shown = pids
             .flatMap { pid in standardWindows(of: pid).filter { isShownFullSize($0, bounds: boundsByID[$0.id]) } }
             .sorted { ($0.frame.midX, $0.frame.minY) < ($1.frame.midX, $1.frame.minY) }
+        WindowTraitsCache.forgetWindows(otherThan: Set(shown.map(\.id)))
+        return shown.map(withTilingDecision)
+    }
+
+    private static func withTilingDecision(_ window: StageWindow) -> StageWindow {
+        var decided = window
+        decided.isTileable = !FloatingRules.refusesTiling(WindowTraitsCache.traits(of: window))
+        return decided
     }
 
     static func windowShownAsThumbnail(inside stripItemFrame: CGRect) -> StageWindow? {

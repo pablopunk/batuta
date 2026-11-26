@@ -66,7 +66,7 @@ final class StageNavigator {
         guard !isPickingStage else { return }
         let allWindows = StageWindows.visibleSortedLeftToRight()
         guard let focused = allWindows.first(where: { $0.id == StageWindows.focusedWindowID() }) ?? allWindows.first else { return }
-        let windows = StageOrders.ordered(StageLayout.windowsOnSameScreen(as: focused, among: allWindows))
+        let windows = StageOrders.ordered(StageLayout.windowsOnSameScreen(as: focused, among: allWindows).tileable)
         let focusedFrame = focused.frame
         let newMode = pickMode(windows)
         let previousMode = StageLayout.mode(for: windows)
@@ -156,13 +156,11 @@ final class StageNavigator {
 
     /// Swaps the focused window with its neighbour; past the edge next to Stage Manager, it leaves the stage.
     private func moveFocusedWindow(_ direction: Direction) {
-        let windows = StageWindows.visibleSortedLeftToRight()
+        let allWindows = StageWindows.visibleSortedLeftToRight()
         guard let focusedID = StageWindows.focusedWindowID(),
-              let focusedIndex = windows.firstIndex(where: { $0.id == focusedID }) else { return }
-        let focused = windows[focusedIndex]
+              let focused = allWindows.first(where: { $0.id == focusedID }) else { return }
 
-        if let neighbourIndex = SpatialNeighbor.index(of: direction, from: focused.frame, among: windows.map(\.frame), excluding: focusedIndex) {
-            let neighbour = windows[neighbourIndex]
+        if let neighbour = Self.tileableNeighbour(of: focused, toward: direction, among: allWindows) {
             WindowAnimator.shared.animate([(focused, neighbour.frame), (neighbour, focused.frame)])
             StageOrders.swap(focused.id, neighbour.id)
             if ConfigStore.shared.config.highlightFocusedWindow { overlay.flash(around: neighbour.frame) }
@@ -170,6 +168,15 @@ final class StageNavigator {
             StageStrip.removeFromCurrentStage(focused)
             Self.retileAfterWindowLeaves(focused.id, strip: strip)
         }
+    }
+
+    /// Only tiles swap places: a floating window cannot fill a tile, and a tile must not take a floating window's size.
+    private static func tileableNeighbour(of focused: StageWindow, toward direction: Direction, among windows: [StageWindow]) -> StageWindow? {
+        guard focused.isTileable else { return nil }
+        let tiles = windows.tileable
+        guard let focusedIndex = tiles.firstIndex(where: { $0.id == focused.id }),
+              let neighbourIndex = SpatialNeighbor.index(of: direction, from: focused.frame, among: tiles.map(\.frame), excluding: focusedIndex) else { return nil }
+        return tiles[neighbourIndex]
     }
 
     private static let addedWindowPollInterval: TimeInterval = 0.03
