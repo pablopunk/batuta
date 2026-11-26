@@ -5,18 +5,18 @@ import Testing
     private let normalWindow = WindowTraits(canResize: true, canMove: true, hasCloseButton: true, fullScreenButton: .enabled)
     private let settingsPane = WindowTraits(canResize: true, canMove: true, hasCloseButton: true, fullScreenButton: .disabledOrMissing)
 
-    private func floats(_ traits: WindowTraits, _ bundleID: String? = "com.example.app", floating: Set<String> = [], tiled: Set<String> = []) -> Bool {
-        FloatingRules.refusesTiling(traits, bundleID: bundleID, floatingApps: floating, tiledApps: tiled)
+    private func floats(_ traits: WindowTraits, _ bundleID: String? = "com.example.app") -> Bool {
+        FloatingRules.refusesTiling(traits, bundleID: bundleID)
     }
 
     @Test func normalWindowIsTiled() { #expect(!floats(normalWindow)) }
 
     @Test func windowWithoutWorkingFullScreenButtonFloats() { #expect(floats(settingsPane)) }
 
-    @Test func windowThatCannotResizeOrMoveFloatsEvenWhenItsAppIsTiled() {
+    @Test func windowThatCannotResizeOrMoveFloatsEvenInAlwaysTiledApps() {
         var fixed = normalWindow
         fixed.canResize = false
-        #expect(floats(fixed, tiled: ["com.example.app"]))
+        #expect(floats(fixed, "com.google.Chrome"))
         var pinned = normalWindow
         pinned.canMove = false
         #expect(floats(pinned))
@@ -31,16 +31,11 @@ import Testing
         #expect(!floats(WindowTraits(canResize: true, canMove: true, hasCloseButton: false, fullScreenButton: .disabledOrMissing)))
     }
 
-    @Test func floatingAppsFloatAndWinOverTiledApps() {
-        #expect(floats(normalWindow, floating: ["com.example.app"], tiled: ["com.example.app"]))
+    @Test func alwaysTiledAppsKeepWindowsWithoutFullScreenButtonTiled() {
+        #expect(!floats(settingsPane, "com.google.Chrome"))
     }
 
-    @Test func tiledAppsKeepWindowsWithoutFullScreenButtonTiled() {
-        #expect(!floats(settingsPane, tiled: ["com.example.app"]))
-    }
-
-    @Test func builtInFloatingAppsFloatUnlessTheUserTilesThem() {
+    @Test func alwaysFloatingAppsFloat() {
         #expect(floats(normalWindow, "com.apple.iphonesimulator"))
-        #expect(!floats(normalWindow, "com.apple.iphonesimulator", tiled: ["com.apple.iphonesimulator"]))
     }
 }

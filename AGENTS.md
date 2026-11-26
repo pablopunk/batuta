@@ -35,13 +35,12 @@ Pick the default mode for every stage in the Tiling tab (saved as `tiling.mode` 
 - **Messy**: loose hand-drawn layouts for 1 to 5 windows that can overlap; more windows use Even. With "Learn app size" on (`rememberAppSizes` in `tiling` / `externalTiling`, off by default), when an app's window is alone in a Messy or Custom stage and you move or resize it (mouse drag or Navigate + +/-), Batuta saves that place for the app in `~/.config/batuta/apps.json` (`laptop` and `external` lists, keyed by bundle ID; External uses `laptop` unless it has its own settings), and uses it next time. With it off nothing is learned or applied, but saved sizes stay in apps.json. The Tiling tab lists them (only while on) so you can forget one.
 - **Custom**: draw tiles for 1 to 6 windows; saved as `customLayouts` inside `tiling` / `externalTiling` (only the counts you changed), keyed by window count, as 0–1 rects (`x`, `y`, `width`, `height`, top-left origin). Tile 1 is the leftmost window.
 
-**Floating windows** are never tiled, swapped, step-resized or learned in apps.json, and do not count as windows of the stage; you can still focus them and send them out of the stage. The first rule that matches decides:
+**Floating windows** are detected automatically, with no settings. They are never tiled, swapped, step-resized or learned in apps.json, and do not count as windows of the stage; you can still focus them and send them out of the stage. The first rule that matches decides:
 
 1. A window whose size or position Batuta cannot set floats.
-2. Apps in `floatingApps` (bundle IDs, "Floating apps" in the Tiling tab) float.
-3. Apps in `tiledApps` are tiled. Its default holds Chrome, Activity Monitor and GIMP, whose normal windows can lack a working full-screen button.
-4. Simulator and Photo Booth float.
-5. A window with a close button whose full-screen button is missing or disabled floats (dialogs, About boxes, System Settings). Windows without title bar buttons are tiled.
+2. Chrome, Activity Monitor and GIMP windows are tiled (their normal windows can lack a working full-screen button).
+3. Simulator and Photo Booth float.
+4. A window with a close button whose full-screen button is missing or disabled floats (dialogs, About boxes, System Settings). Windows without title bar buttons are tiled.
 
 An Accessibility value Batuta cannot read never makes a window float. The traits are read when a window first shows, once more 0.3 s later, then kept by window ID.
 

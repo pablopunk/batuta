@@ -117,10 +117,6 @@ struct BatutaConfig: Codable, Equatable {
     var cycleTilingModeShortcutIsCleared = false
     /// Keyed by mode name. Each shortcut toggles that mode on the current stage. None by default.
     var modeShortcuts: [String: KeyShortcut] = [:]
-    /// Bundle IDs whose windows never get tiled.
-    var floatingApps: [String] = []
-    /// Bundle IDs whose resizable windows always get tiled, even without a working full-screen button.
-    var tiledApps: [String] = FloatingRules.defaultTiledApps
 
     init() {}
 
@@ -161,8 +157,6 @@ struct BatutaConfig: Codable, Equatable {
         cycleTilingModeShortcut = try container.decodeIfPresent(KeyShortcut.self, forKey: .cycleTilingModeShortcut)
         cycleTilingModeShortcutIsCleared = try container.decodeIfPresent(Bool.self, forKey: .cycleTilingModeShortcutIsCleared) ?? false
         modeShortcuts = try container.decodeIfPresent([String: KeyShortcut].self, forKey: .modeShortcuts) ?? [:]
-        floatingApps = try container.decodeIfPresent([String].self, forKey: .floatingApps) ?? defaults.floatingApps
-        tiledApps = try container.decodeIfPresent([String].self, forKey: .tiledApps) ?? defaults.tiledApps
     }
 
     /// The window counts a tiling section of the file sets itself, which a legacy top-level layout must not replace.

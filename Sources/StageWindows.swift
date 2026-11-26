@@ -24,13 +24,10 @@ enum StageWindows {
     }
 
     private static func withTilingDecision(_ window: StageWindow) -> StageWindow {
-        let config = ConfigStore.shared.config
         var decided = window
         decided.isTileable = !FloatingRules.refusesTiling(
             WindowTraitsCache.traits(of: window),
-            bundleID: NSRunningApplication(processIdentifier: window.pid)?.bundleIdentifier,
-            floatingApps: Set(config.floatingApps),
-            tiledApps: Set(config.tiledApps)
+            bundleID: NSRunningApplication(processIdentifier: window.pid)?.bundleIdentifier
         )
         return decided
     }

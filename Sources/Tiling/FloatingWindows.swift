@@ -12,12 +12,11 @@ struct WindowTraits: Equatable {
 enum FloatingRules {
     static let alwaysFloatingApps: Set<String> = ["com.apple.iphonesimulator", "com.apple.PhotoBooth"]
     /// Apps whose normal windows briefly or always lack a working full-screen button.
-    static let defaultTiledApps = ["com.google.Chrome", "com.apple.ActivityMonitor", "org.gimp.gimp-2.10", "org.gimp.gimp-3.0"]
+    static let alwaysTiledApps: Set<String> = ["com.google.Chrome", "com.apple.ActivityMonitor", "org.gimp.gimp-2.10", "org.gimp.gimp-3.0"]
 
-    static func refusesTiling(_ traits: WindowTraits, bundleID: String?, floatingApps: Set<String>, tiledApps: Set<String>) -> Bool {
+    static func refusesTiling(_ traits: WindowTraits, bundleID: String?) -> Bool {
         if traits.canResize == false || traits.canMove == false { return true }
-        if let bundleID, floatingApps.contains(bundleID) { return true }
-        if let bundleID, tiledApps.contains(bundleID) { return false }
+        if let bundleID, alwaysTiledApps.contains(bundleID) { return false }
         if let bundleID, alwaysFloatingApps.contains(bundleID) { return true }
         return isTitledWindowNotMeantToBeBig(traits)
     }
