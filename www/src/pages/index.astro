@@ -4,6 +4,8 @@ import Download from "../components/Download.astro";
 import Features from "../components/Features.astro";
 import Demo from "../demo/Demo";
 import SeoHead from "../components/SeoHead.astro";
+
+const isProd = import.meta.env.PROD;
 ---
 
 <html lang="en">
@@ -11,6 +13,7 @@ import SeoHead from "../components/SeoHead.astro";
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <SeoHead />
+    {isProd ? <script data-goatcounter="/goat" async src="/count.js" is:inline /> : null}
     <script is:inline>
       try {
         const theme = localStorage.getItem("theme");
