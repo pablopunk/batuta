@@ -3,15 +3,14 @@ import ThemeToggle from "../components/ThemeToggle.astro";
 import Download from "../components/Download.astro";
 import Features from "../components/Features.astro";
 import Demo from "../demo/Demo";
+import SeoHead from "../components/SeoHead.astro";
 ---
 
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" href="/icon.png" />
-    <title>Batuta</title>
-    <meta name="description" content="Keyboard control for macOS Stage Manager." />
+    <SeoHead />
     <script is:inline>
       try {
         const theme = localStorage.getItem("theme");
