@@ -7,6 +7,8 @@ description: Cut a Batuta release from a bump word (patch/minor/major) or a vers
 
 `make release VERSION=x.y.z` only bumps `VERSION`, commits, tags `vX.Y.Z` and pushes `main` and the tag. The tag starts the `Release` GitHub Action, which builds, signs and notarizes `Batuta.app`, creates the GitHub release with generated notes, commits the signed `appcast.xml` to `main` and updates the Homebrew cask. See "Release" in `AGENTS.md` for the secrets it needs.
 
+Cut first, name later: run `make release` right away, before you ask for the name or write the notes. The name and notes go on the release only after the action finishes, so ask for them while it builds. A bump word ("release minor") is the go-ahead to cut; do not ask again.
+
 ## Cut
 
 1. `git fetch --tags origin`; read the latest tag with `git tag --sort=-v:refname | head -1`.
@@ -16,6 +18,8 @@ description: Cut a Batuta release from a bump word (patch/minor/major) or a vers
 5. `git pull` so local `main` has the appcast commit the action pushed.
 
 ## Notes
+
+Do this while the action from step 4 runs.
 
 1. Gather what ships: `git log --oneline vPREV..vNEW` (skip the `Update appcast` and `VERSION` commits). Read the diffs, not only the messages, for user-facing changes. Ignore website-only and agent-file changes unless they matter to users.
 2. Copy the house style from `gh release view vPREV`.
