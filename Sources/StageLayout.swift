@@ -107,13 +107,20 @@ enum StageLayout {
     private static func usableArea(on screen: NSScreen, leavingRoom: Bool, besides strip: StageStrip?) -> CGRect {
         let visible = screen.visibleFrame.convertedFromAppKit.insetBy(dx: gap, dy: gap)
         guard leavingRoom else { return visible }
-        let stripWidth = strip.map { $0.thumbnailsFrame.maxX - visible.minX + gap } ?? fallbackStripWidth
+        let isOnLeftEdge = strip?.isOnLeftEdge ?? true
+        let measuredWidth = strip.map { isOnLeftEdge ? $0.thumbnailsFrame.maxX - visible.minX + gap : visible.maxX - $0.thumbnailsFrame.minX + gap }
+        let stripWidth = stripRoom.width(measured: measuredWidth, onScreen: stripRoomKey(screen, isOnLeftEdge: isOnLeftEdge), fallback: fallbackStripWidth)
 
-        if strip?.isOnLeftEdge ?? true {
+        if isOnLeftEdge {
             return CGRect(x: visible.minX + stripWidth, y: visible.minY, width: visible.width - stripWidth, height: visible.height)
         }
-        let rightStripWidth = strip.map { visible.maxX - $0.thumbnailsFrame.minX + gap } ?? fallbackStripWidth
-        return CGRect(x: visible.minX, y: visible.minY, width: visible.width - rightStripWidth, height: visible.height)
+        return CGRect(x: visible.minX, y: visible.minY, width: visible.width - stripWidth, height: visible.height)
+    }
+
+    private static var stripRoom = StripRoom()
+
+    private static func stripRoomKey(_ screen: NSScreen, isOnLeftEdge: Bool) -> String {
+        "\(screen.displayID ?? 0)-\(screen.frame)-\(isOnLeftEdge ? "left" : "right")"
     }
 }
 
@@ -129,8 +136,12 @@ private extension StageStrip {
 }
 
 extension NSScreen {
+    var displayID: CGDirectDisplayID? {
+        deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID
+    }
+
     var isBuiltIn: Bool {
-        guard let displayID = deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? CGDirectDisplayID else { return false }
+        guard let displayID else { return false }
         return CGDisplayIsBuiltin(displayID) != 0
     }
 }
