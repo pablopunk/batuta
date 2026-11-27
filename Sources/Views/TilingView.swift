@@ -63,7 +63,7 @@ struct TilingView: View {
 
             if settings.mode == .custom {
                 if isEditable {
-                    CustomLayoutEditor(windowCount: windowCount, layouts: settings.customLayouts) { key, rects in updateSettings { $0.customLayouts[key] = rects } }
+                    CustomLayoutEditor(windowCount: windowCount, layouts: settings.customLayouts, screensUsingTheseSettings: screensUsingTheseSettings) { key, rects in updateSettings { $0.customLayouts[key] = rects } }
                         .id("\(editsExternalSettings)-\(windowCount)")
                 } else {
                     LayoutPreview(rects: previewRects).opacity(0.45)
@@ -119,6 +119,12 @@ struct TilingView: View {
 
     private var editsExternalSettings: Bool {
         screenKind == .external && configStore.config.externalScreensHaveOwnTiling
+    }
+
+    private var screensUsingTheseSettings: (_ isBuiltIn: Bool) -> Bool {
+        let editsExternal = editsExternalSettings
+        let externalUsesLaptopSettings = !configStore.config.externalScreensHaveOwnTiling
+        return { isBuiltIn in editsExternal ? !isBuiltIn : isBuiltIn || externalUsesLaptopSettings }
     }
 
     private var isEditable: Bool {

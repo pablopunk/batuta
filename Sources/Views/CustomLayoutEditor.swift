@@ -4,10 +4,12 @@ import SwiftUI
 struct CustomLayoutEditor: View {
     let windowCount: Int
     let layouts: [String: [UnitRect]]
+    let screensUsingTheseSettings: (_ isBuiltIn: Bool) -> Bool
     let saveLayout: (_ key: String, _ rects: [UnitRect]) -> Void
     @State private var draftRects: [UnitRect]?
     @State private var dragStartRects: [UnitRect]?
     @State private var activeIndex: Int?
+    @State private var currentStageRects: [UnitRect]?
 
     private static let snapStep = 0.05
 
@@ -28,8 +30,13 @@ struct CustomLayoutEditor: View {
                     Pill(label: mode.label, isOn: false) { copyLayout(from: mode) }
                         .help("Replace this layout with the \(mode.label) one")
                 }
+                if let currentStageRects {
+                    Pill(label: "Current windows", isOn: false) { save(currentStageRects) }
+                        .help("Replace this layout with where the windows of the open stage are now")
+                }
             }
         }
+        .onAppear { currentStageRects = CurrentStageLayout.unitRects(ofStageWith: windowCount, onScreensWhere: screensUsingTheseSettings) }
     }
 
     private var savedRects: [UnitRect] {

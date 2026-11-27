@@ -98,7 +98,7 @@ enum StageLayout {
         return usableArea(on: screen, leavingRoom: settings.leaveRoomForStageManager, besides: strip)
     }
 
-    private static func screen(containing frame: CGRect) -> NSScreen? {
+    static func screen(containing frame: CGRect) -> NSScreen? {
         let appKitFrame = frame.convertedToAppKit
         return NSScreen.screens.first { $0.frame.intersects(appKitFrame) } ?? NSScreen.main
     }
