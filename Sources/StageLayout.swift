@@ -108,7 +108,7 @@ enum StageLayout {
         let visible = screen.visibleFrame.convertedFromAppKit.insetBy(dx: gap, dy: gap)
         guard leavingRoom else { return visible }
         let isOnLeftEdge = strip?.isOnLeftEdge ?? true
-        let measuredWidth = strip.map { isOnLeftEdge ? $0.thumbnailsFrame.maxX - visible.minX + gap : visible.maxX - $0.thumbnailsFrame.minX + gap }
+        let measuredWidth = strip.flatMap { $0.items.isEmpty ? nil : $0 }.map { isOnLeftEdge ? $0.thumbnailsFrame.maxX - visible.minX + gap : visible.maxX - $0.thumbnailsFrame.minX + gap }
         let stripWidth = stripRoom.width(measured: measuredWidth, onScreen: stripRoomKey(screen, isOnLeftEdge: isOnLeftEdge), fallback: fallbackStripWidth)
 
         if isOnLeftEdge {

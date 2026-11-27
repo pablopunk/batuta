@@ -5,8 +5,10 @@ import CoreGraphics
 struct StripRoom {
     private var widestByScreen: [String: CGFloat] = [:]
 
+    /// A reading wider than the fallback comes from a stray window or another screen's strip, so it is not kept.
     mutating func width(measured: CGFloat?, onScreen screenKey: String, fallback: CGFloat) -> CGFloat {
-        let widest = max(measured ?? 0, widestByScreen[screenKey] ?? 0)
+        let plausible = measured.flatMap { $0 <= fallback ? $0 : nil } ?? 0
+        let widest = max(plausible, widestByScreen[screenKey] ?? 0)
         guard widest > 0 else { return fallback }
         widestByScreen[screenKey] = widest
         return widest

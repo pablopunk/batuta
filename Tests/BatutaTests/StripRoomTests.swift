@@ -21,4 +21,11 @@ struct StripRoomTests {
         _ = room.width(measured: 150, onScreen: "a", fallback: 260)
         #expect(room.width(measured: nil, onScreen: "a", fallback: 260) == 150)
     }
+
+    @Test func ignoresReadingsWiderThanAnyStrip() {
+        var room = StripRoom()
+        _ = room.width(measured: 165, onScreen: "a", fallback: 260)
+        #expect(room.width(measured: 2165, onScreen: "a", fallback: 260) == 165)
+        #expect(room.width(measured: 2165, onScreen: "b", fallback: 260) == 260)
+    }
 }
