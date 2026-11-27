@@ -321,7 +321,12 @@ final class StageNavigator {
 
     private func select(_ index: Int, in strip: StageStrip) {
         pickedIndex = index
-        overlay.show(around: strip.items[index].frame)
+        overlay.show(around: picturesFrame(of: strip.items[index]))
+    }
+
+    /// Strip buttons are much wider than the window pictures they draw, so the frame hugs the pictures.
+    private func picturesFrame(of item: StageStripItem) -> CGRect {
+        StageWindows.thumbnailBounds(inside: [item.frame]) ?? item.frame
     }
 
     private func focus(_ window: StageWindow, alwaysHighlight: Bool = false) {
