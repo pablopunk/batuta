@@ -11,7 +11,7 @@ struct CustomLayoutEditor: View {
     @State private var activeIndex: Int?
     @State private var currentStageRects: [UnitRect]?
 
-    private static let snapStep = 0.05
+    private static let snapStep = 0.025
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
