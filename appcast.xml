@@ -3,6 +3,15 @@
     <channel>
         <title>Batuta</title>
         <item>
+            <title>0.2.1</title>
+            <pubDate>Fri, 27 Nov 2026 21:15:09 +0000</pubDate>
+            <sparkle:version>0.2.1</sparkle:version>
+            <sparkle:shortVersionString>0.2.1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+            <enclosure url="https://github.com/pablopunk/batuta/releases/download/v0.2.1/Batuta.zip" length="1566196" type="application/octet-stream" sparkle:edSignature="xhedy512cxiy028e2KsidoPGU+Y8hvtqrTbUx0DmkIoFuDo6kD7RPxdyvmE/9evHETGrXw+32bzK4BT1aYrlCA=="/>
+        </item>
+        <item>
             <title>0.2.0</title>
             <pubDate>Fri, 27 Nov 2026 15:40:26 +0000</pubDate>
             <sparkle:version>0.2.0</sparkle:version>
@@ -19,15 +28,6 @@
             <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
             <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
             <enclosure url="https://github.com/pablopunk/batuta/releases/download/v0.1.2/Batuta.zip" length="1557568" type="application/octet-stream" sparkle:edSignature="sosyj+6I+2G6oB1OwtrZtenmODds5gpBvm6XlvItmwz1n4DoxOEuqcsTqsIUO9ODAfX5Uk/tteDiVtcb5xsfCA=="/>
-        </item>
-        <item>
-            <title>0.1.1</title>
-            <pubDate>Wed, 25 Nov 2026 12:32:00 +0100</pubDate>
-            <sparkle:version>0.1.1</sparkle:version>
-            <sparkle:shortVersionString>0.1.1</sparkle:shortVersionString>
-            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
-            <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
-            <enclosure url="https://github.com/pablopunk/batuta/releases/download/v0.1.1/Batuta.zip" length="1630355" type="application/octet-stream" sparkle:edSignature="gvmcjRW67wcZ3npdoDBovb6GLOjb5M4LkvZv56r5955vZHhjnhT+Kvvly8t8b6U8GCUyoH9w+JxFbcHj1JONCQ=="/>
         </item>
     </channel>
 </rss>
